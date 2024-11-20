@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';

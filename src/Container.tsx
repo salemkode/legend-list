@@ -1,9 +1,10 @@
 import { Observable } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
+import * as React from 'react';
 import { Reactive, use$ } from '@legendapp/state/react';
-import { useRef } from 'react';
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native';
 import type { LegendListProps } from './types';
+import { ReactNode } from 'react';
 
 enableReactNativeComponents();
 
@@ -23,7 +24,7 @@ export const Container = ({
     $container: Observable<ContainerInfo>;
     recycleItems?: boolean;
     listProps: LegendListProps<any>;
-    getRenderedItem: (index: number) => React.ReactNode;
+    getRenderedItem: (index: number) => ReactNode;
     onLayout: (index: number, length: number) => void;
 }) => {
     const { horizontal } = listProps;

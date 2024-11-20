@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, ReactNode } from 'react';
 import { ScrollView } from 'react-native';
 
 export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
@@ -14,7 +14,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     estimatedItemLength: (index: number) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
-    renderItem?: (props: LegendListRenderItemInfo<T>) => React.ReactNode;
+    renderItem?: (props: LegendListRenderItemInfo<T>) => ReactNode;
     onViewableRangeChanged?: (range: ViewableRange<T>) => void;
     //   TODO:
     //   onViewableItemsChanged?:
