@@ -4,6 +4,8 @@
     "main": "expo-router/entry",
     "version": "1.0.0",
     "scripts": {
+        "buildll": "cd .. && npm run build && cd dist && npm pack --pack-destination ../example && cd ../example && mv legendapp-list-*.tgz ./legendapp-list.tgz",
+        "bootstrap": "npm run buildll && npm i",
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",
         "android": "expo run:android",
@@ -16,7 +18,7 @@
         "preset": "jest-expo"
     },
     "dependencies": {
-        "@legendapp/list": "file:../dist/",
+        "@legendapp/list": "file:./legendapp-list.tgz",
         "@expo/vector-icons": "^14.0.2",
         "@legendapp/motion": "^2.4.0",
         "@legendapp/state": "^3.0.0-beta.19",
