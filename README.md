@@ -16,6 +16,48 @@ In addition to normal FlatList features:
 
 ## Usage
 
+### Props
+
+We suggest using all of the required props and additionally `keyExtractor` to improve performance when adding/removing items.
+
+#### Required
+
+```ts
+interface PropsRequired {
+    data: ArrayLike<any> & T[];
+    renderItem: (props: LegendListRenderItemInfo<T>) => ReactNode;
+    estimatedItemLength: (index: number) => number;
+}
+```
+
+#### Optional
+
+```ts
+interface PropsOptional {
+    initialScrollOffset?: number;
+    initialScrollIndex?: number;
+    drawDistance?: number;
+    initialContainers?: number;
+    recycleItems?: boolean;
+    onEndReachedThreshold?: number | null | undefined;
+    autoScrollToBottom?: boolean;
+    autoScrollToBottomThreshold?: number;
+    onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
+    keyExtractor?: (item: T, index: number) => string;
+    onViewableRangeChanged?: (range: ViewableRange<T>) => void;
+}
+```
+
+## How to build
+
+`npm run build` will build the package to the `dist` folder.
+
+## How to run example
+
+1. `cd example`
+2. `npm i`
+3. `npm run bootstrap-start`
+
 ## PRs gladly accepted!
 
 There's not a lot of code here so hopefully it's easy to contribute. If you want to add a missing feature or fix a bug please post an issue to see if development is already in progress so we can make sure to not duplicate work 😀.
