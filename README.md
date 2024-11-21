@@ -70,3 +70,11 @@ There's not a lot of code here so hopefully it's easy to contribute. If you want
 -   Other important missing features from FlatList or other lists libraries
 -   Optimizations:
     -   Loop over only potentially changed items when adjusting heights rather than data array
+
+## Community
+
+Join us on [Discord](https://discord.gg/tuW2pAffjA) to get involved with the Legend community.
+
+## 👩‍⚖️ License
+
+[MIT](LICENSE)
