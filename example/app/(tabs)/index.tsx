@@ -1,6 +1,6 @@
 import { LegendList } from '@legendapp/list';
-import { useState } from 'react';
-import { LogBox, Platform, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { renderItem } from '../renderItem';
 
 LogBox.ignoreLogs(['Open debugger']);
@@ -13,6 +13,8 @@ console.log(`Using ${uiManager}`);
 const ESTIMATED_ITEM_LENGTH = 200;
 
 export default function HomeScreen() {
+    const scrollViewRef = useRef<ScrollView>(null);
+
     const [data, setData] = useState(
         () =>
             Array.from({ length: 500 }, (_, i) => ({
@@ -33,6 +35,7 @@ export default function HomeScreen() {
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
             <LegendList
+                ref={scrollViewRef}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 contentContainerStyle={styles.listContainer}
                 data={data}
