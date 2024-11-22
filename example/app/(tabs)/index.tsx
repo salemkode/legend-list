@@ -44,8 +44,8 @@ export default function HomeScreen() {
                 estimatedItemLength={() => ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
                 recycleItems={true}
-                // autoScrollToBottom
-                // autoScrollToBottomAnimated
+                // alignItemsAtEnd
+                // maintainScrollAtEnd
                 onEndReached={({ distanceFromEnd }) => {
                     console.log('onEndReached', distanceFromEnd);
                 }}
