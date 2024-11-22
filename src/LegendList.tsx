@@ -55,6 +55,7 @@ export const LegendList = forwardRef(function LegendList<T>(
         ListHeaderComponentStyle,
         ListFooterComponent,
         ListFooterComponentStyle,
+        ItemSeparatorComponent,
         ...rest
     } = props;
     const internalRef = useRef<ScrollView>(null);
@@ -513,6 +514,7 @@ export const LegendList = forwardRef(function LegendList<T>(
                         listProps={props}
                         getRenderedItem={getRenderedItem}
                         onLayout={updateItemLength}
+                        ItemSeparatorComponent={ItemSeparatorComponent}
                     />
                 ))}
             </Reactive.View>
