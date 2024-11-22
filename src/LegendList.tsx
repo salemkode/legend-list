@@ -50,6 +50,10 @@ export const LegendList = forwardRef(<T,>(
         estimatedItemLength,
         onEndReached,
         onViewableRangeChanged,
+        ListHeaderComponent,
+        ListHeaderComponentStyle,
+        ListFooterComponent,
+        ListFooterComponentStyle,
         ...rest
     } = props;
     const internalRef = useRef<ScrollView>(null);
@@ -450,6 +454,9 @@ export const LegendList = forwardRef(<T,>(
             {...rest}
             ref={refScroller}
         >
+            {ListHeaderComponent && (
+                <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
+            )}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -481,6 +488,9 @@ export const LegendList = forwardRef(<T,>(
                     />
                 ))}
             </Reactive.View>
+            {ListFooterComponent && (
+                <Reactive.View $style={ListFooterComponentStyle}>{ListFooterComponent}</Reactive.View>
+            )}
         </Reactive.ScrollView>
     );
 });

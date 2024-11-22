@@ -49,6 +49,8 @@ export default function HomeScreen() {
                 onEndReached={({ distanceFromEnd }) => {
                     console.log('onEndReached', distanceFromEnd);
                 }}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
 
                 // initialScrollOffset={20000}
                 // initialScrollIndex={500}
@@ -60,6 +62,15 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+    listHeader: {
+        alignSelf: "center",
+        height: 100,
+        width: 100,
+        backgroundColor: '#456AAA',
+        borderRadius: 12,
+        marginHorizontal: 8,
+        marginTop: 8,
+    },
     outerContainer: {
         backgroundColor: '#456',
         bottom: Platform.OS === 'ios' ? 82 : 0,
