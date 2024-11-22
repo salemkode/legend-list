@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "scripts": {
         "buildll": "cd .. && npm run build && cd dist && npm pack --pack-destination ../example && cd ../example && mv legendapp-list-*.tgz ./legendapp-list.tgz",
+        "preinstall": "npm run buildll",
         "bootstrap": "npm run buildll && npm i @legendapp/list",
         "bootstrap-start": "npm run bootstrap && npm start --clear",
         "start": "expo start",
