@@ -3,7 +3,7 @@ import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
 import { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, LayoutChangeEvent, ScrollView } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, ViewStyle } from 'react-native';
 import { Container } from './Container';
 import type { LegendListProps } from './types';
 
@@ -45,6 +45,7 @@ export const LegendList = forwardRef(function LegendList<T>(
         onEndReachedThreshold,
         autoScrollToBottom = false,
         autoScrollToBottomThreshold = 0.1,
+        startAtBottom = false,
         keyExtractor,
         renderItem,
         estimatedItemLength,
@@ -59,6 +60,7 @@ export const LegendList = forwardRef(function LegendList<T>(
     const internalRef = useRef<ScrollView>(null);
     const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
     const containers$ = useObservable<ContainerInfo[]>(() => []);
+    const paddingTop$ = useObservable(0);
     const visibleRange$ = useObservable<VisibleRange>(() => ({
         start: 0,
         end: 0,
@@ -115,6 +117,16 @@ export const LegendList = forwardRef(function LegendList<T>(
     const initialContentOffset =
         initialScrollOffset ??
         (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
+
+    const setTotalLength = (length: number) => {
+        visibleRange$.totalLength.set(length as any);
+        const screenLength = refPositions.current!.scrollLength;
+        if (startAtBottom) {
+            const listPaddingTop =
+                ((style as any)?.paddingTop || 0) + ((contentContainerStyle as any)?.paddingTop || 0);
+            paddingTop$.set(Math.max(0, screenLength - length - listPaddingTop));
+        }
+    };
 
     const allocateContainers = useCallback(() => {
         const scrollLength = refPositions.current!.scrollLength;
@@ -312,13 +324,35 @@ export const LegendList = forwardRef(function LegendList<T>(
 
             totalLength += lengths.get(id) ?? estimatedItemLength(i);
         }
-        visibleRange$.totalLength.set(totalLength);
+        setTotalLength(totalLength);
     }, []);
+
+    const checkAtBottom = () => {
+        const scrollLength = refPositions.current!.scrollLength;
+        const newScroll = visibleRange$.scroll.peek();
+        // Check if at end
+        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - scrollLength;
+        if (refPositions.current) {
+            refPositions.current.isAtBottom = distanceFromEnd < scrollLength * autoScrollToBottomThreshold;
+        }
+        if (onEndReached && !refPositions.current?.isEndReached) {
+            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * scrollLength) {
+                if (refPositions.current) {
+                    refPositions.current.isEndReached = true;
+                }
+                onEndReached({ distanceFromEnd });
+            }
+        }
+    };
 
     useMemo(() => {
         if (refPositions.current) {
-            refPositions.current.isEndReached = false;
+            if (!refPositions.current?.isAtBottom) {
+                refPositions.current.isEndReached = false;
+            }
         }
+        calculateItemsInView();
+        checkAtBottom();
     }, [data]);
 
     const containers = use$(containers$, { shallow: true });
@@ -345,7 +379,7 @@ export const LegendList = forwardRef(function LegendList<T>(
             // }
 
             lengths.set(id, length);
-            visibleRange$.totalLength.set((prevTotal) => prevTotal + (length - prevLength));
+            setTotalLength(visibleRange$.totalLength.peek() + (length - prevLength));
 
             if (refPositions.current?.isAtBottom && autoScrollToBottom) {
                 // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
@@ -387,23 +421,8 @@ export const LegendList = forwardRef(function LegendList<T>(
     }, []);
 
     const handleScrollDebounced = useCallback(() => {
-        const scrollLength = refPositions.current!.scrollLength;
-        const newScroll = visibleRange$.scroll.peek();
-
         calculateItemsInView();
-        // Check if at end
-        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - scrollLength;
-        if (refPositions.current) {
-            refPositions.current.isAtBottom = distanceFromEnd < scrollLength * autoScrollToBottomThreshold;
-        }
-        if (onEndReached && !refPositions.current?.isEndReached) {
-            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * scrollLength) {
-                if (refPositions.current) {
-                    refPositions.current.isEndReached = true;
-                }
-                onEndReached({ distanceFromEnd });
-            }
-        }
+        checkAtBottom();
 
         // Reset the debounce
         if (refPositions.current) {
@@ -462,6 +481,7 @@ export const LegendList = forwardRef(function LegendList<T>(
             {...rest}
             ref={refScroller}
         >
+            {startAtBottom && <Reactive.View $style={() => ({ height: paddingTop$.get() })} />}
             {ListHeaderComponent && (
                 <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
             )}
