@@ -2,7 +2,7 @@ import * as React from 'react';
 import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
-import { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, ScrollView } from 'react-native';
 import { Container } from './Container';
 import type { LegendListProps } from './types';
@@ -28,10 +28,12 @@ interface VisibleRange {
     topPad: number;
 }
 
-export const LegendList = forwardRef(<T,>(
+export const LegendList: <T>(
+    props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }
+) => ReactElement = forwardRef(function LegendList<T>(
     props: LegendListProps<T>,
     forwardedRef: ForwardedRef<ScrollView>
-) => {
+) {
     const {
         data,
         initialScrollIndex,
@@ -493,4 +495,4 @@ export const LegendList = forwardRef(<T,>(
             )}
         </Reactive.ScrollView>
     );
-});
+}) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement;
