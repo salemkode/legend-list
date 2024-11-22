@@ -3,7 +3,7 @@ import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
 import { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, ScrollView } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView } from 'react-native';
 import { Container } from './Container';
 import type { LegendListProps } from './types';
 
@@ -28,10 +28,10 @@ interface VisibleRange {
     topPad: number;
 }
 
-export const LegendList = forwardRef(<T,>(
+export const LegendList = forwardRef(function LegendList<T>(
     props: LegendListProps<T>,
-    forwardedRef: ForwardedRef<ScrollView>
-) => {
+    forwardedRef: ForwardedRef<ScrollView>,
+) {
     const {
         data,
         initialScrollIndex,
@@ -83,6 +83,7 @@ export const LegendList = forwardRef(<T,>(
         data: T[];
         idsInFirstRender: Set<string>;
         hasScrolled: boolean;
+        scrollLength: number;
     }>();
     const getId = (index: number): string => {
         const data = refPositions.current?.data;
@@ -105,20 +106,20 @@ export const LegendList = forwardRef(<T,>(
             data: data,
             idsInFirstRender: undefined as any,
             hasScrolled: false,
+            scrollLength: Dimensions.get('window')[horizontal ? 'width' : 'height'],
         };
         refPositions.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
     }
     refPositions.current.data = data;
-
-    const SCREEN_LENGTH = Dimensions.get('window')[horizontal ? 'width' : 'height'];
 
     const initialContentOffset =
         initialScrollOffset ??
         (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
 
     const allocateContainers = useCallback(() => {
+        const scrollLength = refPositions.current!.scrollLength;
         const numContainers =
-            initialContainers || Math.ceil((SCREEN_LENGTH + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
+            initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
 
         const containers: ContainerInfo[] = [];
         for (let i = 0; i < numContainers; i++) {
@@ -148,7 +149,7 @@ export const LegendList = forwardRef(<T,>(
     );
 
     const calculateItemsInView = useCallback(() => {
-        const data = refPositions.current!.data;
+        const { data, scrollLength } = refPositions.current!;
         if (!data) {
             return;
         }
@@ -181,10 +182,10 @@ export const LegendList = forwardRef(<T,>(
                 startBuffered = i;
             }
             if (startNoBuffer !== null) {
-                if (top <= scroll + SCREEN_LENGTH) {
+                if (top <= scroll + scrollLength) {
                     endNoBuffer = i;
                 }
-                if (top <= scroll + SCREEN_LENGTH + scrollBuffer) {
+                if (top <= scroll + scrollLength + scrollBuffer) {
                     endBuffered = i;
                 } else {
                     break;
@@ -386,16 +387,17 @@ export const LegendList = forwardRef(<T,>(
     }, []);
 
     const handleScrollDebounced = useCallback(() => {
+        const scrollLength = refPositions.current!.scrollLength;
         const newScroll = visibleRange$.scroll.peek();
 
         calculateItemsInView();
         // Check if at end
-        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - SCREEN_LENGTH;
+        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - scrollLength;
         if (refPositions.current) {
-            refPositions.current.isAtBottom = distanceFromEnd < SCREEN_LENGTH * autoScrollToBottomThreshold;
+            refPositions.current.isAtBottom = distanceFromEnd < scrollLength * autoScrollToBottomThreshold;
         }
         if (onEndReached && !refPositions.current?.isEndReached) {
-            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * SCREEN_LENGTH) {
+            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * scrollLength) {
                 if (refPositions.current) {
                     refPositions.current.isEndReached = true;
                 }
@@ -408,6 +410,11 @@ export const LegendList = forwardRef(<T,>(
             refPositions.current.animFrame = null;
         }
     }, []);
+
+    const onLayout = (event: LayoutChangeEvent) => {
+        const scrollLength = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+        refPositions.current!.scrollLength = scrollLength;
+    };
 
     const handleScroll = useCallback((event: any) => {
         refPositions.current!.hasScrolled = true;
@@ -442,6 +449,7 @@ export const LegendList = forwardRef(<T,>(
                     : {},
             ]}
             onScroll={handleScroll}
+            onLayout={onLayout}
             scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
