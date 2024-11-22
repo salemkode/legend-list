@@ -2,7 +2,7 @@ import * as React from 'react';
 import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, ScrollView } from 'react-native';
 import { Container } from './Container';
 import type { LegendListProps } from './types';
@@ -28,7 +28,10 @@ interface VisibleRange {
     topPad: number;
 }
 
-export function LegendList<T>(props: LegendListProps<T>) {
+export const LegendList = forwardRef(<T,>(
+    props: LegendListProps<T>,
+    forwardedRef: ForwardedRef<ScrollView>
+) => {
     const {
         data,
         initialScrollIndex,
@@ -53,7 +56,8 @@ export function LegendList<T>(props: LegendListProps<T>) {
         ListFooterComponentStyle,
         ...rest
     } = props;
-    const refScroller = useRef<ScrollView>(null);
+    const internalRef = useRef<ScrollView>(null);
+    const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
     const containers$ = useObservable<ContainerInfo[]>(() => []);
     const visibleRange$ = useObservable<VisibleRange>(() => ({
         start: 0,
@@ -489,4 +493,4 @@ export function LegendList<T>(props: LegendListProps<T>) {
             )}
         </Reactive.ScrollView>
     );
-}
+});
