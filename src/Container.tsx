@@ -70,11 +70,9 @@ export const Container = ({
             }}
         >
             <View key={key}>{getRenderedItem(itemIndex)}</View>
-            {ItemSeparatorComponent && (
-                <Reactive.View>
-                    {ItemSeparatorComponent}
-                </Reactive.View>
-            )}
+            {ItemSeparatorComponent && itemIndex !== listProps.data.length - 1 && (
+				<Reactive.View>{ItemSeparatorComponent}</Reactive.View>
+			)}
         </Reactive.View>
     );
 };
