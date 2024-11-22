@@ -20,12 +20,14 @@ export const Container = ({
     listProps,
     getRenderedItem,
     onLayout,
+    ItemSeparatorComponent
 }: {
     $container: Observable<ContainerInfo>;
     recycleItems?: boolean;
     listProps: LegendListProps<any>;
     getRenderedItem: (index: number) => ReactNode;
     onLayout: (index: number, length: number) => void;
+    ItemSeparatorComponent?: ReactNode;
 }) => {
     const { horizontal } = listProps;
     const { id } = $container.peek();
@@ -38,6 +40,7 @@ export const Container = ({
     const createStyle = (): ViewStyle =>
         horizontal
             ? {
+                  flexDirection: "row",
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
@@ -67,6 +70,9 @@ export const Container = ({
             }}
         >
             <View key={key}>{getRenderedItem(itemIndex)}</View>
+            {ItemSeparatorComponent && itemIndex !== listProps.data.length - 1 && (
+				<Reactive.View>{ItemSeparatorComponent}</Reactive.View>
+			)}
         </Reactive.View>
     );
 };

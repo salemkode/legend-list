@@ -11,6 +11,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     onEndReachedThreshold?: number | null | undefined;
     autoScrollToBottom?: boolean;
     autoScrollToBottomThreshold?: number;
+    startAtBottom?: boolean;
     estimatedItemLength: (index: number) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
@@ -20,6 +21,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: ReactNode;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
+    ItemSeparatorComponent?: ReactNode;
     //   TODO:
     //   onViewableItemsChanged?:
     //     | ((info: {

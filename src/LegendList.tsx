@@ -3,7 +3,7 @@ import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, ScrollView } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, ViewStyle } from 'react-native';
 import { Container } from './Container';
 import type { LegendListProps } from './types';
 
@@ -47,6 +47,7 @@ export const LegendList: <T>(
         onEndReachedThreshold,
         autoScrollToBottom = false,
         autoScrollToBottomThreshold = 0.1,
+        startAtBottom = false,
         keyExtractor,
         renderItem,
         estimatedItemLength,
@@ -56,11 +57,13 @@ export const LegendList: <T>(
         ListHeaderComponentStyle,
         ListFooterComponent,
         ListFooterComponentStyle,
+        ItemSeparatorComponent,
         ...rest
     } = props;
     const internalRef = useRef<ScrollView>(null);
     const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
     const containers$ = useObservable<ContainerInfo[]>(() => []);
+    const paddingTop$ = useObservable(0);
     const visibleRange$ = useObservable<VisibleRange>(() => ({
         start: 0,
         end: 0,
@@ -85,6 +88,7 @@ export const LegendList: <T>(
         data: T[];
         idsInFirstRender: Set<string>;
         hasScrolled: boolean;
+        scrollLength: number;
     }>();
     const getId = (index: number): string => {
         const data = refPositions.current?.data;
@@ -107,20 +111,30 @@ export const LegendList: <T>(
             data: data,
             idsInFirstRender: undefined as any,
             hasScrolled: false,
+            scrollLength: Dimensions.get('window')[horizontal ? 'width' : 'height'],
         };
         refPositions.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
     }
     refPositions.current.data = data;
 
-    const SCREEN_LENGTH = Dimensions.get('window')[horizontal ? 'width' : 'height'];
-
     const initialContentOffset =
         initialScrollOffset ??
         (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
 
+    const setTotalLength = (length: number) => {
+        visibleRange$.totalLength.set(length as any);
+        const screenLength = refPositions.current!.scrollLength;
+        if (startAtBottom) {
+            const listPaddingTop =
+                ((style as any)?.paddingTop || 0) + ((contentContainerStyle as any)?.paddingTop || 0);
+            paddingTop$.set(Math.max(0, screenLength - length - listPaddingTop));
+        }
+    };
+
     const allocateContainers = useCallback(() => {
+        const scrollLength = refPositions.current!.scrollLength;
         const numContainers =
-            initialContainers || Math.ceil((SCREEN_LENGTH + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
+            initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
 
         const containers: ContainerInfo[] = [];
         for (let i = 0; i < numContainers; i++) {
@@ -150,7 +164,7 @@ export const LegendList: <T>(
     );
 
     const calculateItemsInView = useCallback(() => {
-        const data = refPositions.current!.data;
+        const { data, scrollLength } = refPositions.current!;
         if (!data) {
             return;
         }
@@ -183,10 +197,10 @@ export const LegendList: <T>(
                 startBuffered = i;
             }
             if (startNoBuffer !== null) {
-                if (top <= scroll + SCREEN_LENGTH) {
+                if (top <= scroll + scrollLength) {
                     endNoBuffer = i;
                 }
-                if (top <= scroll + SCREEN_LENGTH + scrollBuffer) {
+                if (top <= scroll + scrollLength + scrollBuffer) {
                     endBuffered = i;
                 } else {
                     break;
@@ -313,13 +327,35 @@ export const LegendList: <T>(
 
             totalLength += lengths.get(id) ?? estimatedItemLength(i);
         }
-        visibleRange$.totalLength.set(totalLength);
+        setTotalLength(totalLength);
     }, []);
+
+    const checkAtBottom = () => {
+        const scrollLength = refPositions.current!.scrollLength;
+        const newScroll = visibleRange$.scroll.peek();
+        // Check if at end
+        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - scrollLength;
+        if (refPositions.current) {
+            refPositions.current.isAtBottom = distanceFromEnd < scrollLength * autoScrollToBottomThreshold;
+        }
+        if (onEndReached && !refPositions.current?.isEndReached) {
+            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * scrollLength) {
+                if (refPositions.current) {
+                    refPositions.current.isEndReached = true;
+                }
+                onEndReached({ distanceFromEnd });
+            }
+        }
+    };
 
     useMemo(() => {
         if (refPositions.current) {
-            refPositions.current.isEndReached = false;
+            if (!refPositions.current?.isAtBottom) {
+                refPositions.current.isEndReached = false;
+            }
         }
+        calculateItemsInView();
+        checkAtBottom();
     }, [data]);
 
     const containers = use$(containers$, { shallow: true });
@@ -346,7 +382,7 @@ export const LegendList: <T>(
             // }
 
             lengths.set(id, length);
-            visibleRange$.totalLength.set((prevTotal) => prevTotal + (length - prevLength));
+            setTotalLength(visibleRange$.totalLength.peek() + (length - prevLength));
 
             if (refPositions.current?.isAtBottom && autoScrollToBottom) {
                 // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
@@ -388,28 +424,19 @@ export const LegendList: <T>(
     }, []);
 
     const handleScrollDebounced = useCallback(() => {
-        const newScroll = visibleRange$.scroll.peek();
-
         calculateItemsInView();
-        // Check if at end
-        const distanceFromEnd = visibleRange$.totalLength.peek() - newScroll - SCREEN_LENGTH;
-        if (refPositions.current) {
-            refPositions.current.isAtBottom = distanceFromEnd < SCREEN_LENGTH * autoScrollToBottomThreshold;
-        }
-        if (onEndReached && !refPositions.current?.isEndReached) {
-            if (distanceFromEnd < (onEndReachedThreshold || 0.5) * SCREEN_LENGTH) {
-                if (refPositions.current) {
-                    refPositions.current.isEndReached = true;
-                }
-                onEndReached({ distanceFromEnd });
-            }
-        }
+        checkAtBottom();
 
         // Reset the debounce
         if (refPositions.current) {
             refPositions.current.animFrame = null;
         }
     }, []);
+
+    const onLayout = (event: LayoutChangeEvent) => {
+        const scrollLength = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+        refPositions.current!.scrollLength = scrollLength;
+    };
 
     const handleScroll = useCallback((event: any) => {
         refPositions.current!.hasScrolled = true;
@@ -444,6 +471,7 @@ export const LegendList: <T>(
                     : {},
             ]}
             onScroll={handleScroll}
+            onLayout={onLayout}
             scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
@@ -456,6 +484,7 @@ export const LegendList: <T>(
             {...rest}
             ref={refScroller}
         >
+            {startAtBottom && <Reactive.View $style={() => ({ height: paddingTop$.get() })} />}
             {ListHeaderComponent && (
                 <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
             )}
@@ -487,6 +516,7 @@ export const LegendList: <T>(
                         listProps={props}
                         getRenderedItem={getRenderedItem}
                         onLayout={updateItemLength}
+                        ItemSeparatorComponent={ItemSeparatorComponent}
                     />
                 ))}
             </Reactive.View>
