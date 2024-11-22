@@ -14,11 +14,11 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import { RectButton } from "react-native-gesture-handler";
-import type { LegendListRenderItemInfo } from "@/app/(tabs)";
 import Animated, { Easing, LinearTransition } from "react-native-reanimated";
 import Breathe from "@/components/Breathe";
+import { LegendListRenderItemInfo } from "@legendapp/list";
 
-interface Item {
+export interface Item {
   id: string;
 }
 

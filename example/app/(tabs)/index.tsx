@@ -1,7 +1,7 @@
 import { LegendList } from '@legendapp/list';
 import { useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import { renderItem } from '../renderItem';
+import { Item, renderItem } from '../renderItem';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -15,7 +15,7 @@ const ESTIMATED_ITEM_LENGTH = 200;
 export default function HomeScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const [data, setData] = useState(
+    const [data, setData] = useState<Item[]>(
         () =>
             Array.from({ length: 500 }, (_, i) => ({
                 id: i.toString(),
@@ -40,7 +40,7 @@ export default function HomeScreen() {
                 contentContainerStyle={styles.listContainer}
                 data={data}
                 renderItem={renderItem}
-                keyExtractor={(item: any) => item.id}
+                keyExtractor={(item) => item.id}
                 estimatedItemLength={() => ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
                 recycleItems={true}
