@@ -47,6 +47,10 @@ export function LegendList<T>(props: LegendListProps<T>) {
         estimatedItemLength,
         onEndReached,
         onViewableRangeChanged,
+        ListHeaderComponent,
+        ListHeaderComponentStyle,
+        ListFooterComponent,
+        ListFooterComponentStyle,
         ...rest
     } = props;
     const refScroller = useRef<ScrollView>(null);
@@ -446,6 +450,9 @@ export function LegendList<T>(props: LegendListProps<T>) {
             {...rest}
             ref={refScroller}
         >
+            {ListHeaderComponent && (
+                <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
+            )}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -477,6 +484,9 @@ export function LegendList<T>(props: LegendListProps<T>) {
                     />
                 ))}
             </Reactive.View>
+            {ListFooterComponent && (
+                <Reactive.View $style={ListFooterComponentStyle}>{ListFooterComponent}</Reactive.View>
+            )}
         </Reactive.ScrollView>
     );
 }

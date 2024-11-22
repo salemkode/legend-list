@@ -12,12 +12,23 @@ export default function HomeScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={<View />}
+        ListHeaderComponentStyle={styles.listHeader}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  listHeader: {
+    alignSelf: "center",
+    height: 100,
+    width: 100,
+    backgroundColor: "#456AAA",
+    borderRadius: 12,
+    marginHorizontal: 8,
+    marginTop: 8,
+  },
   outerContainer: {
     backgroundColor: "#456",
   },
