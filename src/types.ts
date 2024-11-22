@@ -20,6 +20,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: ReactNode;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
+    ItemSeparatorComponent?: ReactNode;
     //   TODO:
     //   onViewableItemsChanged?:
     //     | ((info: {
