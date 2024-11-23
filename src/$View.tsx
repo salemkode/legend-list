@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { View, ViewProps, ViewStyle } from 'react-native';
-import { ListenerType, use$ } from './state';
+import type { ViewProps, ViewStyle } from 'react-native';
+import { LeanView } from './LeanView';
+import { type ListenerType, use$ } from './state';
 
 interface ContainerStyleProps extends ViewProps {
     $key: ListenerType;
@@ -14,5 +15,5 @@ export function $View({ $key, $style, ...rest }: ContainerStyleProps) {
     use$($key);
     // Use the style function to create the style prop.
     const style = $style();
-    return <View style={style} {...rest} />;
+    return <LeanView style={style} {...rest} />;
 }
