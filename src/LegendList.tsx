@@ -3,10 +3,11 @@ import { beginBatch, endBatch } from '@legendapp/state';
 import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, ViewStyle } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import type { ContainerInfo } from './Container';
 import type { LegendListProps } from './types';
 import { Containers } from './Containers';
+import { ListComponent } from 'src/ListComponent';
 
 enableReactNativeComponents();
 
@@ -30,8 +31,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             initialScrollIndex,
             initialScrollOffset,
             horizontal,
-            style,
-            contentContainerStyle,
+            style: styleProp,
+            contentContainerStyle: contentContainerStyleProp,
             initialContainers,
             drawDistance,
             recycleItems = true,
@@ -44,11 +45,6 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             estimatedItemLength,
             onEndReached,
             onViewableRangeChanged,
-            ListHeaderComponent,
-            ListHeaderComponentStyle,
-            ListFooterComponent,
-            ListFooterComponentStyle,
-            ItemSeparatorComponent,
             ...rest
         } = props;
         const internalRef = useRef<ScrollView>(null);
@@ -68,6 +64,14 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         // And it doesn't work at all on Android because it uses contentInset. I'll try it again later.
         // Ideally it would work by adjusting the contentOffset but in previous attempts that was causing jitter.
         const supportsEstimationAdjustment = false; //   Platform.OS === "ios";
+
+        const styleFlattened = StyleSheet.flatten(styleProp);
+        const style = useMemo(() => styleFlattened, [JSON.stringify(styleProp)]);
+        const contentContainerStyleFlattened = StyleSheet.flatten(contentContainerStyleProp);
+        const contentContainerStyle = useMemo(
+            () => contentContainerStyleFlattened,
+            [JSON.stringify(contentContainerStyleProp)],
+        );
 
         const refPositions = useRef<{
             positions: Map<string, number>;
@@ -422,10 +426,10 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             }
         }, []);
 
-        const onLayout = (event: LayoutChangeEvent) => {
+        const onLayout = useCallback((event: LayoutChangeEvent) => {
             const scrollLength = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
             refPositions.current!.scrollLength = scrollLength;
-        };
+        }, []);
 
         const handleScroll = useCallback((event: any) => {
             refPositions.current!.hasScrolled = true;
@@ -449,56 +453,23 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         }, []);
 
         return (
-            <Reactive.ScrollView
-                style={style}
-                contentContainerStyle={[
-                    contentContainerStyle,
-                    horizontal
-                        ? {
-                              height: '100%',
-                          }
-                        : {},
-                ]}
-                onScroll={handleScroll}
-                onLayout={onLayout}
-                scrollEventThrottle={32}
-                horizontal={horizontal}
-                contentOffset={
-                    initialContentOffset
-                        ? horizontal
-                            ? { x: initialContentOffset, y: 0 }
-                            : { x: 0, y: initialContentOffset }
-                        : undefined
-                }
+            <ListComponent
                 {...rest}
-                ref={refScroller}
-            >
-                {alignItemsAtEnd && <Reactive.View $style={() => ({ height: paddingTop$.get() })} />}
-                {ListHeaderComponent && (
-                    <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
-                )}
-                {/* {supportsEstimationAdjustment && (
-                <Reactive.View
-                    $style={() => ({
-                        height: visibleRange$.topPad.get(),
-                        width: '100%',
-                    })}
-                />
-            )} */}
-
-                <Containers
-                    containers$={containers$}
-                    numItems$={numItems$}
-                    horizontal={horizontal!}
-                    visibleRange$={visibleRange$}
-                    recycleItems={recycleItems}
-                    getRenderedItem={getRenderedItem}
-                    ItemSeparatorComponent={ItemSeparatorComponent}
-                    updateItemLength={updateItemLength}
-                />
-                {ListFooterComponent && (
-                    <Reactive.View $style={ListFooterComponentStyle}>{ListFooterComponent}</Reactive.View>
-                )}
-            </Reactive.ScrollView>
+                contentContainerStyle={contentContainerStyle}
+                style={style}
+                horizontal={horizontal!}
+                refScroller={refScroller}
+                initialContentOffset={initialContentOffset}
+                paddingTop$={paddingTop$}
+                containers$={containers$}
+                numItems$={numItems$}
+                visibleRange$={visibleRange$}
+                getRenderedItem={getRenderedItem}
+                updateItemLength={updateItemLength}
+                handleScroll={handleScroll}
+                onLayout={onLayout}
+                recycleItems={recycleItems}
+                alignItemsAtEnd={alignItemsAtEnd}
+            />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement;
