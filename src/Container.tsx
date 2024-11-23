@@ -17,20 +17,22 @@ export interface ContainerInfo {
 export const Container = ({
     $container,
     recycleItems,
-    listProps,
+    numItems$,
+    horizontal,
     getRenderedItem,
     onLayout,
-    ItemSeparatorComponent
+    ItemSeparatorComponent,
 }: {
     $container: Observable<ContainerInfo>;
     recycleItems?: boolean;
-    listProps: LegendListProps<any>;
+    numItems$: Observable<number>;
+    horizontal: boolean;
     getRenderedItem: (index: number) => ReactNode;
     onLayout: (index: number, length: number) => void;
     ItemSeparatorComponent?: ReactNode;
 }) => {
-    const { horizontal } = listProps;
     const { id } = $container.peek();
+    const numItems = use$(numItems$);
     // Subscribe to the itemIndex observable so this re-renders when the itemIndex changes.
     const itemIndex = use$($container.itemIndex);
     // Set a key on the child view if not recycling items so that it creates a new view
@@ -40,7 +42,7 @@ export const Container = ({
     const createStyle = (): ViewStyle =>
         horizontal
             ? {
-                  flexDirection: "row",
+                  flexDirection: 'row',
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
@@ -70,9 +72,9 @@ export const Container = ({
             }}
         >
             <View key={key}>{getRenderedItem(itemIndex)}</View>
-            {ItemSeparatorComponent && itemIndex !== listProps.data.length - 1 && (
-				<Reactive.View>{ItemSeparatorComponent}</Reactive.View>
-			)}
+            {ItemSeparatorComponent && itemIndex < numItems - 1 && (
+                <Reactive.View>{ItemSeparatorComponent}</Reactive.View>
+            )}
         </Reactive.View>
     );
 };

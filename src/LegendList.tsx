@@ -4,21 +4,16 @@ import { enableReactNativeComponents } from '@legendapp/state/config/enableReact
 import { Reactive, use$, useObservable } from '@legendapp/state/react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, ViewStyle } from 'react-native';
-import { Container } from './Container';
+import type { ContainerInfo } from './Container';
 import type { LegendListProps } from './types';
+import { Containers } from './Containers';
 
 enableReactNativeComponents();
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
 
-interface ContainerInfo {
-    id: number;
-    itemIndex: number;
-    position: number;
-}
-
-interface VisibleRange {
+export interface VisibleRange {
     startBuffered: number;
     startNoBuffer: number;
     endBuffered: number;
@@ -59,6 +54,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         const internalRef = useRef<ScrollView>(null);
         const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
         const containers$ = useObservable<ContainerInfo[]>(() => []);
+        const numItems$ = useObservable(0);
         const paddingTop$ = useObservable(0);
         const visibleRange$ = useObservable<VisibleRange>(() => ({
             start: 0,
@@ -112,6 +108,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             refPositions.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refPositions.current.data = data;
+        numItems$.set(data.length);
 
         const initialContentOffset =
             initialScrollOffset ??
@@ -346,13 +343,11 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
 
         useMemo(() => {
             if (refPositions.current) {
-                    refPositions.current.isEndReached = false;
-                }
+                refPositions.current.isEndReached = false;
+            }
             calculateItemsInView();
             checkAtBottom();
         }, [data]);
-
-        const containers = use$(containers$, { shallow: true });
 
         const updateItemLength = useCallback((index: number, length: number) => {
             const data = refPositions.current?.data;
@@ -491,29 +486,16 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 />
             )} */}
 
-                <Reactive.View
-                    $style={() =>
-                        horizontal
-                            ? {
-                                  width: visibleRange$.totalLength.get(),
-                              }
-                            : {
-                                  height: visibleRange$.totalLength.get(),
-                              }
-                    }
-                >
-                    {containers.map((container, i) => (
-                        <Container
-                            key={container.id}
-                            recycleItems={recycleItems}
-                            $container={containers$[i]}
-                            listProps={props}
-                            getRenderedItem={getRenderedItem}
-                            onLayout={updateItemLength}
-                            ItemSeparatorComponent={ItemSeparatorComponent}
-                        />
-                    ))}
-                </Reactive.View>
+                <Containers
+                    containers$={containers$}
+                    numItems$={numItems$}
+                    horizontal={horizontal!}
+                    visibleRange$={visibleRange$}
+                    recycleItems={recycleItems}
+                    getRenderedItem={getRenderedItem}
+                    ItemSeparatorComponent={ItemSeparatorComponent}
+                    updateItemLength={updateItemLength}
+                />
                 {ListFooterComponent && (
                     <Reactive.View $style={ListFooterComponentStyle}>{ListFooterComponent}</Reactive.View>
                 )}
