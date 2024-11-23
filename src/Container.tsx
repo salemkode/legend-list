@@ -46,7 +46,7 @@ export const Container = ({
     const ctx = useStateContext();
 
     const createStyle = (): ViewStyle => {
-        const position = peek$(`containerPosition${id}`, ctx);
+        const position = peek$(ctx, `containerPosition${id}`);
         return horizontal
             ? {
                   flexDirection: 'row',
@@ -73,7 +73,7 @@ export const Container = ({
             $key={`containerPosition${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
-                const index = peek$(`containerIndex${id}`, ctx);
+                const index = peek$(ctx, `containerIndex${id}`);
                 if (index >= 0) {
                     const length = Math.round(event.nativeEvent.layout[horizontal ? 'width' : 'height']);
 

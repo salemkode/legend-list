@@ -86,7 +86,7 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
-            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$('paddingTop', ctx) })} />}
+            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, 'paddingTop') })} />}
             {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View

@@ -118,19 +118,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
-        set$(`numItems`, ctx, data.length);
+        set$(ctx, `numItems`, data.length);
 
         const initialContentOffset =
             initialScrollOffset ??
             (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
 
         const setTotalLength = (length: number) => {
-            set$(`totalLength`, ctx, length);
+            set$(ctx, `totalLength`, length);
             const screenLength = refState.current!.scrollLength;
             if (alignItemsAtEnd) {
                 const listPaddingTop =
                     ((style as any)?.paddingTop || 0) + ((contentContainerStyle as any)?.paddingTop || 0);
-                set$(`paddingTop`, ctx, Math.max(0, screenLength - length - listPaddingTop));
+                set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
             }
         };
 
@@ -140,11 +140,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(`containerIndex${i}`, ctx, -1);
-                set$(`containerPosition${i}`, ctx, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerIndex${i}`, -1);
+                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
-            set$(`numContainers`, ctx, numContainers);
+            set$(ctx, `numContainers`, numContainers);
         }, []);
 
         const getRenderedItem = useCallback(
@@ -230,7 +230,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                     let isContained = false;
                     // See if this item is already in a container
                     for (let j = 0; j < numContainers; j++) {
-                        const index = peek$(`containerIndex${j}`, ctx);
+                        const index = peek$(ctx, `containerIndex${j}`);
                         if (index === i) {
                             isContained = true;
                             break;
@@ -240,10 +240,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                     if (!isContained) {
                         let didRecycle = false;
                         for (let u = 0; u < numContainers; u++) {
-                            const index = peek$(`containerIndex${u}`, ctx);
+                            const index = peek$(ctx, `containerIndex${u}`);
 
                             if (index < startBuffered || index > endBuffered) {
-                                set$(`containerIndex${u}`, ctx, i);
+                                set$(ctx, `containerIndex${u}`, i);
                                 didRecycle = true;
                                 break;
                             }
@@ -257,31 +257,31 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                             }
                             const id = numContainers;
                             numContainers++;
-                            set$(`containerIndex${id}`, ctx, i);
-                            set$(`containerPosition${id}`, ctx, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerIndex${id}`, i);
+                            set$(ctx, `containerPosition${id}`, POSITION_OUT_OF_VIEW);
                         }
                     }
                 }
 
                 if (numContainers !== prevNumContainers) {
-                    set$(`numContainers`, ctx, numContainers);
+                    set$(ctx, `numContainers`, numContainers);
                 }
 
                 // Update top positions of all containers
                 // TODO: This could be optimized to only update the containers that have changed
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
-                    const itemIndex = peek$(`containerIndex${i}`, ctx);
+                    const itemIndex = peek$(ctx, `containerIndex${i}`);
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
                         if (itemIndex < startBuffered || itemIndex > endBuffered) {
-                            set$(`containerPosition${i}`, ctx, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                         } else {
                             const pos = positions.get(id) ?? -1;
-                            const prevPos = peek$(`containerPosition${i}`, ctx);
+                            const prevPos = peek$(ctx, `containerPosition${i}`);
                             if (pos >= 0 && pos !== prevPos) {
-                                set$(`containerPosition${i}`, ctx, pos);
+                                set$(ctx, `containerPosition${i}`, pos);
                             }
                         }
                     }
@@ -341,7 +341,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
         const checkAtBottom = () => {
             const { scrollLength, scroll } = refState.current!;
-            const totalLength = peek$('totalLength', ctx);
+            const totalLength = peek$(ctx, 'totalLength');
             // Check if at end
             const distanceFromEnd = totalLength - scroll - scrollLength;
             if (refState.current) {
@@ -385,7 +385,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // }
 
                 lengths.set(id, length);
-                const totalLength = peek$('totalLength', ctx);
+                const totalLength = peek$(ctx, 'totalLength');
                 setTotalLength(totalLength + (length - prevLength));
 
                 if (refState.current?.isAtBottom && maintainScrollAtEnd) {
@@ -448,7 +448,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // Update the scroll position to use in checks
                 refState.current!.scroll = newScroll;
 
-                // Debounce  a calculate if no calculate is already pending
+                // Debounce a calculate if no calculate is already pending
                 if (refState.current && !refState.current.animFrame) {
                     refState.current.animFrame = requestAnimationFrame(handleScrollDebounced);
                 }

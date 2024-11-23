@@ -43,12 +43,12 @@ export function use$<T>(signalName: ListenerType): T {
     return values.get(signalName);
 }
 
-export function peek$(signalName: ListenerType, ctx: ListenerContext) {
+export function peek$(ctx: ListenerContext, signalName: ListenerType) {
     const { values } = ctx;
     return values.get(signalName);
 }
 
-export function set$(signalName: ListenerType, ctx: ListenerContext, value: any) {
+export function set$(ctx: ListenerContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
