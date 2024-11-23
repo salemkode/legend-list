@@ -22,9 +22,10 @@ export const Container = ({
     const numItems = ItemSeparatorComponent ? use$<number>('numItems') : 0;
     // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
     const itemIndex = use$<number>(`containerIndex${id}`);
-    // Set a key on the child view if not recycling items so that it creates a new view
-    // for the rendered item
-    const key = recycleItems ? undefined : itemIndex;
+
+    if (itemIndex < 0) {
+        return null;
+    }
 
     const createStyle = (): ViewStyle => {
         const position = peek$(`containerPosition${id}`, ctx);
@@ -46,12 +47,13 @@ export const Container = ({
               };
     };
 
+    const renderedItem = getRenderedItem(itemIndex);
+
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
-    return itemIndex < 0 ? null : (
+    return (
         <$View
-            key={id}
             $key={`containerPosition${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
@@ -61,7 +63,7 @@ export const Container = ({
                 onLayout(index, length);
             }}
         >
-            <View key={key}>{getRenderedItem(itemIndex)}</View>
+            {recycleItems ? renderedItem : <React.Fragment key={itemIndex}>{renderedItem}</React.Fragment>}
             {ItemSeparatorComponent && itemIndex < numItems - 1 && ItemSeparatorComponent}
         </$View>
     );
