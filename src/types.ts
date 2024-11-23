@@ -6,13 +6,18 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialContainers?: number;
+    initialNumContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     maintainScrollAtEnd?: boolean;
     maintainScrollAtEndThreshold?: number;
     alignItemsAtEnd?: boolean;
-    estimatedItemLength: (index: number) => number;
+    // in most cases providing a constant value for item size enough
+    estimatedItemSize: number;
+    // in case you have distinct item sizes, you can provide a function to get the size of an item
+    // use instead of FlatList's getItemLayout or FlashList overrideItemLayout
+    // if you want to have accurate initialScrollOffset, you should provide this function
+    getEstimatedItemSize?: (index: number, item: T) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
     renderItem?: (props: LegendListRenderItemInfo<T>) => ReactNode;
