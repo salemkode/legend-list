@@ -1,56 +1,55 @@
 import * as React from 'react';
-import { Observable } from '@legendapp/state';
-import { Reactive, use$ } from '@legendapp/state/react';
-import { memo, ReactNode } from 'react';
-import { Container, ContainerInfo } from './Container';
-import type { VisibleRange } from './LegendList';
+import { $View } from './$View';
+import { Container } from './Container';
+import { peek$, use$, useStateContext } from './state';
 
 interface ContainersProps {
-    containers$: Observable<ContainerInfo[]>;
-    numItems$: Observable<number>;
     horizontal: boolean;
-    visibleRange$: Observable<VisibleRange>;
     recycleItems: boolean;
-    ItemSeparatorComponent?: ReactNode;
+    ItemSeparatorComponent?: React.ReactNode;
     updateItemLength: (index: number, length: number) => void;
-    getRenderedItem: (index: number) => ReactNode;
+    getRenderedItem: (index: number) => React.ReactNode;
 }
 
-export const Containers = memo(function Containers({
-    containers$,
+export const Containers = React.memo(function Containers({
     horizontal,
-    visibleRange$,
     recycleItems,
     ItemSeparatorComponent,
     updateItemLength,
     getRenderedItem,
-    numItems$,
 }: ContainersProps) {
-    const containers = use$(containers$, { shallow: true });
+    const ctx = useStateContext();
+    const numContainers = use$<number>('numContainers');
+
+    const containers = [];
+    for (let i = 0; i < numContainers; i++) {
+        containers.push(
+            <Container
+                id={i}
+                key={i}
+                recycleItems={recycleItems}
+                horizontal={horizontal}
+                getRenderedItem={getRenderedItem}
+                onLayout={updateItemLength}
+                ItemSeparatorComponent={ItemSeparatorComponent}
+            />,
+        );
+    }
+
     return (
-        <Reactive.View
+        <$View
+            $key="totalLength"
             $style={() =>
                 horizontal
                     ? {
-                          width: visibleRange$.totalLength.get(),
+                          width: peek$('totalLength', ctx),
                       }
                     : {
-                          height: visibleRange$.totalLength.get(),
+                          height: peek$('totalLength', ctx),
                       }
             }
         >
-            {containers.map((container, i) => (
-                <Container
-                    key={container.id}
-                    recycleItems={recycleItems}
-                    $container={containers$[i]}
-                    horizontal={horizontal}
-                    numItems$={numItems$}
-                    getRenderedItem={getRenderedItem}
-                    onLayout={updateItemLength}
-                    ItemSeparatorComponent={ItemSeparatorComponent}
-                />
-            ))}
-        </Reactive.View>
+            {containers}
+        </$View>
     );
 });
