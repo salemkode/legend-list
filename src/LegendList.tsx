@@ -1,9 +1,16 @@
 import * as React from 'react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-native';
+import {
+    Dimensions,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollView,
+    StyleSheet,
+} from 'react-native';
 import { ListComponent } from './ListComponent';
+import { peek$, set$, StateProvider, useStateContext } from './state';
 import type { LegendListProps } from './types';
-import { StateProvider, peek$, set$, useStateContext } from './state';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -33,6 +40,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             maintainScrollAtEnd = false,
             maintainScrollAtEndThreshold = 0.1,
             alignItemsAtEnd = false,
+            onScroll: onScrollProp,
             keyExtractor,
             renderItem,
             estimatedItemLength,
@@ -433,23 +441,34 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             refState.current!.scrollLength = scrollLength;
         }, []);
 
-        const handleScroll = useCallback((event: any) => {
-            refState.current!.hasScrolled = true;
-            const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
-            // Update the scroll position to use in checks
-            refState.current!.scroll = newScroll;
+        const handleScroll = useCallback(
+            (event: { nativeEvent: { contentOffset: { x: number; y: number } } }, fromSelf?: boolean) => {
+                refState.current!.hasScrolled = true;
+                const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
+                // Update the scroll position to use in checks
+                refState.current!.scroll = newScroll;
 
-            // Debounce  a calculate if no calculate is already pending
-            if (refState.current && !refState.current.animFrame) {
-                refState.current.animFrame = requestAnimationFrame(handleScrollDebounced);
-            }
-        }, []);
+                // Debounce  a calculate if no calculate is already pending
+                if (refState.current && !refState.current.animFrame) {
+                    refState.current.animFrame = requestAnimationFrame(handleScrollDebounced);
+                }
+
+                if (!fromSelf) {
+                    onScrollProp?.(event as NativeSyntheticEvent<NativeScrollEvent>);
+                }
+            },
+            [],
+        );
 
         useEffect(() => {
             if (initialContentOffset) {
-                handleScroll({
-                    nativeEvent: { contentOffset: { y: initialContentOffset } },
-                });
+                const offset = horizontal ? { x: initialContentOffset, y: 0 } : { x: 0, y: initialContentOffset };
+                handleScroll(
+                    {
+                        nativeEvent: { contentOffset: offset },
+                    },
+                    /*fromSelf*/ true,
+                );
                 calculateItemsInView();
             }
         }, []);
