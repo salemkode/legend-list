@@ -1,12 +1,8 @@
 import { Observable } from '@legendapp/state';
-import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
+import { use$ } from '@legendapp/state/react';
 import * as React from 'react';
-import { Reactive, use$ } from '@legendapp/state/react';
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native';
-import type { LegendListProps } from './types';
-import { ReactNode } from 'react';
-
-enableReactNativeComponents();
+import { $View } from './signal/$View';
 
 export interface ContainerInfo {
     id: number;
@@ -27,9 +23,9 @@ export const Container = ({
     recycleItems?: boolean;
     numItems$: Observable<number>;
     horizontal: boolean;
-    getRenderedItem: (index: number) => ReactNode;
+    getRenderedItem: (index: number) => React.ReactNode;
     onLayout: (index: number, length: number) => void;
-    ItemSeparatorComponent?: ReactNode;
+    ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const { id } = $container.peek();
     const numItems = use$(numItems$);
@@ -57,11 +53,11 @@ export const Container = ({
                   opacity: $container.position.get() < 0 ? 0 : 1,
               };
 
-    // Use Legend-State's Reactive.View to ensure the container element itself
+    // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return itemIndex < 0 ? null : (
-        <Reactive.View
+        <$View
             key={id}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
@@ -72,9 +68,7 @@ export const Container = ({
             }}
         >
             <View key={key}>{getRenderedItem(itemIndex)}</View>
-            {ItemSeparatorComponent && itemIndex < numItems - 1 && (
-                <Reactive.View>{ItemSeparatorComponent}</Reactive.View>
-            )}
-        </Reactive.View>
+            {ItemSeparatorComponent && itemIndex < numItems - 1 && ItemSeparatorComponent}
+        </$View>
     );
 };

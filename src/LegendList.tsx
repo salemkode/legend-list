@@ -1,15 +1,11 @@
-import * as React from 'react';
 import { beginBatch, endBatch } from '@legendapp/state';
-import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
-import { Reactive, use$, useObservable } from '@legendapp/state/react';
+import { useObservable } from '@legendapp/state/react';
+import * as React from 'react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, LayoutChangeEvent, ScrollView, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-native';
+import { ListComponent } from 'src/ListComponent';
 import type { ContainerInfo } from './Container';
 import type { LegendListProps } from './types';
-import { Containers } from './Containers';
-import { ListComponent } from 'src/ListComponent';
-
-enableReactNativeComponents();
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;

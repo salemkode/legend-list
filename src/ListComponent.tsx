@@ -1,7 +1,5 @@
 import { ReactNode } from 'react';
-
 import { Observable } from '@legendapp/state';
-import { Reactive } from '@legendapp/state/react';
 import * as React from 'react';
 import {
     LayoutChangeEvent,
@@ -9,11 +7,13 @@ import {
     NativeSyntheticEvent,
     ScrollView,
     StyleProp,
+    View,
     ViewStyle,
 } from 'react-native';
 import type { ContainerInfo } from './Container';
 import { Containers } from './Containers';
 import type { VisibleRange } from './LegendList';
+import { $View } from './signal/$View';
 import type { LegendListProps } from './types';
 
 interface ListComponentProps
@@ -62,7 +62,7 @@ export const ListComponent = React.memo(function ListComponent({
     console.log('render ListComponent');
 
     return (
-        <Reactive.ScrollView
+        <ScrollView
             style={style}
             contentContainerStyle={[
                 contentContainerStyle,
@@ -86,10 +86,8 @@ export const ListComponent = React.memo(function ListComponent({
             {...rest}
             ref={refScroller}
         >
-            {alignItemsAtEnd && <Reactive.View $style={() => ({ height: paddingTop$.get() })} />}
-            {ListHeaderComponent && (
-                <Reactive.View $style={ListHeaderComponentStyle}>{ListHeaderComponent}</Reactive.View>
-            )}
+            {alignItemsAtEnd && <$View $style={() => ({ height: paddingTop$.get() })} />}
+            {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{ListHeaderComponent}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -109,9 +107,7 @@ export const ListComponent = React.memo(function ListComponent({
                 ItemSeparatorComponent={ItemSeparatorComponent}
                 updateItemLength={updateItemLength}
             />
-            {ListFooterComponent && (
-                <Reactive.View $style={ListFooterComponentStyle}>{ListFooterComponent}</Reactive.View>
-            )}
-        </Reactive.ScrollView>
+            {ListFooterComponent && <View style={ListFooterComponentStyle}>{ListFooterComponent}</View>}
+        </ScrollView>
     );
 });

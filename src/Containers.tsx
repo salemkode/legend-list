@@ -1,9 +1,9 @@
-import * as React from 'react';
 import { Observable } from '@legendapp/state';
-import { Reactive, use$ } from '@legendapp/state/react';
-import { memo, ReactNode } from 'react';
+import { use$ } from '@legendapp/state/react';
 import { Container, ContainerInfo } from './Container';
 import type { VisibleRange } from './LegendList';
+import { $View } from './signal/$View';
+import * as React from 'react';
 
 interface ContainersProps {
     containers$: Observable<ContainerInfo[]>;
@@ -11,12 +11,12 @@ interface ContainersProps {
     horizontal: boolean;
     visibleRange$: Observable<VisibleRange>;
     recycleItems: boolean;
-    ItemSeparatorComponent?: ReactNode;
+    ItemSeparatorComponent?: React.ReactNode;
     updateItemLength: (index: number, length: number) => void;
-    getRenderedItem: (index: number) => ReactNode;
+    getRenderedItem: (index: number) => React.ReactNode;
 }
 
-export const Containers = memo(function Containers({
+export const Containers = React.memo(function Containers({
     containers$,
     horizontal,
     visibleRange$,
@@ -28,7 +28,7 @@ export const Containers = memo(function Containers({
 }: ContainersProps) {
     const containers = use$(containers$, { shallow: true });
     return (
-        <Reactive.View
+        <$View
             $style={() =>
                 horizontal
                     ? {
@@ -51,6 +51,6 @@ export const Containers = memo(function Containers({
                     ItemSeparatorComponent={ItemSeparatorComponent}
                 />
             ))}
-        </Reactive.View>
+        </$View>
     );
 });
