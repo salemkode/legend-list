@@ -30,6 +30,16 @@ interface ListComponentProps
     onLayout: (event: LayoutChangeEvent) => void;
 }
 
+const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
+    if (React.isValidElement<any>(Component)) {
+        return Component;
+    }
+    if (Component) {
+        return <Component />;
+    }
+    return null;
+};
+
 export const ListComponent = React.memo(function ListComponent({
     style,
     contentContainerStyle,
@@ -77,7 +87,7 @@ export const ListComponent = React.memo(function ListComponent({
             ref={refScroller}
         >
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$('paddingTop', ctx) })} />}
-            {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{ListHeaderComponent}</View>}
+            {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -91,10 +101,10 @@ export const ListComponent = React.memo(function ListComponent({
                 horizontal={horizontal!}
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}
-                ItemSeparatorComponent={ItemSeparatorComponent}
+                ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemLength={updateItemLength}
-            />
-            {ListFooterComponent && <View style={ListFooterComponentStyle}>{ListFooterComponent}</View>}
+
+            {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollView>
     );
 });
