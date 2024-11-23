@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-native';
-import { ListComponent } from 'src/ListComponent';
+import { ListComponent } from './ListComponent';
 import type { LegendListProps } from './types';
 import { StateProvider, peek$, set$, useStateContext } from './state';
 
