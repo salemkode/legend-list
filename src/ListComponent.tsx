@@ -1,19 +1,17 @@
-import { ReactNode } from 'react';
-
-import { Observable } from '@legendapp/state';
-import { Reactive } from '@legendapp/state/react';
 import * as React from 'react';
+import { ReactNode } from 'react';
 import {
     LayoutChangeEvent,
     NativeScrollEvent,
     NativeSyntheticEvent,
     ScrollView,
     StyleProp,
+    View,
     ViewStyle,
 } from 'react-native';
-import type { ContainerInfo } from './Container';
+import { $View } from './$View';
 import { Containers } from './Containers';
-import type { VisibleRange } from './LegendList';
+import { peek$, useStateContext } from './state';
 import type { LegendListProps } from './types';
 
 interface ListComponentProps
@@ -25,10 +23,6 @@ interface ListComponentProps
     contentContainerStyle: StyleProp<ViewStyle>;
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    paddingTop$: Observable<number>;
-    containers$: Observable<ContainerInfo[]>;
-    numItems$: Observable<number>;
-    visibleRange$: Observable<VisibleRange>;
     refScroller: React.MutableRefObject<ScrollView>;
     getRenderedItem: (index: number) => ReactNode;
     updateItemLength: (index: number, length: number) => void;
@@ -60,19 +54,15 @@ export const ListComponent = React.memo(function ListComponent({
     ListHeaderComponentStyle,
     ListFooterComponent,
     ListFooterComponentStyle,
-    paddingTop$,
-    containers$,
-    numItems$,
-    visibleRange$,
     getRenderedItem,
     updateItemLength,
     refScroller,
     ...rest
 }: ListComponentProps) {
-    console.log('render ListComponent');
+    const ctx = useStateContext();
 
     return (
-        <Reactive.ScrollView
+        <ScrollView
             style={style}
             contentContainerStyle={[
                 contentContainerStyle,
@@ -96,10 +86,8 @@ export const ListComponent = React.memo(function ListComponent({
             {...rest}
             ref={refScroller}
         >
-            {alignItemsAtEnd && <Reactive.View $style={() => ({ height: paddingTop$.get() })} />}
-            {ListHeaderComponent && (
-                <Reactive.View $style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</Reactive.View>
-            )}
+            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$('paddingTop', ctx) })} />}
+            {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -110,18 +98,13 @@ export const ListComponent = React.memo(function ListComponent({
             )} */}
 
             <Containers
-                containers$={containers$}
-                numItems$={numItems$}
                 horizontal={horizontal!}
-                visibleRange$={visibleRange$}
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemLength={updateItemLength}
-            />
-            {ListFooterComponent && (
-                <Reactive.View $style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</Reactive.View>
-            )}
-        </Reactive.ScrollView>
+
+            {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
+        </ScrollView>
     );
 });

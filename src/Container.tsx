@@ -1,80 +1,68 @@
-import { Observable } from '@legendapp/state';
-import { enableReactNativeComponents } from '@legendapp/state/config/enableReactNativeComponents';
 import * as React from 'react';
-import { Reactive, use$ } from '@legendapp/state/react';
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native';
-import type { LegendListProps } from './types';
-import { ReactNode } from 'react';
-
-enableReactNativeComponents();
-
-export interface ContainerInfo {
-    id: number;
-    itemIndex: number;
-    position: number;
-}
+import { $View } from './$View';
+import { peek$, use$, useStateContext } from './state';
 
 export const Container = ({
-    $container,
+    id,
     recycleItems,
-    numItems$,
     horizontal,
     getRenderedItem,
     onLayout,
     ItemSeparatorComponent,
 }: {
-    $container: Observable<ContainerInfo>;
+    id: number;
     recycleItems?: boolean;
-    numItems$: Observable<number>;
     horizontal: boolean;
-    getRenderedItem: (index: number) => ReactNode;
+    getRenderedItem: (index: number) => React.ReactNode;
     onLayout: (index: number, length: number) => void;
-    ItemSeparatorComponent?: ReactNode;
+    ItemSeparatorComponent?: React.ReactNode;
 }) => {
-    const { id } = $container.peek();
-    const numItems = use$(numItems$);
-    // Subscribe to the itemIndex observable so this re-renders when the itemIndex changes.
-    const itemIndex = use$($container.itemIndex);
+    const ctx = useStateContext();
+    const numItems = ItemSeparatorComponent ? use$<number>('numItems') : 0;
+    // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
+    const itemIndex = use$<number>(`containerIndex${id}`);
     // Set a key on the child view if not recycling items so that it creates a new view
     // for the rendered item
     const key = recycleItems ? undefined : itemIndex;
 
-    const createStyle = (): ViewStyle =>
-        horizontal
+    const createStyle = (): ViewStyle => {
+        const position = peek$(`containerPosition${id}`, ctx);
+        return horizontal
             ? {
                   flexDirection: 'row',
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
-                  left: $container.position.get(),
-                  opacity: $container.position.get() < 0 ? 0 : 1,
+                  left: position,
+                  opacity: position < 0 ? 0 : 1,
               }
             : {
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  top: $container.position.get(),
-                  opacity: $container.position.get() < 0 ? 0 : 1,
+                  top: position,
+                  opacity: position < 0 ? 0 : 1,
               };
+    };
 
-    // Use Legend-State's Reactive.View to ensure the container element itself
+    // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return itemIndex < 0 ? null : (
-        <Reactive.View
+        <$View
             key={id}
+            $key={`containerPosition${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
-                const index = $container.itemIndex.peek();
+                const index = peek$(`containerIndex${id}`, ctx);
                 const length = Math.round(event.nativeEvent.layout[horizontal ? 'width' : 'height']);
 
                 onLayout(index, length);
             }}
         >
             <View key={key}>{getRenderedItem(itemIndex)}</View>
-            {ItemSeparatorComponent && itemIndex < numItems - 1 && (
-                <Reactive.View>{ItemSeparatorComponent}</Reactive.View>
-            )}
-        </Reactive.View>
+            {ItemSeparatorComponent && itemIndex < numItems - 1 && ItemSeparatorComponent}
+        </$View>
     );
 };
