@@ -1,15 +1,13 @@
 import { Observable } from '@legendapp/state';
 import { use$ } from '@legendapp/state/react';
-import { Container, ContainerInfo } from './Container';
-import type { VisibleRange } from './LegendList';
-import { $View } from './signal/$View';
 import * as React from 'react';
+import { peek$, useStateContext } from './state';
+import { Container, ContainerInfo } from './Container';
+import { $View } from './$View';
 
 interface ContainersProps {
     containers$: Observable<ContainerInfo[]>;
-    numItems$: Observable<number>;
     horizontal: boolean;
-    visibleRange$: Observable<VisibleRange>;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
     updateItemLength: (index: number, length: number) => void;
@@ -19,33 +17,32 @@ interface ContainersProps {
 export const Containers = React.memo(function Containers({
     containers$,
     horizontal,
-    visibleRange$,
     recycleItems,
     ItemSeparatorComponent,
     updateItemLength,
     getRenderedItem,
-    numItems$,
 }: ContainersProps) {
+    const ctx = useStateContext();
     const containers = use$(containers$, { shallow: true });
     return (
         <$View
+            $key="totalLength"
             $style={() =>
                 horizontal
                     ? {
-                          width: visibleRange$.totalLength.get(),
+                          width: peek$('totalLength', ctx),
                       }
                     : {
-                          height: visibleRange$.totalLength.get(),
+                          height: peek$('totalLength', ctx),
                       }
             }
         >
             {containers.map((container, i) => (
                 <Container
-                    key={container.id}
+                    id={i}
+                    key={i}
                     recycleItems={recycleItems}
-                    $container={containers$[i]}
                     horizontal={horizontal}
-                    numItems$={numItems$}
                     getRenderedItem={getRenderedItem}
                     onLayout={updateItemLength}
                     ItemSeparatorComponent={ItemSeparatorComponent}

@@ -13,8 +13,9 @@ import {
 import type { ContainerInfo } from './Container';
 import { Containers } from './Containers';
 import type { VisibleRange } from './LegendList';
-import { $View } from './signal/$View';
+import { $View } from './$View';
 import type { LegendListProps } from './types';
+import { peek$, useStateContext } from './state';
 
 interface ListComponentProps
     extends Omit<
@@ -25,9 +26,7 @@ interface ListComponentProps
     contentContainerStyle: StyleProp<ViewStyle>;
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    paddingTop$: Observable<number>;
     containers$: Observable<ContainerInfo[]>;
-    numItems$: Observable<number>;
     visibleRange$: Observable<VisibleRange>;
     refScroller: React.MutableRefObject<ScrollView>;
     getRenderedItem: (index: number) => ReactNode;
@@ -50,16 +49,14 @@ export const ListComponent = React.memo(function ListComponent({
     ListHeaderComponentStyle,
     ListFooterComponent,
     ListFooterComponentStyle,
-    paddingTop$,
     containers$,
-    numItems$,
     visibleRange$,
     getRenderedItem,
     updateItemLength,
     refScroller,
     ...rest
 }: ListComponentProps) {
-    console.log('render ListComponent');
+    const ctx = useStateContext();
 
     return (
         <ScrollView
@@ -86,7 +83,7 @@ export const ListComponent = React.memo(function ListComponent({
             {...rest}
             ref={refScroller}
         >
-            {alignItemsAtEnd && <$View $style={() => ({ height: paddingTop$.get() })} />}
+            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$('paddingTop', ctx) })} />}
             {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{ListHeaderComponent}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
@@ -99,9 +96,7 @@ export const ListComponent = React.memo(function ListComponent({
 
             <Containers
                 containers$={containers$}
-                numItems$={numItems$}
                 horizontal={horizontal!}
-                visibleRange$={visibleRange$}
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent}

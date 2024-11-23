@@ -1,8 +1,7 @@
-import { Observable } from '@legendapp/state';
-import { use$ } from '@legendapp/state/react';
 import * as React from 'react';
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native';
-import { $View } from './signal/$View';
+import { $View } from './$View';
+import { peek$, use$, useStateContext } from './state';
 
 export interface ContainerInfo {
     id: number;
@@ -11,47 +10,47 @@ export interface ContainerInfo {
 }
 
 export const Container = ({
-    $container,
+    id,
     recycleItems,
-    numItems$,
     horizontal,
     getRenderedItem,
     onLayout,
     ItemSeparatorComponent,
 }: {
-    $container: Observable<ContainerInfo>;
+    id: number;
     recycleItems?: boolean;
-    numItems$: Observable<number>;
     horizontal: boolean;
     getRenderedItem: (index: number) => React.ReactNode;
     onLayout: (index: number, length: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
-    const { id } = $container.peek();
-    const numItems = use$(numItems$);
-    // Subscribe to the itemIndex observable so this re-renders when the itemIndex changes.
-    const itemIndex = use$($container.itemIndex);
+    const ctx = useStateContext();
+    const numItems = ItemSeparatorComponent && use$('numItems');
+    // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
+    const itemIndex = use$(`containerIndex${id}`);
     // Set a key on the child view if not recycling items so that it creates a new view
     // for the rendered item
     const key = recycleItems ? undefined : itemIndex;
 
-    const createStyle = (): ViewStyle =>
-        horizontal
+    const createStyle = (): ViewStyle => {
+        const position = peek$(`containerPosition${id}`, ctx);
+        return horizontal
             ? {
                   flexDirection: 'row',
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
-                  left: $container.position.get(),
-                  opacity: $container.position.get() < 0 ? 0 : 1,
+                  left: position,
+                  opacity: position < 0 ? 0 : 1,
               }
             : {
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  top: $container.position.get(),
-                  opacity: $container.position.get() < 0 ? 0 : 1,
+                  top: position,
+                  opacity: position < 0 ? 0 : 1,
               };
+    };
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
@@ -59,9 +58,10 @@ export const Container = ({
     return itemIndex < 0 ? null : (
         <$View
             key={id}
+            $key={`containerPosition${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
-                const index = $container.itemIndex.peek();
+                const index = peek$(`containerIndex${id}`, ctx);
                 const length = Math.round(event.nativeEvent.layout[horizontal ? 'width' : 'height']);
 
                 onLayout(index, length);

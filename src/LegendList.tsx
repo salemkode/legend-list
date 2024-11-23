@@ -6,6 +6,7 @@ import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-nat
 import { ListComponent } from 'src/ListComponent';
 import type { ContainerInfo } from './Container';
 import type { LegendListProps } from './types';
+import { StateProvider, set$, useStateContext } from './state';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -22,6 +23,15 @@ export interface VisibleRange {
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<ScrollView>) {
+        return (
+            <StateProvider>
+                <LegendListInner {...props} ref={forwardedRef} />
+            </StateProvider>
+        );
+    }) as any;
+
+const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement = forwardRef(
+    function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<ScrollView>) {
         const {
             data,
             initialScrollIndex,
@@ -43,11 +53,12 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             onViewableRangeChanged,
             ...rest
         } = props;
+
+        const ctx = useStateContext();
+
         const internalRef = useRef<ScrollView>(null);
         const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
         const containers$ = useObservable<ContainerInfo[]>(() => []);
-        const numItems$ = useObservable(0);
-        const paddingTop$ = useObservable(0);
         const visibleRange$ = useObservable<VisibleRange>(() => ({
             start: 0,
             end: 0,
@@ -108,19 +119,20 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             refPositions.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refPositions.current.data = data;
-        numItems$.set(data.length);
+        set$(`numItems`, ctx, data.length);
 
         const initialContentOffset =
             initialScrollOffset ??
             (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
 
         const setTotalLength = (length: number) => {
+            set$(`totalLength`, ctx, length);
             visibleRange$.totalLength.set(length as any);
             const screenLength = refPositions.current!.scrollLength;
             if (alignItemsAtEnd) {
                 const listPaddingTop =
                     ((style as any)?.paddingTop || 0) + ((contentContainerStyle as any)?.paddingTop || 0);
-                paddingTop$.set(Math.max(0, screenLength - length - listPaddingTop));
+                set$(`paddingTop`, ctx, Math.max(0, screenLength - length - listPaddingTop));
             }
         };
 
@@ -136,6 +148,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                     itemIndex: -1,
                     position: POSITION_OUT_OF_VIEW,
                 });
+                set$(`containerIndex${i}`, ctx, -1);
+                set$(`containerPosition${i}`, ctx, POSITION_OUT_OF_VIEW);
             }
             containers$.set(containers);
         }, []);
@@ -229,6 +243,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                         for (let u = 0; u < containers.length; u++) {
                             const container = containers[u];
                             if (container.itemIndex < startBuffered || container.itemIndex > endBuffered) {
+                                set$(`containerIndex${u}`, ctx, i);
                                 containers$[u].itemIndex.set(i);
                                 didRecycle = true;
                                 break;
@@ -241,11 +256,14 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                                     i,
                                 );
                             }
+                            const id = containers$.peek().length;
                             containers$.push({
-                                id: containers$.peek().length,
+                                id: id,
                                 itemIndex: i,
                                 position: POSITION_OUT_OF_VIEW,
                             });
+                            set$(`containerIndex${id}`, ctx, i);
+                            set$(`containerPosition${id}`, ctx, POSITION_OUT_OF_VIEW);
                         }
                     }
                 }
@@ -260,10 +278,12 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                         const id = getId(container.itemIndex);
                         if (container.itemIndex < startBuffered || container.itemIndex > endBuffered) {
                             containers$[i].position.set(POSITION_OUT_OF_VIEW);
+                            set$(`containerPosition${i}`, ctx, POSITION_OUT_OF_VIEW);
                         } else {
                             const pos = positions.get(id) ?? -1;
                             if (pos >= 0 && pos !== containers$[i].position.peek()) {
                                 containers$[i].position.set(pos);
+                                set$(`containerPosition${i}`, ctx, pos);
                             }
                         }
                     }
@@ -456,9 +476,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 horizontal={horizontal!}
                 refScroller={refScroller}
                 initialContentOffset={initialContentOffset}
-                paddingTop$={paddingTop$}
                 containers$={containers$}
-                numItems$={numItems$}
                 visibleRange$={visibleRange$}
                 getRenderedItem={getRenderedItem}
                 updateItemLength={updateItemLength}
@@ -468,4 +486,5 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 alignItemsAtEnd={alignItemsAtEnd}
             />
         );
-    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement;
+    },
+) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement;
