@@ -1,4 +1,3 @@
-import { beginBatch, endBatch } from '@legendapp/state';
 import * as React from 'react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-native';
@@ -216,8 +215,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endNoBuffer,
             });
 
-            beginBatch();
-
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get('numContainers');
                 let numContainers = prevNumContainers;
@@ -300,8 +297,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                     }
                 }
             }
-
-            endBatch();
         }, [data]);
 
         // const adjustTopPad = (diff: number) => {
@@ -374,8 +369,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             // let scrollNeedsAdjust = 0;
 
             if (!prevLength || prevLength !== length) {
-                beginBatch();
-
                 // TODO: Experimental scroll adjusting
                 // const diff = length - (prevLength || 0);
                 // const startNoBuffer = visibleRange$.startNoBuffer.peek();
@@ -422,7 +415,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // if (scrollNeedsAdjust) {
                 //     adjustTopPad(scrollNeedsAdjust);
                 // }
-                endBatch();
             }
         }, []);
 
