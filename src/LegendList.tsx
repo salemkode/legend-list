@@ -40,7 +40,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             initialContainers,
             drawDistance,
             recycleItems = true,
-            onEndReachedThreshold,
+            onEndReachedThreshold = 0.5,
             maintainScrollAtEnd = false,
             maintainScrollAtEndThreshold = 0.1,
             alignItemsAtEnd = false,
@@ -335,7 +335,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 refPositions.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
             }
             if (onEndReached && !refPositions.current?.isEndReached) {
-                if (distanceFromEnd < (onEndReachedThreshold || 0.5) * scrollLength) {
+                if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
                     if (refPositions.current) {
                         refPositions.current.isEndReached = true;
                     }
@@ -346,10 +346,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
 
         useMemo(() => {
             if (refPositions.current) {
-                if (!refPositions.current?.isAtBottom) {
                     refPositions.current.isEndReached = false;
                 }
-            }
             calculateItemsInView();
             checkAtBottom();
         }, [data]);
