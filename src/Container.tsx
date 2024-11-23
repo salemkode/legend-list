@@ -3,12 +3,6 @@ import { LayoutChangeEvent, View, ViewStyle } from 'react-native';
 import { $View } from './$View';
 import { peek$, use$, useStateContext } from './state';
 
-export interface ContainerInfo {
-    id: number;
-    itemIndex: number;
-    position: number;
-}
-
 export const Container = ({
     id,
     recycleItems,
@@ -25,9 +19,9 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const numItems = ItemSeparatorComponent && use$('numItems');
+    const numItems = ItemSeparatorComponent ? use$<number>('numItems') : 0;
     // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
-    const itemIndex = use$(`containerIndex${id}`);
+    const itemIndex = use$<number>(`containerIndex${id}`);
     // Set a key on the child view if not recycling items so that it creates a new view
     // for the rendered item
     const key = recycleItems ? undefined : itemIndex;

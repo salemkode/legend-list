@@ -1,12 +1,9 @@
-import { Observable } from '@legendapp/state';
-import { use$ } from '@legendapp/state/react';
 import * as React from 'react';
-import { peek$, useStateContext } from './state';
-import { Container, ContainerInfo } from './Container';
 import { $View } from './$View';
+import { Container } from './Container';
+import { peek$, use$, useStateContext } from './state';
 
 interface ContainersProps {
-    containers$: Observable<ContainerInfo[]>;
     horizontal: boolean;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
@@ -15,7 +12,6 @@ interface ContainersProps {
 }
 
 export const Containers = React.memo(function Containers({
-    containers$,
     horizontal,
     recycleItems,
     ItemSeparatorComponent,
@@ -23,7 +19,23 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
 }: ContainersProps) {
     const ctx = useStateContext();
-    const containers = use$(containers$, { shallow: true });
+    const numContainers = use$<number>('numContainers');
+
+    const containers = [];
+    for (let i = 0; i < numContainers; i++) {
+        containers.push(
+            <Container
+                id={i}
+                key={i}
+                recycleItems={recycleItems}
+                horizontal={horizontal}
+                getRenderedItem={getRenderedItem}
+                onLayout={updateItemLength}
+                ItemSeparatorComponent={ItemSeparatorComponent}
+            />,
+        );
+    }
+
     return (
         <$View
             $key="totalLength"
@@ -37,17 +49,7 @@ export const Containers = React.memo(function Containers({
                       }
             }
         >
-            {containers.map((container, i) => (
-                <Container
-                    id={i}
-                    key={i}
-                    recycleItems={recycleItems}
-                    horizontal={horizontal}
-                    getRenderedItem={getRenderedItem}
-                    onLayout={updateItemLength}
-                    ItemSeparatorComponent={ItemSeparatorComponent}
-                />
-            ))}
+            {containers}
         </$View>
     );
 });

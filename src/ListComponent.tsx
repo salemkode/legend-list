@@ -1,6 +1,5 @@
-import { ReactNode } from 'react';
-import { Observable } from '@legendapp/state';
 import * as React from 'react';
+import { ReactNode } from 'react';
 import {
     LayoutChangeEvent,
     NativeScrollEvent,
@@ -10,12 +9,10 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import type { ContainerInfo } from './Container';
-import { Containers } from './Containers';
-import type { VisibleRange } from './LegendList';
 import { $View } from './$View';
-import type { LegendListProps } from './types';
+import { Containers } from './Containers';
 import { peek$, useStateContext } from './state';
+import type { LegendListProps } from './types';
 
 interface ListComponentProps
     extends Omit<
@@ -26,8 +23,6 @@ interface ListComponentProps
     contentContainerStyle: StyleProp<ViewStyle>;
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    containers$: Observable<ContainerInfo[]>;
-    visibleRange$: Observable<VisibleRange>;
     refScroller: React.MutableRefObject<ScrollView>;
     getRenderedItem: (index: number) => ReactNode;
     updateItemLength: (index: number, length: number) => void;
@@ -49,8 +44,6 @@ export const ListComponent = React.memo(function ListComponent({
     ListHeaderComponentStyle,
     ListFooterComponent,
     ListFooterComponentStyle,
-    containers$,
-    visibleRange$,
     getRenderedItem,
     updateItemLength,
     refScroller,
@@ -95,7 +88,6 @@ export const ListComponent = React.memo(function ListComponent({
             )} */}
 
             <Containers
-                containers$={containers$}
                 horizontal={horizontal!}
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}

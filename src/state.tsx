@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 export type ListenerType =
-    | 'containers'
+    | 'numContainers'
     | `containerIndex${number}`
     | `containerPosition${number}`
     | `numItems`
@@ -27,7 +27,7 @@ export function useStateContext() {
     return React.useContext(ContextListener)!;
 }
 
-export function use$(signalName: ListenerType) {
+export function use$<T>(signalName: ListenerType): T {
     const { listeners, values } = React.useContext(ContextListener)!;
     const [_, setState] = React.useState(0);
     React.useMemo(() => {
