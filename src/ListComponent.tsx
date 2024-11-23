@@ -103,7 +103,7 @@ export const ListComponent = React.memo(function ListComponent({
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemLength={updateItemLength}
-
+            />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollView>
     );
