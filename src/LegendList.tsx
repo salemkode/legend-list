@@ -73,7 +73,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             positions: Map<string, number>;
             lengths: Map<String, number>;
             pendingAdjust: number;
-            animFrame: number | null;
+            animFrameScroll: number | null;
             isStartReached: boolean;
             isEndReached: boolean;
             isAtBottom: boolean;
@@ -123,7 +123,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 lengths: new Map(),
                 positions: new Map(),
                 pendingAdjust: 0,
-                animFrame: null,
+                animFrameScroll: null,
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,
@@ -408,7 +408,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             checkAtBottom();
         }, [data]);
 
-        const updateItemLength = useCallback((index: number, length: number) => {
+        const updateItemSize = useCallback((index: number, length: number) => {
             const data = refState.current?.data;
             if (!data) {
                 return;
@@ -459,7 +459,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // TODO: Could this be optimized to only calculate items in view that have changed?
 
                 // Calculate positions if not currently scrolling and have a calculate already pending
-                if (!refState.current?.animFrame) {
+                if (!refState.current?.animFrameScroll) {
                     calculateItemsInView();
                 }
 
@@ -476,7 +476,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
             // Reset the debounce
             if (refState.current) {
-                refState.current.animFrame = null;
+                refState.current.animFrameScroll = null;
             }
         }, []);
 
@@ -504,8 +504,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 refState.current!.scroll = newScroll;
 
                 // Debounce a calculate if no calculate is already pending
-                if (refState.current && !refState.current.animFrame) {
-                    refState.current.animFrame = requestAnimationFrame(handleScrollDebounced);
+                if (refState.current && !refState.current.animFrameScroll) {
+                    refState.current.animFrameScroll = requestAnimationFrame(handleScrollDebounced);
                 }
 
                 if (!fromSelf) {
@@ -524,7 +524,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 refScroller={refScroller}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
-                updateItemLength={updateItemLength}
+                updateItemSize={updateItemSize}
                 handleScroll={handleScroll}
                 onLayout={onLayout}
                 recycleItems={recycleItems}
