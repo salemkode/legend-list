@@ -17,7 +17,7 @@ import type { LegendListProps } from './types';
 interface ListComponentProps
     extends Omit<
         LegendListProps<any>,
-        'data' | 'estimatedItemLength' | 'drawDistance' | 'maintainScrollAtEnd' | 'maintainScrollAtEndThreshold'
+        'data' | 'estimatedItemSize' | 'drawDistance' | 'maintainScrollAtEnd' | 'maintainScrollAtEndThreshold'
     > {
     style: StyleProp<ViewStyle>;
     contentContainerStyle: StyleProp<ViewStyle>;
