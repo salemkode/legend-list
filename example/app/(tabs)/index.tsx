@@ -42,7 +42,7 @@ export default function HomeScreen() {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                estimatedItemLength={() => ESTIMATED_ITEM_LENGTH}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
                 recycleItems={RECYCLE_ITEMS}
                 // alignItemsAtEnd

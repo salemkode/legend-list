@@ -33,7 +33,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             horizontal,
             style: styleProp,
             contentContainerStyle: contentContainerStyleProp,
-            initialContainers,
+            initialNumContainers,
             drawDistance,
             recycleItems = true,
             onEndReachedThreshold = 0.5,
@@ -43,7 +43,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             onScroll: onScrollProp,
             keyExtractor,
             renderItem,
-            estimatedItemLength,
+            estimatedItemSize,
+            getEstimatedItemSize,
             onEndReached,
             onViewableRangeChanged,
             ...rest
@@ -95,6 +96,27 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             return ret + '';
         };
 
+        const getItemLength = (index: number, data: T) => {
+            return getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
+        };
+        const calculateInitialOffset = () => {
+            if (initialScrollIndex) {
+                if (getEstimatedItemSize) {
+                    let offset = 0;
+                    for (let i = 0; i < initialScrollIndex; i++) {
+                        offset += getEstimatedItemSize(i, data[i]);
+                    }
+                    return offset;
+                } else if (estimatedItemSize) {
+                    return initialScrollIndex * estimatedItemSize;
+                }
+            }
+            return undefined;
+        };
+
+        const initialContentOffset =
+            initialScrollOffset ?? useMemo(calculateInitialOffset, [initialScrollIndex, estimatedItemSize]);
+
         if (!refState.current) {
             refState.current = {
                 lengths: new Map(),
@@ -112,17 +134,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 startNoBuffer: 0,
                 endBuffered: 0,
                 endNoBuffer: 0,
-                scroll: 0,
+                scroll: initialContentOffset || 0,
                 topPad: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
         set$(ctx, `numItems`, data.length);
-
-        const initialContentOffset =
-            initialScrollOffset ??
-            (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
 
         const setTotalLength = (length: number) => {
             set$(ctx, `totalLength`, length);
@@ -136,8 +154,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
         const allocateContainers = useCallback(() => {
             const scrollLength = refState.current!.scrollLength;
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
             const numContainers =
-                initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
+                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerIndex${i}`, -1);
@@ -190,7 +209,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             // TODO: This could be optimized to not start at 0, to go backwards from previous start position
             for (let i = 0; i < data!.length; i++) {
                 const id = getId(i)!;
-                const length = lengths.get(id) ?? estimatedItemLength(i);
+                const length = lengths.get(id) ?? getItemLength(i, data[i]);
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -333,8 +352,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             let totalLength = 0;
             for (let i = 0; i < data.length; i++) {
                 const id = getId(i);
-
-                totalLength += lengths.get(id) ?? estimatedItemLength(i);
+                totalLength += lengths.get(id) ?? getItemLength(i, data[i]);
             }
             setTotalLength(totalLength);
         }, []);
@@ -373,7 +391,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             const lengths = refState.current?.lengths!;
             const id = getId(index);
             const wasInFirstRender = refState.current?.idsInFirstRender.has(id);
-            const prevLength = lengths.get(id) || (wasInFirstRender ? estimatedItemLength(index) : 0);
+
+            const prevLength = lengths.get(id) || (wasInFirstRender ? getItemLength(index, data[index]) : 0);
             // let scrollNeedsAdjust = 0;
 
             if (!prevLength || prevLength !== length) {
@@ -442,7 +461,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
         }, []);
 
         const handleScroll = useCallback(
-            (event: { nativeEvent: { contentOffset: { x: number; y: number } } }, fromSelf?: boolean) => {
+            (
+                event: {
+                    nativeEvent: NativeScrollEvent;
+                },
+                fromSelf?: boolean,
+            ) => {
+                // in some cases when we set ScrollView contentOffset prop, there comes event from with 0 height and width
+                // this causes blank list display, looks to be Paper implementation problem
+                // let's filter out such events
+                if (event.nativeEvent?.contentSize?.height === 0 && event.nativeEvent.contentSize?.width === 0) {
+                    return;
+                }
                 refState.current!.hasScrolled = true;
                 const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
                 // Update the scroll position to use in checks
@@ -460,19 +490,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             [],
         );
 
-        useEffect(() => {
-            if (initialContentOffset) {
-                const offset = horizontal ? { x: initialContentOffset, y: 0 } : { x: 0, y: initialContentOffset };
-                handleScroll(
-                    {
-                        nativeEvent: { contentOffset: offset },
-                    },
-                    /*fromSelf*/ true,
-                );
-                calculateItemsInView();
-            }
-        }, []);
-
         return (
             <ListComponent
                 {...rest}
@@ -487,6 +504,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
+                estimatedItemSize={estimatedItemSize}
             />
         );
     },
