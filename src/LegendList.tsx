@@ -15,7 +15,7 @@ import {
     handleScroll as handleScrollHelper,
     onLayout as onLayoutHelper,
     setTotalLength,
-    updateItemLength as updateItemLengthHelper,
+    updateItemSize as updateItemSizeHelper,
 } from './LegendListHelpers';
 import { ListComponent } from './ListComponent';
 import { set$, StateProvider, useStateContext } from './state';
@@ -63,7 +63,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 lengths: new Map(),
                 positions: new Map(),
                 pendingAdjust: 0,
-                animFrame: null,
+                animFrameScroll: null,
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,
@@ -105,7 +105,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 getId: getIdHelper.bind(undefined, refState.current!),
                 getItemSize: getItemSizeHelper.bind(undefined, refState.current!),
                 calculateItemsInView: calculateItemsInViewHelper.bind(undefined, refState.current!),
-                updateItemLength: updateItemLengthHelper.bind(undefined, refState.current!, refScroller),
+                updateItemSize: updateItemSizeHelper.bind(undefined, refState.current!, refScroller),
                 checkAtBottom: checkAtBottomHelper.bind(undefined, refState.current!),
                 handleScrollDebounced: handleScrollDebouncedHelper.bind(undefined, refState.current!),
                 onLayout: onLayoutHelper.bind(undefined, refState.current!),
@@ -122,7 +122,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             getId,
             getItemSize,
             checkAtBottom,
-            updateItemLength,
+            updateItemSize,
             getRenderedItem,
             onLayout,
             handleScroll,
@@ -178,7 +178,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 refScroller={refScroller}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
-                updateItemLength={updateItemLength}
+                updateItemSize={updateItemSize}
                 handleScroll={handleScroll}
                 onLayout={onLayout}
             />

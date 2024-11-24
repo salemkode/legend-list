@@ -107,8 +107,6 @@ export function calculateItemsInView(state: InternalState) {
             ctx,
         } = state;
 
-        debugger;
-
         if (!data) {
             return;
         }
@@ -261,7 +259,7 @@ export function calculateItemsInView(state: InternalState) {
     });
 }
 
-export function updateItemLength(
+export function updateItemSize(
     state: InternalState,
     refScroller: React.RefObject<ScrollView>,
     index: number,
@@ -322,7 +320,7 @@ export function updateItemLength(
         // TODO: Could this be optimized to only calculate items in view that have changed?
 
         // Calculate positions if not currently scrolling and have a calculate already pending
-        if (!state?.animFrame) {
+        if (!state.animFrameScroll) {
             calculateItemsInView(state);
         }
 
@@ -357,7 +355,7 @@ export function handleScrollDebounced(state: InternalState) {
     checkAtBottom(state);
 
     // Reset the debounce
-    state.animFrame = null;
+    state.animFrameScroll = null;
 }
 
 export function handleScroll(
@@ -380,8 +378,8 @@ export function handleScroll(
     state.scroll = newScroll;
 
     // Debounce a calculate if no calculate is already pending
-    if (state && !state.animFrame) {
-        state.animFrame = requestAnimationFrame(onScrollDebounced);
+    if (state && !state.animFrameScroll) {
+        state.animFrameScroll = requestAnimationFrame(onScrollDebounced);
     }
 
     onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
