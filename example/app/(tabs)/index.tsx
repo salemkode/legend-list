@@ -33,6 +33,7 @@ export default function HomeScreen() {
                 //   }
                 scrollViewRef.current?.scrollTo({
                     y: (start += inc),
+                    animated: true,
                 });
             }, 60);
             return () => clearInterval(interval);
