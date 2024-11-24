@@ -1,5 +1,5 @@
 import { LegendList } from '@legendapp/list';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { Item, renderItem } from '../renderItem';
 import { RECYCLE_ITEMS } from '@/constants';
@@ -12,24 +12,37 @@ const uiManager = global?.nativeFabricUIManager ? 'Fabric' : 'Paper';
 console.log(`Using ${uiManager}`);
 
 const ESTIMATED_ITEM_LENGTH = 200;
+const DO_SCROLL_TEST = true;
 
 export default function HomeScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
 
     const [data, setData] = useState<Item[]>(
         () =>
-            Array.from({ length: 500 }, (_, i) => ({
+            Array.from({ length: 1000 }, (_, i) => ({
                 id: i.toString(),
             })) as any[],
     );
 
+    if (DO_SCROLL_TEST) {
+        useEffect(() => {
+            let num = 0;
+            let start = 0;
+            let inc = 2000;
+            const interval = setInterval(() => {
+                //   setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
+                //   if (num > 10) {
+                //     clearInterval(interval);
+                //   }
+                scrollViewRef.current?.scrollTo({
+                    y: (start += inc),
+                });
+            }, 60);
+        }, []);
+    }
     //   useEffect(() => {
     //     let num = 0;
     //     const interval = setInterval(() => {
-    //       setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
-    //       if (num > 10) {
-    //         clearInterval(interval);
-    //       }
     //     }, 2000);
     //   }, []);
 
