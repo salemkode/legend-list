@@ -154,8 +154,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
         const allocateContainers = useCallback(() => {
             const scrollLength = refState.current!.scrollLength;
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
             const numContainers =
-                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemSize) + 4;
+                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerIndex${i}`, -1);
