@@ -2,7 +2,7 @@ import { LegendList } from '@legendapp/list';
 import { useEffect, useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { Item, renderItem } from '../renderItem';
-import { RECYCLE_ITEMS } from '@/constants';
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -10,9 +10,6 @@ LogBox.ignoreLogs(['Open debugger']);
 const uiManager = global?.nativeFabricUIManager ? 'Fabric' : 'Paper';
 
 console.log(`Using ${uiManager}`);
-
-const ESTIMATED_ITEM_LENGTH = 200;
-const DO_SCROLL_TEST = true;
 
 export default function HomeScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
@@ -38,6 +35,7 @@ export default function HomeScreen() {
                     y: (start += inc),
                 });
             }, 60);
+            return () => clearInterval(interval);
         }, []);
     }
     //   useEffect(() => {
@@ -56,7 +54,7 @@ export default function HomeScreen() {
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
-                drawDistance={1000}
+                drawDistance={DRAW_DISTANCE}
                 recycleItems={RECYCLE_ITEMS}
                 // alignItemsAtEnd
                 // maintainScrollAtEnd
