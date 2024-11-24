@@ -1,5 +1,5 @@
 import renderItem from '@/app/renderItem';
-import { DO_SCROLL_TEST, DRAW_DISTANCE, RECYCLE_ITEMS } from '@/constants';
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants';
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list';
 import { Fragment, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -38,6 +38,7 @@ export default function HomeScreen() {
                 //   }
                 scrollRef.current?.scrollToOffset({
                     offset: (start += inc),
+                    animated: true,
                 });
             }, 60);
             return () => clearInterval(interval);
@@ -52,7 +53,7 @@ export default function HomeScreen() {
                 renderItem={renderItemFn}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
-                estimatedItemSize={389}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
                 // initialScrollIndex={500}
                 ref={scrollRef}
