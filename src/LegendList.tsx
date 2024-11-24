@@ -75,6 +75,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endBuffered: 0,
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
+                scrollPrevious: initialContentOffset || 0,
                 topPad: 0,
                 previousViewableItems: new Set(),
                 props,

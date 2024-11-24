@@ -76,6 +76,7 @@ export interface InternalState<T = any> {
     startNoBuffer: number;
     endBuffered: number;
     endNoBuffer: number;
+    scrollPrevious: number;
     scroll: number;
     topPad: number;
     previousViewableItems: Set<number>;

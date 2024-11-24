@@ -1,5 +1,5 @@
 import { peek$, set$ } from './state';
-import { POSITION_OUT_OF_VIEW } from './constants';
+import { OPTIMIZE_DIRECTION, POSITION_OUT_OF_VIEW } from './constants';
 import type { LegendListProps, InternalState } from './types';
 import {
     LayoutChangeEvent,
@@ -111,6 +111,18 @@ export function calculateItemsInView(state: InternalState) {
             return;
         }
         const scroll = scrollState - topPad;
+        const direction = scroll > state.scrollPrevious ? 1 : -1;
+        const optimizeDirection = OPTIMIZE_DIRECTION;
+        const scrollBufferTop = optimizeDirection
+            ? direction > 0
+                ? scrollBuffer * 0.25
+                : scrollBuffer * 1.75
+            : scrollBuffer;
+        const scrollBufferBottom = optimizeDirection
+            ? direction > 0
+                ? scrollBuffer * 1.75
+                : scrollBuffer * 0.25
+            : scrollBuffer;
 
         let startNoBuffer: number | null = null;
         let startBuffered: number | null = null;
@@ -128,7 +140,7 @@ export function calculateItemsInView(state: InternalState) {
                 if (top !== undefined) {
                     const length = lengths.get(id) ?? getItemSize(state, i, data[i]);
                     const bottom = top + length;
-                    if (bottom > scroll - scrollBuffer) {
+                    if (bottom > scroll - scrollBufferTop) {
                         loopStart = i;
                     } else {
                         break;
@@ -150,14 +162,14 @@ export function calculateItemsInView(state: InternalState) {
             if (startNoBuffer === null && top + length > scroll) {
                 startNoBuffer = i;
             }
-            if (startBuffered === null && top + length > scroll - scrollBuffer) {
+            if (startBuffered === null && top + length > scroll - scrollBufferTop) {
                 startBuffered = i;
             }
             if (startNoBuffer !== null) {
                 if (top <= scroll + scrollLength) {
                     endNoBuffer = i;
                 }
-                if (top <= scroll + scrollLength + scrollBuffer) {
+                if (top <= scroll + scrollLength + scrollBufferBottom) {
                     endBuffered = i;
                 } else {
                     break;
@@ -375,6 +387,7 @@ export function handleScroll(
     state.hasScrolled = true;
     const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
     // Update the scroll position to use in checks
+    state.scrollPrevious = state.scroll;
     state.scroll = newScroll;
 
     // Debounce a calculate if no calculate is already pending
