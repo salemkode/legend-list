@@ -1,4 +1,4 @@
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants';
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
 import { useScrollTest } from '@/constants/useScrollTest';
 import { LegendList } from '@legendapp/list';
 import { useRef, useState } from 'react';

@@ -16,8 +16,8 @@ import { useEffect, useState } from 'react';
 import { RectButton } from 'react-native-gesture-handler';
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 import Breathe from '@/components/Breathe';
+import { EMULATE_SLOW_RENDER } from '@/constants/constants';
 import { LegendListRenderItemInfo } from '@legendapp/list';
-import { EMULATE_SLOW_RENDER } from '@/constants';
 
 export interface Item {
     id: string;

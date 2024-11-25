@@ -6,10 +6,10 @@ export function useScrollTest(scrollFn: (offset: number) => void) {
         let interval: any;
         const timeout = setTimeout(() => {
             let start = 0;
-            let inc = 2000;
+            let inc = 1000;
             interval = setInterval(() => {
                 scrollFn((start += inc));
-            }, 60);
+            }, 500);
         }, 1000);
         return () => {
             clearInterval(interval);
