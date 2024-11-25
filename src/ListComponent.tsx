@@ -77,7 +77,6 @@ export const ListComponent = React.memo(function ListComponent({
             ]}
             onScroll={handleScroll}
             onLayout={onLayout}
-            scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
                 initialContentOffset
