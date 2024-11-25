@@ -69,6 +69,7 @@ export interface InternalState<T = any> {
     lengths: Map<String, number>;
     pendingAdjust: number;
     animFrameScroll: number | null;
+    animFrameLayout: number | null;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;

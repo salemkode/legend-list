@@ -64,6 +64,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 positions: new Map(),
                 pendingAdjust: 0,
                 animFrameScroll: null,
+                animFrameLayout: null,
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,

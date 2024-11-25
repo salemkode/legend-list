@@ -352,8 +352,13 @@ export function updateItemSize(
         // TODO: Could this be optimized to only calculate items in view that have changed?
 
         // Calculate positions if not currently scrolling and have a calculate already pending
+        if (!state.animFrameScroll && !state.animFrameLayout) {
+            state.animFrameLayout = requestAnimationFrame(() => {
+                state.animFrameLayout = null;
         if (!state.animFrameScroll) {
             calculateItemsInView(state);
+        }
+            });
         }
 
         // TODO: Experimental
