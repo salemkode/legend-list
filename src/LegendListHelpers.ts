@@ -149,6 +149,8 @@ export function calculateItemsInView(state: InternalState) {
             }
         }
 
+        let scrollUpDistanceToChange = 0;
+
         let top = loopStart > 0 ? positions.get(getId(state, loopStart))! : 0;
 
         for (let i = loopStart; i < data!.length; i++) {
@@ -201,27 +203,43 @@ export function calculateItemsInView(state: InternalState) {
                 }
                 // If it's not in a container, then we need to recycle a container out of view
                 if (!isContained) {
-                    let didRecycle = false;
+                    const id = getId(state, i)!;
+                    const top = positions.get(id) || 0;
+                    let furthestIndex = -1;
+                    let furthestDistance = 0;
+                    // Find the furthest container so we can recycle a container from the other side of scroll
+                    // to reduce empty container flashing when switching directions
+                    // Note that since this is only checking top it may not be 100% accurate but that's fine.
                     for (let u = 0; u < numContainers; u++) {
                         const index = peek$(ctx, `containerIndex${u}`);
-
-                        if (index < startBuffered || index > endBuffered) {
-                            set$(ctx, `containerIndex${u}`, i);
-                            didRecycle = true;
+                        if (index < 0) {
+                            furthestIndex = u;
                             break;
                         }
+
+                        const pos = peek$(ctx, `containerPosition${u}`);
+                        if (index < startBuffered || index > endBuffered) {
+                            const distance = Math.abs(pos - top);
+                            if (index < 0 || distance > furthestDistance) {
+                                furthestDistance = distance;
+                                furthestIndex = u;
+                        }
                     }
-                    if (!didRecycle) {
+                    }
+
+                    if (furthestIndex >= 0) {
+                        set$(ctx, `containerIndex${furthestIndex}`, i);
+                    } else {
                         if (__DEV__) {
                             console.warn(
                                 '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemLength',
                                 i,
                             );
                         }
-                        const id = numContainers;
+                        const containerId = numContainers;
                         numContainers++;
-                        set$(ctx, `containerIndex${id}`, i);
-                        set$(ctx, `containerPosition${id}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerIndex${containerId}`, i);
+                        set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
                     }
                 }
             }
