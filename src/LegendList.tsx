@@ -14,11 +14,11 @@ import {
     handleScrollDebounced as handleScrollDebouncedHelper,
     handleScroll as handleScrollHelper,
     onLayout as onLayoutHelper,
-    setTotalLength,
+    addTotalLength as addTotalLengthHelper,
     updateItemSize as updateItemSizeHelper,
 } from './LegendListHelpers';
 import { ListComponent } from './ListComponent';
-import { set$, StateProvider, useStateContext } from './state';
+import { peek$, set$, StateProvider, useStateContext } from './state';
 import type { InternalState, LegendListProps } from './types';
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement =
@@ -76,7 +76,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
                 scrollPrevious: initialContentOffset || 0,
-                topPad: 0,
                 previousViewableItems: new Set(),
                 props,
                 ctx,
@@ -110,6 +109,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 checkAtBottom: checkAtBottomHelper.bind(undefined, refState.current!),
                 handleScrollDebounced: handleScrollDebouncedHelper.bind(undefined, refState.current!),
                 onLayout: onLayoutHelper.bind(undefined, refState.current!),
+                addTotalLength: addTotalLengthHelper.bind(undefined, refState.current!),
                 handleScroll: handleScrollHelper.bind(
                     undefined,
                     refState.current!,
@@ -127,9 +127,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             getRenderedItem,
             onLayout,
             handleScroll,
+            addTotalLength,
         } = fns;
 
         set$(ctx, `numItems`, data.length);
+        // TODO: This needs to support horizontal and other ways of defining padding.
+        set$(ctx, `stylePaddingTop`, styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
         // const adjustTopPad = (diff: number) => {
         //     // TODO: Experimental, find a better way to do this.
@@ -154,12 +157,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
             // Set an initial total height based on what we know
             const lengths = refState.current?.lengths!;
-            let totalLength = 0;
+            let totalLength = (peek$(ctx, `headerSize`) || 0) + (peek$(ctx, `footerSize`) || 0);
             for (let i = 0; i < data.length; i++) {
                 const id = getId(i);
                 totalLength += lengths.get(id) ?? getItemSize(i, data[i]);
             }
-            setTotalLength(refState.current!, totalLength);
+            addTotalLength(totalLength);
         }, []);
 
         useMemo(() => {
@@ -173,6 +176,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
         return (
             <ListComponent
                 {...rest}
+                addTotalLength={addTotalLength}
                 contentContainerStyle={contentContainerStyle}
                 style={style}
                 horizontal={horizontal!}
