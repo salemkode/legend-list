@@ -297,7 +297,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                             if (!didRecycle) {
                                 if (__DEV__) {
                                     console.warn(
-                                        '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemLength',
+                                        '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize',
                                         i,
                                     );
                                 }
@@ -535,7 +535,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
-                estimatedItemSize={estimatedItemSize}
             />
         );
     },
