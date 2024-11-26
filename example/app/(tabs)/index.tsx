@@ -2,7 +2,7 @@ import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } f
 import { useScrollTest } from '@/constants/useScrollTest';
 import { LegendList, LegendListRef } from '@legendapp/list';
 import { useRef, useState } from 'react';
-import { LogBox, Platform, StyleSheet, View } from 'react-native';
+import { LogBox, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Item, renderItem } from '../renderItem';
 
 LogBox.ignoreLogs(['Open debugger']);
@@ -13,7 +13,7 @@ const uiManager = global?.nativeFabricUIManager ? 'Fabric' : 'Paper';
 console.log(`Using ${uiManager}`);
 
 export default function HomeScreen() {
-    const scrollViewRef = useRef<LegendListRef>(null);
+    const listRef = useRef<LegendListRef>(null);
 
     const [data, setData] = useState<Item[]>(
         () =>
@@ -24,7 +24,7 @@ export default function HomeScreen() {
 
     if (DO_SCROLL_TEST) {
         useScrollTest((offset) => {
-            scrollViewRef.current?.scrollToOffset({
+            listRef.current?.scrollToOffset({
                 offset: offset,
                 animated: true,
             });
@@ -39,7 +39,7 @@ export default function HomeScreen() {
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
             <LegendList
-                ref={scrollViewRef}
+                ref={listRef}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 contentContainerStyle={styles.listContainer}
                 data={data}

@@ -9,7 +9,23 @@ import type { StateType, StateContext } from './types';
 // once for each unique name. So we don't need to manage a Set of listeners or dispose them,
 // which saves needing useEffect hooks or managing listeners in a Set.
 
-const ContextListener = React.createContext<StateContext | null>(null);
+export type ListenerType =
+    | 'numContainers'
+    | `containerIndex${number}`
+    | `containerPosition${number}`
+    | `numItems`
+    | 'totalLength'
+    | 'paddingTop'
+    | 'stylePaddingTop'
+    | 'headerSize'
+    | 'footerSize';
+
+interface ListenerContext {
+    listeners: Map<ListenerType, () => void>;
+    values: Map<ListenerType, any>;
+}
+
+const ContextListener = React.createContext<ListenerContext | null>(null);
 
 export function StateProvider({ children }: { children: React.ReactNode }) {
     const [value] = React.useState(() => ({
