@@ -75,6 +75,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             pendingAdjust: number;
             animFrameScroll: number | null;
             animFrameLayout: number | null;
+            animFrameTotalSize: number | null;
             isStartReached: boolean;
             isEndReached: boolean;
             isAtBottom: boolean;
@@ -87,6 +88,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             endBuffered: number;
             endNoBuffer: number;
             scroll: number;
+            totalSize: number;
         }>();
         const getId = (index: number): string => {
             const data = refState.current?.data;
@@ -125,6 +127,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 pendingAdjust: 0,
                 animFrameScroll: null,
                 animFrameLayout: null,
+                animFrameTotalSize: null,
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,
@@ -137,6 +140,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endBuffered: 0,
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
+                totalSize: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
@@ -146,13 +150,22 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
         set$(ctx, `stylePaddingTop`, styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
         const addTotalSize = (add: number) => {
-            const length = (peek$(ctx, `totalLength`) || 0) + add;
+            const prev = refState.current!.totalSize;
+            const length = (refState.current!.totalSize += add);
+            const doAdd = () => {
+                refState.current!.animFrameTotalSize = null;
 
             set$(ctx, `totalLength`, length);
             const screenLength = refState.current!.scrollLength;
             if (alignItemsAtEnd) {
                 const listPaddingTop = peek$(ctx, `stylePaddingTop`);
                 set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
+            }
+        };
+            if (!prev) {
+                doAdd();
+            } else if (!refState.current!.animFrameTotalSize) {
+                refState.current!.animFrameTotalSize = requestAnimationFrame(doAdd);
             }
         };
 
