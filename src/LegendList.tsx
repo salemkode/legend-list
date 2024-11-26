@@ -82,7 +82,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const refState = useRef<{
             positions: Map<string, number>;
-            lengths: Map<string, number>;
+            sizes: Map<string, number>;
             pendingAdjust: number;
             animFrameScroll: number | null;
             animFrameLayout: number | null;
@@ -110,7 +110,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return `${ret}`;
         };
 
-        const getItemLength = (index: number, data: T) => {
+        const getItemSize = (index: number, data: T) => {
             return getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
         };
         const calculateInitialOffset = (index = initialScrollIndex) => {
@@ -133,7 +133,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         if (!refState.current) {
             refState.current = {
-                lengths: new Map(),
+                sizes: new Map(),
                 positions: new Map(),
                 pendingAdjust: 0,
                 animFrameScroll: null,
@@ -163,15 +163,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const addTotalSize = (add: number) => {
             const prev = refState.current!.totalSize;
             refState.current!.totalSize += add;
-            const length = refState.current!.totalSize;
+            const totalSize = refState.current!.totalSize;
             const doAdd = () => {
                 refState.current!.animFrameTotalSize = null;
 
-                set$(ctx, 'totalLength', length);
+                set$(ctx, 'totalSize', totalSize);
                 const screenLength = refState.current!.scrollLength;
                 if (alignItemsAtEnd) {
                     const listPaddingTop = peek$(ctx, 'stylePaddingTop');
-                    set$(ctx, 'paddingTop', Math.max(0, screenLength - length - listPaddingTop));
+                    set$(ctx, 'paddingTop', Math.max(0, screenLength - totalSize - listPaddingTop));
                 }
             };
             if (!prev) {
@@ -216,7 +216,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
                 const scroll = scrollState - topPad;
 
-                const { lengths, positions } = refState.current!;
+                const { sizes, positions } = refState.current!;
 
                 let startNoBuffer: number | null = null;
                 let startBuffered: number | null = null;
@@ -232,8 +232,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const id = getId(i)!;
                         const top = positions.get(id)!;
                         if (top !== undefined) {
-                            const length = lengths.get(id) ?? getItemLength(i, data[i]);
-                            const bottom = top + length;
+                            const size = sizes.get(id) ?? getItemSize(i, data[i]);
+                            const bottom = top + size;
                             if (bottom > scroll - scrollBuffer) {
                                 loopStart = i;
                             } else {
@@ -247,16 +247,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 for (let i = loopStart; i < data!.length; i++) {
                     const id = getId(i)!;
-                    const length = lengths.get(id) ?? getItemLength(i, data[i]);
+                    const size = sizes.get(id) ?? getItemSize(i, data[i]);
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
                     }
 
-                    if (startNoBuffer === null && top + length > scroll) {
+                    if (startNoBuffer === null && top + size > scroll) {
                         startNoBuffer = i;
                     }
-                    if (startBuffered === null && top + length > scroll - scrollBuffer) {
+                    if (startBuffered === null && top + size > scroll - scrollBuffer) {
                         startBuffered = i;
                     }
                     if (startNoBuffer !== null) {
@@ -270,7 +270,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                     }
 
-                    top += length;
+                    top += size;
                 }
 
                 Object.assign(refState.current!, {
@@ -417,20 +417,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             calculateItemsInView();
 
             // Set an initial total height based on what we know
-            const lengths = refState.current?.lengths!;
-            let totalLength = 0;
+            const sizes = refState.current?.sizes!;
+            let totalSize = 0;
             for (let i = 0; i < data.length; i++) {
                 const id = getId(i);
-                totalLength += lengths.get(id) ?? getItemLength(i, data[i]);
+                totalSize += sizes.get(id) ?? getItemSize(i, data[i]);
             }
-            addTotalSize(totalLength);
+            addTotalSize(totalSize);
         }, []);
 
         const checkAtBottom = () => {
             const { scrollLength, scroll } = refState.current!;
-            const totalLength = peek$(ctx, 'totalLength');
+            const totalSize = peek$(ctx, 'totalSize');
             // Check if at end
-            const distanceFromEnd = totalLength - scroll - scrollLength;
+            const distanceFromEnd = totalSize - scroll - scrollLength;
             if (refState.current) {
                 refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
             }
@@ -452,19 +452,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             checkAtBottom();
         }, [data]);
 
-        const updateItemSize = useCallback((index: number, length: number) => {
+        const updateItemSize = useCallback((index: number, size: number) => {
             const data = refState.current?.data;
             if (!data) {
                 return;
             }
-            const lengths = refState.current?.lengths!;
+            const sizes = refState.current?.sizes!;
             const id = getId(index);
             const wasInFirstRender = refState.current?.idsInFirstRender.has(id);
 
-            const prevLength = lengths.get(id) || (wasInFirstRender ? getItemLength(index, data[index]) : 0);
+            const prevSize = sizes.get(id) || (wasInFirstRender ? getItemSize(index, data[index]) : 0);
             // let scrollNeedsAdjust = 0;
 
-            if (!prevLength || Math.abs(prevLength - length) > 0.5) {
+            if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 // TODO: Experimental scroll adjusting
                 // const diff = length - (prevLength || 0);
                 // const startNoBuffer = visibleRange$.startNoBuffer.peek();
@@ -472,19 +472,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 //     scrollNeedsAdjust += diff;
                 // }
 
-                lengths.set(id, length);
-                addTotalSize(length - prevLength);
+                sizes.set(id, size);
+                addTotalSize(size - prevSize);
 
                 if (refState.current?.isAtBottom && maintainScrollAtEnd) {
                     // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
                     // scrollRef.current?.setNativeProps({
                     //   contentContainerStyle: {
                     //     height:
-                    //       visibleRange$.totalLength.get() + visibleRange$.topPad.get() + 48,
+                    //       visibleRange$.totalSize.get() + visibleRange$.topPad.get() + 48,
                     //   },
                     //   contentOffset: {
                     //     y:
-                    //       visibleRange$.totalLength.peek() +
+                    //       visibleRange$.totalSize.peek() +
                     //       visibleRange$.topPad.peek() -
                     //       SCREEN_LENGTH +
                     //       48 * 3,

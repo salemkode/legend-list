@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: Example crashes if React is missing for some reason
 import * as React from 'react';
 import type { ViewProps, ViewStyle } from 'react-native';
 import { LeanView } from './LeanView';

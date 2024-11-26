@@ -13,7 +13,7 @@ export type ListenerType =
     | `containerIndex${number}`
     | `containerPosition${number}`
     | `numItems`
-    | 'totalLength'
+    | 'totalSize'
     | 'paddingTop'
     | 'stylePaddingTop'
     | 'headerSize'

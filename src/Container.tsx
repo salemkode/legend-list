@@ -40,7 +40,7 @@ export const Container = ({
     recycleItems?: boolean;
     horizontal: boolean;
     getRenderedItem: (index: number) => React.ReactNode;
-    onLayout: (index: number, length: number) => void;
+    onLayout: (index: number, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
@@ -75,9 +75,9 @@ export const Container = ({
             onLayout={(event: LayoutChangeEvent) => {
                 const index = peek$(ctx, `containerIndex${id}`);
                 if (index >= 0) {
-                    const length = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+                    const size = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
 
-                    onLayout(index, length);
+                    onLayout(index, size);
                 }
             }}
         >
