@@ -1,5 +1,5 @@
-import { ComponentProps, ReactNode } from 'react';
-import { ScrollResponderMixin, ScrollView, ScrollViewComponent, StyleProp, ViewStyle } from 'react-native';
+import type { ComponentProps, ReactNode } from 'react';
+import type { ScrollResponderMixin, ScrollView, ScrollViewComponent, StyleProp, ViewStyle } from 'react-native';
 
 export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
     data: ArrayLike<any> & T[];

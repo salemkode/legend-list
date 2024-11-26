@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LayoutChangeEvent, ViewStyle } from 'react-native';
+import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 import { $View } from './$View';
 import { peek$, use$, useStateContext } from './state';
 

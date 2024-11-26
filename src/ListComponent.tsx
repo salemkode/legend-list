@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
+    type LayoutChangeEvent,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
     ScrollView,
-    StyleProp,
+    type StyleProp,
     View,
-    ViewStyle,
+    type ViewStyle,
 } from 'react-native';
 import { $View } from './$View';
 import { Containers } from './Containers';
