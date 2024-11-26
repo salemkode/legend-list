@@ -86,7 +86,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             endBuffered: number;
             endNoBuffer: number;
             scroll: number;
-            topPad: number;
         }>();
         const getId = (index: number): string => {
             const data = refState.current?.data;
@@ -136,19 +135,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endBuffered: 0,
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
-                topPad: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
         set$(ctx, `numItems`, data.length);
+        // TODO: This needs to support horizontal and other ways of defining padding.
+        set$(ctx, `stylePaddingTop`, styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
-        const setTotalLength = (length: number) => {
+        const addTotalSize = (add: number) => {
+            const length = (peek$(ctx, `totalLength`) || 0) + add;
+
             set$(ctx, `totalLength`, length);
             const screenLength = refState.current!.scrollLength;
             if (alignItemsAtEnd) {
-                const listPaddingTop =
-                    ((style as any)?.paddingTop || 0) + ((contentContainerStyle as any)?.paddingTop || 0);
+                const listPaddingTop = peek$(ctx, `stylePaddingTop`);
                 set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
             }
         };
@@ -191,7 +192,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                     data,
                     scrollLength,
                     scroll: scrollState,
-                    topPad,
                     startNoBuffer: startNoBufferState,
                     startBuffered: startBufferedState,
                     endNoBuffer: endNoBufferState,
@@ -200,6 +200,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 if (!data) {
                     return;
                 }
+                const topPad = (peek$(ctx, `stylePaddingTop`) || 0) + (peek$(ctx, `headerSize`) || 0);
                 const scroll = scrollState - topPad;
 
                 const { lengths, positions } = refState.current!;
@@ -379,7 +380,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 const id = getId(i);
                 totalLength += lengths.get(id) ?? getItemLength(i, data[i]);
             }
-            setTotalLength(totalLength);
+            addTotalSize(totalLength);
         }, []);
 
         const checkAtBottom = () => {
@@ -429,8 +430,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // }
 
                 lengths.set(id, length);
-                const totalLength = peek$(ctx, 'totalLength');
-                setTotalLength(totalLength + (length - prevLength));
+                addTotalSize(length - prevLength);
 
                 if (refState.current?.isAtBottom && maintainScrollAtEnd) {
                     // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.

@@ -14,7 +14,10 @@ export type ListenerType =
     | `containerPosition${number}`
     | `numItems`
     | 'totalLength'
-    | 'paddingTop';
+    | 'paddingTop'
+    | 'stylePaddingTop'
+    | 'headerSize'
+    | 'footerSize';
 
 interface ListenerContext {
     listeners: Map<ListenerType, () => void>;
