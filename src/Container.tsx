@@ -75,7 +75,7 @@ export const Container = ({
             onLayout={(event: LayoutChangeEvent) => {
                 const index = peek$(ctx, `containerIndex${id}`);
                 if (index >= 0) {
-                    const length = Math.round(event.nativeEvent.layout[horizontal ? 'width' : 'height']);
+                    const length = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
 
                     onLayout(index, length);
                 }

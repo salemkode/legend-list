@@ -155,13 +155,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             const doAdd = () => {
                 refState.current!.animFrameTotalSize = null;
 
-            set$(ctx, `totalLength`, length);
-            const screenLength = refState.current!.scrollLength;
-            if (alignItemsAtEnd) {
-                const listPaddingTop = peek$(ctx, `stylePaddingTop`);
-                set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
-            }
-        };
+                set$(ctx, `totalLength`, length);
+                const screenLength = refState.current!.scrollLength;
+                if (alignItemsAtEnd) {
+                    const listPaddingTop = peek$(ctx, `stylePaddingTop`);
+                    set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
+                }
+            };
             if (!prev) {
                 doAdd();
             } else if (!refState.current!.animFrameTotalSize) {
@@ -436,7 +436,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             const prevLength = lengths.get(id) || (wasInFirstRender ? getItemLength(index, data[index]) : 0);
             // let scrollNeedsAdjust = 0;
 
-            if (!prevLength || prevLength !== length) {
+            if (!prevLength || Math.abs(prevLength - length) > 0.5) {
                 // TODO: Experimental scroll adjusting
                 // const diff = length - (prevLength || 0);
                 // const startNoBuffer = visibleRange$.startNoBuffer.peek();
@@ -472,7 +472,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 }
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
-
                 const state = refState.current!;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameScroll && !state.animFrameLayout) {
