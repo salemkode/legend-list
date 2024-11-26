@@ -74,6 +74,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             lengths: Map<String, number>;
             pendingAdjust: number;
             animFrameScroll: number | null;
+            animFrameLayout: number | null;
             isStartReached: boolean;
             isEndReached: boolean;
             isAtBottom: boolean;
@@ -123,6 +124,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 positions: new Map(),
                 pendingAdjust: 0,
                 animFrameScroll: null,
+                animFrameLayout: null,
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,
@@ -458,9 +460,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
 
+                const state = refState.current!;
                 // Calculate positions if not currently scrolling and have a calculate already pending
-                if (!refState.current?.animFrameScroll) {
-                    calculateItemsInView();
+                if (!state.animFrameScroll && !state.animFrameLayout) {
+                    state.animFrameLayout = requestAnimationFrame(() => {
+                        state.animFrameLayout = null;
+                        calculateItemsInView();
+                    });
                 }
 
                 // TODO: Experimental
