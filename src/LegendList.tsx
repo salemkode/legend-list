@@ -19,10 +19,10 @@ import {
     unstable_batchedUpdates,
 } from 'react-native';
 import { ListComponent } from './ListComponent';
-import {} from './state';
 import { StateProvider, peek$, set$, useStateContext } from './state';
 import type { LegendListRef } from './types';
-import type { LegendListProps } from './types';
+import type { InternalState, LegendListProps } from './types';
+import { setupViewability, updateViewableItems } from './viewability';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -80,27 +80,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [JSON.stringify(contentContainerStyleProp)],
         );
 
-        const refState = useRef<{
-            positions: Map<string, number>;
-            sizes: Map<string, number>;
-            pendingAdjust: number;
-            animFrameScroll: number | null;
-            animFrameLayout: number | null;
-            animFrameTotalSize: number | null;
-            isStartReached: boolean;
-            isEndReached: boolean;
-            isAtBottom: boolean;
-            data: T[];
-            idsInFirstRender: Set<string>;
-            hasScrolled: boolean;
-            scrollLength: number;
-            startBuffered: number;
-            startNoBuffer: number;
-            endBuffered: number;
-            endNoBuffer: number;
-            scroll: number;
-            totalSize: number;
-        }>();
+        const refState = useRef<InternalState>();
         const getId = (index: number): string => {
             const data = refState.current?.data;
             if (!data) {
@@ -152,6 +132,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
                 totalSize: 0,
+                timeouts: new Set(),
+                viewabilityConfigCallbackPairs: undefined as any,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
@@ -379,6 +361,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             });
                         }
                     }
+
+                    // if (startNoBuffer !== startNoBufferState || endNoBuffer !== endNoBufferState) {
+                    updateViewableItems(
+                        refState.current!,
+                        ctx,
+                        refState.current!.viewabilityConfigCallbackPairs,
+                        getId,
+                        scrollLength,
+                        startNoBuffer!,
+                        endNoBuffer!,
+                    );
+                    // }
                 }
             });
         }, [data]);
@@ -401,6 +395,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         // };
 
         useMemo(() => {
+            refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
+
             // Allocate containers
             const scrollLength = refState.current!.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);

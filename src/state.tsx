@@ -19,39 +19,39 @@ export type ListenerType =
     | 'headerSize'
     | 'footerSize';
 
-interface ListenerContext {
+export interface StateContext {
     listeners: Map<ListenerType, () => void>;
     values: Map<ListenerType, any>;
 }
 
-const ContextListener = React.createContext<ListenerContext | null>(null);
+const ContextState = React.createContext<StateContext | null>(null);
 
 export function StateProvider({ children }: { children: React.ReactNode }) {
     const [value] = React.useState(() => ({
         listeners: new Map(),
         values: new Map(),
     }));
-    return <ContextListener.Provider value={value}>{children}</ContextListener.Provider>;
+    return <ContextState.Provider value={value}>{children}</ContextState.Provider>;
 }
 
 export function useStateContext() {
-    return React.useContext(ContextListener)!;
+    return React.useContext(ContextState)!;
 }
 
 export function use$<T>(signalName: ListenerType): T {
-    const { listeners, values } = React.useContext(ContextListener)!;
+    const { listeners, values } = React.useContext(ContextState)!;
     const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
     listeners.set(signalName, forceUpdate);
 
     return values.get(signalName);
 }
 
-export function peek$(ctx: ListenerContext, signalName: ListenerType) {
+export function peek$(ctx: StateContext, signalName: ListenerType) {
     const { values } = ctx;
     return values.get(signalName);
 }
 
-export function set$(ctx: ListenerContext, signalName: ListenerType, value: any) {
+export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
