@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import { ListComponent } from './ListComponent';
 import { peek$, set$, StateProvider, useStateContext } from './state';
-import type { LegendListProps } from './types';
+import type { LegendListProps, LegendListRef } from './types';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
 
-export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement =
-    forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<ScrollView>) {
+export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
+    forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
         return (
             <StateProvider>
                 <LegendListInner {...props} ref={forwardedRef} />
@@ -25,8 +25,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         );
     }) as any;
 
-const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement = forwardRef(
-    function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<ScrollView>) {
+const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
+    forwardRef(function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
         const {
             data,
             initialScrollIndex,
@@ -54,7 +54,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
         const ctx = useStateContext();
 
         const internalRef = useRef<ScrollView>(null);
-        const refScroller = (forwardedRef || internalRef) as React.MutableRefObject<ScrollView>;
+        const refScroller = internalRef as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_SCROLL_BUFFER;
         // Experimental: It works ok on iOS when scrolling up, but is doing weird things when sizes are changing.
         // And it doesn't work at all on Android because it uses contentInset. I'll try it again later.
@@ -102,16 +102,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
         const getItemLength = (index: number, data: T) => {
             return getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
         };
-        const calculateInitialOffset = () => {
-            if (initialScrollIndex) {
+        const calculateInitialOffset = (index = initialScrollIndex) => {
+            if (index) {
                 if (getEstimatedItemSize) {
                     let offset = 0;
-                    for (let i = 0; i < initialScrollIndex; i++) {
+                    for (let i = 0; i < index; i++) {
                         offset += getEstimatedItemSize(i, data[i]);
                     }
                     return offset;
                 } else if (estimatedItemSize) {
-                    return initialScrollIndex * estimatedItemSize;
+                    return index * estimatedItemSize;
                 }
             }
             return undefined;
@@ -551,6 +551,35 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             [],
         );
 
+        React.useImperativeHandle(forwardedRef, () => {
+            const scrollToIndex = ({ index, animated }: Parameters<LegendListRef['scrollToIndex']>[0]) => {
+                // naive implementation to search element by index
+                // TODO: create some accurate search algorithm
+                // FlashList seems to be able to find index in the dynamic size list with some search
+                const offsetObj = calculateInitialOffset(index);
+                const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                refScroller.current!.scrollTo({ ...offset, animated });
+            };
+            return {
+                getNativeScrollRef: () => refScroller.current!,
+                getScrollableNode: refScroller.current!.getScrollableNode,
+                getScrollResponder: refScroller.current!.getScrollResponder,
+                flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                scrollToIndex,
+                scrollToOffset: ({ offset, animated }) => {
+                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
+                    refScroller.current!.scrollTo({ ...offsetObj, animated });
+                },
+                scrollToItem: ({ item, animated }) => {
+                    const index = data.indexOf(item);
+                    if (index !== -1) {
+                        scrollToIndex({ index, animated });
+                    }
+                },
+                scrollToEnd: refScroller.current!.scrollToEnd,
+            };
+        }, []);
+
         return (
             <ListComponent
                 {...rest}
@@ -567,5 +596,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 alignItemsAtEnd={alignItemsAtEnd}
             />
         );
-    },
-) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement;
+    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
