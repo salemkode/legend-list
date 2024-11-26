@@ -1,21 +1,32 @@
 import { ComponentProps, ReactNode } from 'react';
-import { ScrollResponderMixin, ScrollView, ScrollViewComponent } from 'react-native';
+import { ScrollResponderMixin, ScrollView, ScrollViewComponent, StyleProp, ViewStyle } from 'react-native';
 
 export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialContainers?: number;
+    initialNumContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
-    autoScrollToBottom?: boolean;
-    autoScrollToBottomThreshold?: number;
-    estimatedItemLength: (index: number) => number;
+    maintainScrollAtEnd?: boolean;
+    maintainScrollAtEndThreshold?: number;
+    alignItemsAtEnd?: boolean;
+    // in most cases providing a constant value for item size enough
+    estimatedItemSize: number;
+    // in case you have distinct item sizes, you can provide a function to get the size of an item
+    // use instead of FlatList's getItemLayout or FlashList overrideItemLayout
+    // if you want to have accurate initialScrollOffset, you should provide this function
+    getEstimatedItemSize?: (index: number, item: T) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
     renderItem?: (props: LegendListRenderItemInfo<T>) => ReactNode;
     onViewableRangeChanged?: (range: ViewableRange<T>) => void;
+    ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
+    ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
+    ItemSeparatorComponent?: React.ComponentType<any>;
     //   TODO:
     //   onViewableItemsChanged?:
     //     | ((info: {
