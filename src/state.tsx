@@ -1,5 +1,4 @@
 import * as React from 'react';
-import type { StateType, StateContext } from './types';
 
 // This is an implementation of a simple state management system, inspired by Legend State.
 // It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
@@ -39,7 +38,7 @@ export function useStateContext() {
     return React.useContext(ContextListener)!;
 }
 
-export function use$<T>(signalName: StateType): T {
+export function use$<T>(signalName: ListenerType): T {
     const { listeners, values } = React.useContext(ContextListener)!;
     const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
     listeners.set(signalName, forceUpdate);
@@ -47,12 +46,12 @@ export function use$<T>(signalName: StateType): T {
     return values.get(signalName);
 }
 
-export function peek$(ctx: StateContext, signalName: StateType) {
+export function peek$(ctx: ListenerContext, signalName: ListenerType) {
     const { values } = ctx;
     return values.get(signalName);
 }
 
-export function set$(ctx: StateContext, signalName: StateType, value: any) {
+export function set$(ctx: ListenerContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
