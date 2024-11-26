@@ -1,17 +1,28 @@
-import * as React from 'react';
-import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
+import type * as React from 'react';
+import {
+    type ForwardedRef,
+    type ReactElement,
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useMemo,
+    useRef,
+} from 'react';
 import {
     Dimensions,
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    ScrollView,
+    type LayoutChangeEvent,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
+    type ScrollView,
     StyleSheet,
     unstable_batchedUpdates,
 } from 'react-native';
 import { ListComponent } from './ListComponent';
-import { peek$, set$, StateProvider, useStateContext } from './state';
-import type { LegendListProps, LegendListRef } from './types';
+import {} from './state';
+import { StateProvider, peek$, set$, useStateContext } from './state';
+import type { LegendListRef } from './types';
+import type { LegendListProps } from './types';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -62,7 +73,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const supportsEstimationAdjustment = false; //   Platform.OS === "ios";
 
         const styleFlattened = StyleSheet.flatten(styleProp);
-        const style = useMemo(() => styleFlattened, [JSON.stringify(styleProp)]);
+        const style = useMemo(() => styleFlattened, [JSON.stringify(styleFlattened)]);
         const contentContainerStyleFlattened = StyleSheet.flatten(contentContainerStyleProp);
         const contentContainerStyle = useMemo(
             () => contentContainerStyleFlattened,
@@ -71,7 +82,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const refState = useRef<{
             positions: Map<string, number>;
-            lengths: Map<String, number>;
+            lengths: Map<string, number>;
             pendingAdjust: number;
             animFrameScroll: number | null;
             animFrameLayout: number | null;
@@ -96,7 +107,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return '';
             }
             const ret = index < data.length ? (keyExtractor ? keyExtractor(data[index], index) : index) : null;
-            return ret + '';
+            return `${ret}`;
         };
 
         const getItemLength = (index: number, data: T) => {
@@ -110,15 +121,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         offset += getEstimatedItemSize(i, data[i]);
                     }
                     return offset;
-                } else if (estimatedItemSize) {
+                }
+                if (estimatedItemSize) {
                     return index * estimatedItemSize;
                 }
             }
             return undefined;
         };
 
-        const initialContentOffset =
-            initialScrollOffset ?? useMemo(calculateInitialOffset, [initialScrollIndex, estimatedItemSize]);
+        const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
 
         if (!refState.current) {
             refState.current = {
@@ -145,21 +156,22 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
-        set$(ctx, `numItems`, data.length);
+        set$(ctx, 'numItems', data.length);
         // TODO: This needs to support horizontal and other ways of defining padding.
-        set$(ctx, `stylePaddingTop`, styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
+        set$(ctx, 'stylePaddingTop', styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
         const addTotalSize = (add: number) => {
             const prev = refState.current!.totalSize;
-            const length = (refState.current!.totalSize += add);
+            refState.current!.totalSize += add;
+            const length = refState.current!.totalSize;
             const doAdd = () => {
                 refState.current!.animFrameTotalSize = null;
 
-                set$(ctx, `totalLength`, length);
+                set$(ctx, 'totalLength', length);
                 const screenLength = refState.current!.scrollLength;
                 if (alignItemsAtEnd) {
-                    const listPaddingTop = peek$(ctx, `stylePaddingTop`);
-                    set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
+                    const listPaddingTop = peek$(ctx, 'stylePaddingTop');
+                    set$(ctx, 'paddingTop', Math.max(0, screenLength - length - listPaddingTop));
                 }
             };
             if (!prev) {
@@ -168,20 +180,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 refState.current!.animFrameTotalSize = requestAnimationFrame(doAdd);
             }
         };
-
-        const allocateContainers = useCallback(() => {
-            const scrollLength = refState.current!.scrollLength;
-            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
-            const numContainers =
-                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
-
-            for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerIndex${i}`, -1);
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-            }
-
-            set$(ctx, `numContainers`, numContainers);
-        }, []);
 
         const getRenderedItem = useCallback(
             (index: number) => {
@@ -192,7 +190,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const renderedItem = renderItem?.({
                     item: data[index],
                     index,
-                } as any);
+                });
 
                 return renderedItem;
             },
@@ -215,7 +213,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (!data) {
                     return;
                 }
-                const topPad = (peek$(ctx, `stylePaddingTop`) || 0) + (peek$(ctx, `headerSize`) || 0);
+                const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
                 const scroll = scrollState - topPad;
 
                 const { lengths, positions } = refState.current!;
@@ -341,7 +339,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
 
                     if (numContainers !== prevNumContainers) {
-                        set$(ctx, `numContainers`, numContainers);
+                        set$(ctx, 'numContainers', numContainers);
                     }
 
                     // Update top positions of all containers
@@ -403,7 +401,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         // };
 
         useMemo(() => {
-            allocateContainers();
+            // Allocate containers
+            const scrollLength = refState.current!.scrollLength;
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
+            const numContainers =
+                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
+
+            for (let i = 0; i < numContainers; i++) {
+                set$(ctx, `containerIndex${i}`, -1);
+                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+            }
+
+            set$(ctx, 'numContainers', numContainers);
+
             calculateItemsInView();
 
             // Set an initial total height based on what we know
@@ -434,7 +444,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         };
 
-        useMemo(() => {
+        useEffect(() => {
             if (refState.current) {
                 refState.current.isEndReached = false;
             }
@@ -551,7 +561,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
-        React.useImperativeHandle(forwardedRef, () => {
+        useImperativeHandle(forwardedRef, () => {
             const scrollToIndex = ({ index, animated }: Parameters<LegendListRef['scrollToIndex']>[0]) => {
                 // naive implementation to search element by index
                 // TODO: create some accurate search algorithm
