@@ -363,15 +363,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
 
                     // if (startNoBuffer !== startNoBufferState || endNoBuffer !== endNoBufferState) {
-                    updateViewableItems(
-                        refState.current!,
-                        ctx,
-                        refState.current!.viewabilityConfigCallbackPairs,
-                        getId,
-                        scrollLength,
-                        startNoBuffer!,
-                        endNoBuffer!,
-                    );
+                    if (refState.current!.viewabilityConfigCallbackPairs) {
+                        updateViewableItems(
+                            refState.current!,
+                            ctx,
+                            refState.current!.viewabilityConfigCallbackPairs,
+                            getId,
+                            scrollLength,
+                            startNoBuffer!,
+                            endNoBuffer!,
+                        );
+                    }
                     // }
                 }
             });
