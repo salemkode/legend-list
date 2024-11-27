@@ -73,6 +73,7 @@ function updateViewableItemsWithConfig(
     ctx: StateContext,
     scrollSize: number,
 ) {
+    const { viewabilityConfig } = viewabilityConfigCallbackPair;
     const viewabilityState = mapViewabilityConfigCallbackPairs.get(viewabilityConfigCallbackPair)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
     // if (previousStart === start && previousEnd === end) {
@@ -82,7 +83,7 @@ function updateViewableItemsWithConfig(
     const changed: ViewToken[] = [];
     if (previousViewableItems) {
         for (const viewToken of previousViewableItems) {
-            if (viewToken.index! < start || viewToken.index! > end) {
+            if (!isViewable(state, ctx, viewabilityConfig, viewToken.key, scrollSize)) {
                 viewToken.isViewable = false;
                 changed.push(viewToken);
             }
@@ -95,7 +96,7 @@ function updateViewableItemsWithConfig(
         const item = data[i];
         if (item) {
             const key = getId(i);
-            if (isViewable(state, ctx, viewabilityConfigCallbackPair.viewabilityConfig, key, scrollSize)) {
+            if (isViewable(state, ctx, viewabilityConfig, key, scrollSize)) {
                 const viewToken: ViewToken = {
                     item,
                     key,
@@ -115,6 +116,7 @@ function updateViewableItemsWithConfig(
 
     if (changed.length > 0) {
         viewabilityConfigCallbackPair.onViewableItemsChanged?.({ viewableItems, changed });
+        viewabilityState.viewableItems = viewableItems;
     }
 }
 
