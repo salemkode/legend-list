@@ -1,9 +1,9 @@
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
 import { useScrollTest } from '@/constants/useScrollTest';
-import { LegendList, LegendListRef } from '@legendapp/list';
+import { LegendList, type LegendListRef } from '@legendapp/list';
 import { useRef, useState } from 'react';
-import { LogBox, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { Item, renderItem } from '../renderItem';
+import { LogBox, Platform, StyleSheet, View } from 'react-native';
+import { type Item, renderItem } from '../renderItem';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -57,14 +57,14 @@ export default function HomeScreen() {
                 ListHeaderComponentStyle={styles.listHeader}
                 viewabilityConfigCallbackPairs={[
                     {
-                        viewabilityConfig: { viewAreaCoveragePercentThreshold: 50 },
-                        onViewableItemsChanged: ({ viewableItems, changed }) => {
-                            console.log(
-                                'onViewableItems',
-                                viewableItems.map((v) => v.key),
-                            );
-                            // console.log('onViewableChanged', changed);
-                        },
+                        viewabilityConfig: { id: 'viewability', viewAreaCoveragePercentThreshold: 50 },
+                        // onViewableItemsChanged: ({ viewableItems, changed }) => {
+                        //     console.log(
+                        //         'onViewableItems',
+                        //         viewableItems.map((v) => v.key),
+                        //     );
+                        //     // console.log('onViewableChanged', changed);
+                        // },
                     },
                 ]}
 

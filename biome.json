@@ -29,7 +29,8 @@
             },
             "suspicious": {
                 "noArrayIndexKey": "off",
-                "noExplicitAny": "off"
+                "noExplicitAny": "off",
+                "noConfusingVoidType": "off"
             },
             "correctness": {
                 "noUnusedImports": "warn",

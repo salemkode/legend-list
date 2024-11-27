@@ -5,7 +5,7 @@ import { peek$, use$, useStateContext } from './state';
 
 interface InnerContainerProps {
     id: number;
-    getRenderedItem: (index: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
 }
@@ -18,14 +18,26 @@ function InnerContainer({ id, getRenderedItem, recycleItems, ItemSeparatorCompon
         return null;
     }
 
-    const renderedItem = getRenderedItem(itemIndex);
-
     return (
         <React.Fragment key={recycleItems ? undefined : itemIndex}>
-            {renderedItem}
+            <RenderedItem itemIndex={itemIndex} id={id} getRenderedItem={getRenderedItem} />
             {ItemSeparatorComponent && itemIndex < numItems - 1 && ItemSeparatorComponent}
         </React.Fragment>
     );
+}
+
+function RenderedItem({
+    itemIndex,
+    id,
+    getRenderedItem,
+}: {
+    itemIndex: number;
+    id: number;
+    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
+}) {
+    const renderedItem = getRenderedItem(itemIndex, id);
+
+    return renderedItem;
 }
 
 export const Container = ({

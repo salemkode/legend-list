@@ -22,7 +22,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     getEstimatedItemSize?: (index: number, item: T) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
-    renderItem?: (props: LegendListRenderItemInfo<T>) => ReactNode;
+    renderItem?: (props: LegendListRenderItemProps<T>) => ReactNode;
     onViewableRangeChanged?: (range: ViewableRange<T>) => void;
     ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
@@ -66,9 +66,12 @@ export interface ViewableRange<T> {
     items: T[];
 }
 
-export interface LegendListRenderItemInfo<ItemT> {
+export interface LegendListRenderItemProps<ItemT> {
     item: ItemT;
     index: number;
+    useViewability: (configId: string, callback: ViewabilityCallback) => void;
+    useRecyclingEffect: (effect: (info: LegendListRecyclingState<ItemT>) => void | (() => void)) => void;
+    useRecyclingState: <T>(updateState: (info: LegendListRecyclingState<ItemT>) => [T, React.Dispatch<T>]) => void;
 }
 
 export type LegendListRef = {
@@ -109,7 +112,7 @@ export interface ViewToken<ItemT = any> {
 
 export interface ViewabilityConfigCallbackPair {
     viewabilityConfig: ViewabilityConfig;
-    onViewableItemsChanged: OnViewableItemsChanged;
+    onViewableItemsChanged?: OnViewableItemsChanged;
 }
 
 export type ViewabilityConfigCallbackPairs = ViewabilityConfigCallbackPair[];
@@ -119,6 +122,11 @@ export type OnViewableItemsChanged =
     | null;
 
 export interface ViewabilityConfig {
+    /**
+     * A unique ID to identify this viewability config
+     */
+    id: string;
+
     /**
      * Minimum amount of time (in milliseconds) that an item must be physically viewable before the
      * viewability callback will be fired. A high number means that scrolling through content without
@@ -145,4 +153,13 @@ export interface ViewabilityConfig {
      * render.
      */
     waitForInteraction?: boolean | undefined;
+}
+
+export type ViewabilityCallback = (viewToken: ViewToken) => void;
+
+export interface LegendListRecyclingState<T> {
+    item: T;
+    prevItem: T | undefined;
+    index: number;
+    prevIndex: number | undefined;
 }

@@ -3,12 +3,13 @@ import type {
     InternalState,
     LegendListProps,
     ViewToken,
+    ViewabilityCallback,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
 } from './types';
 
-const mapViewabilityConfigCallbackPairs = new WeakMap<
-    ViewabilityConfigCallbackPair,
+const mapViewabilityConfigCallbackPairs = new Map<
+    string,
     {
         viewableItems: ViewToken[];
         start: number;
@@ -17,18 +18,18 @@ const mapViewabilityConfigCallbackPairs = new WeakMap<
         previousEnd: number;
     }
 >();
+const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
+
 export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
-    viewabilityConfigCallbackPairs =
-        viewabilityConfigCallbackPairs! ||
-        (onViewableItemsChanged && [
-            { viewabilityConfig: viewabilityConfig || { viewAreaCoveragePercentThreshold: 0 }, onViewableItemsChanged },
-        ]);
+    viewabilityConfigCallbackPairs = viewabilityConfigCallbackPairs! || [
+        { viewabilityConfig: viewabilityConfig || { viewAreaCoveragePercentThreshold: 0 }, onViewableItemsChanged },
+    ];
 
     if (viewabilityConfigCallbackPairs) {
         for (const pair of viewabilityConfigCallbackPairs) {
-            mapViewabilityConfigCallbackPairs.set(pair, {
+            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id, {
                 viewableItems: [],
                 start: -1,
                 end: -1,
@@ -50,7 +51,9 @@ export function updateViewableItems(
     end: number,
 ) {
     for (const viewabilityConfigCallbackPair of viewabilityConfigCallbackPairs) {
-        const viewabilityState = mapViewabilityConfigCallbackPairs.get(viewabilityConfigCallbackPair)!;
+        const viewabilityState = mapViewabilityConfigCallbackPairs.get(
+            viewabilityConfigCallbackPair.viewabilityConfig.id,
+        )!;
         viewabilityState.start = start;
         viewabilityState.end = end;
         if (viewabilityConfigCallbackPair.viewabilityConfig.minimumViewTime) {
@@ -73,8 +76,9 @@ function updateViewableItemsWithConfig(
     ctx: StateContext,
     scrollSize: number,
 ) {
-    const { viewabilityConfig } = viewabilityConfigCallbackPair;
-    const viewabilityState = mapViewabilityConfigCallbackPairs.get(viewabilityConfigCallbackPair)!;
+    const { viewabilityConfig, onViewableItemsChanged } = viewabilityConfigCallbackPair;
+    const configId = viewabilityConfig.id;
+    const viewabilityState = mapViewabilityConfigCallbackPairs.get(configId)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
     // if (previousStart === start && previousEnd === end) {
     //     // Already processed this, so skip it
@@ -103,7 +107,6 @@ function updateViewableItemsWithConfig(
                     index: i,
                     isViewable: true,
                 };
-
                 viewableItems.push(viewToken);
                 if (!previousViewableItems?.find((v) => v.key === viewToken.key)) {
                     changed.push(viewToken);
@@ -115,8 +118,17 @@ function updateViewableItemsWithConfig(
     Object.assign(viewabilityState, { viewableItems, previousStart: start, previousEnd: end });
 
     if (changed.length > 0) {
-        viewabilityConfigCallbackPair.onViewableItemsChanged?.({ viewableItems, changed });
+        console.log('changed', changed);
         viewabilityState.viewableItems = viewableItems;
+
+        for (let i = 0; i < changed.length; i++) {
+            const change = changed[i];
+            maybeUpdateViewabilityCallback(configId, change);
+        }
+
+        if (onViewableItemsChanged) {
+            onViewableItemsChanged({ viewableItems, changed });
+        }
     }
 }
 
@@ -144,4 +156,22 @@ function isViewable(
     const visibleHeight = Math.min(bottom, scrollSize) - Math.max(top, 0);
     const percent = 100 * (visibleHeight / (viewAreaMode ? scrollSize : size));
     return percent >= viewablePercentThreshold!;
+}
+
+function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) {
+    const key = viewToken.key + configId;
+
+    const cb = mapViewabilityCallbacks.get(key);
+
+    cb?.(viewToken);
+}
+
+export function registerViewabilityCallback(itemKey: string, configId: string, callback: ViewabilityCallback) {
+    const key = itemKey + configId;
+
+    mapViewabilityCallbacks.set(key, callback);
+
+    return () => {
+        mapViewabilityCallbacks.delete(key);
+    };
 }

@@ -1,23 +1,9 @@
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { MaterialIcons } from '@expo/vector-icons';
-
-import {
-    StyleSheet,
-    Text,
-    View,
-    Image,
-    TouchableOpacity,
-    Pressable,
-    UIManager,
-    Platform,
-    LayoutAnimation,
-} from 'react-native';
-import { useEffect, useState } from 'react';
+import type { LegendListRenderItemProps } from '@legendapp/list';
+import { useRef } from 'react';
+import { Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
-import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
-import Breathe from '@/components/Breathe';
-import { EMULATE_SLOW_RENDER } from '@/constants/constants';
-import { LegendListRenderItemInfo } from '@legendapp/list';
+import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 export interface Item {
     id: string;
@@ -48,11 +34,6 @@ export const randomNames = [
     'Reese Cooper',
     'Morgan Bailey',
 ];
-
-interface ItemCardProps {
-    item: Item;
-    index: number;
-}
 
 // Array of lorem ipsum sentences to randomly choose from
 export const loremSentences = [
@@ -113,14 +94,20 @@ const renderRightActions = () => {
     );
 };
 
-export const ItemCard = ({ item }: ItemCardProps) => {
-    let now = performance.now();
-    if (EMULATE_SLOW_RENDER) {
-        while (performance.now() - now < EMULATE_SLOW_RENDER) {
-            // Just wait
-        }
-    }
-    const [isExpanded, setIsExpanded] = useState(false);
+export const ItemCard = ({
+    item,
+    useRecyclingEffect,
+    useRecyclingState,
+    useViewability,
+}: LegendListRenderItemProps<Item>) => {
+    // const now = performance.now();
+    // if (EMULATE_SLOW_RENDER) {
+    //     while (performance.now() - now < EMULATE_SLOW_RENDER) {
+    //         // Just wait
+    //     }
+    // }
+    const refSwipeable = useRef<SwipeableMethods>();
+    const [isExpanded, setIsExpanded] = useRecyclingState(() => false);
 
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;
 
@@ -137,17 +124,28 @@ export const ItemCard = ({ item }: ItemCardProps) => {
     const authorName = randomNames[indexForData % randomNames.length];
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
 
+    useRecyclingEffect?.((info) => {
+        console.log('recycling', info);
+        refSwipeable?.current?.close();
+    });
+
+    useViewability?.('viewability', (viewToken) => {
+        console.log('viewable', viewToken.index, viewToken.isViewable);
+    });
+
     return (
         <View style={styles.itemOuterContainer}>
             <Swipeable
                 renderRightActions={renderRightActions}
                 overshootRight={true}
                 containerStyle={{ backgroundColor: '#4CAF50', borderRadius: 12 }}
+                ref={refSwipeable as any}
             >
                 <Pressable
-                    onPress={() => {
+                    onPress={(e) => {
                         //   LinearTransition.easing(Easing.ease);
 
+                        e.stopPropagation();
                         setIsExpanded(!isExpanded);
                     }}
                 >
@@ -198,7 +196,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
     );
 };
 
-export const renderItem = ({ item, index }: LegendListRenderItemInfo<Item>) => <ItemCard item={item} index={index} />;
+export const renderItem = ItemCard;
 
 const styles = StyleSheet.create({
     itemOuterContainer: {

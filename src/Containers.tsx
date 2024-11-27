@@ -8,7 +8,7 @@ interface ContainersProps {
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
     updateItemSize: (index: number, size: number) => void;
-    getRenderedItem: (index: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
 }
 
 export const Containers = React.memo(function Containers({

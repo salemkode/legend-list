@@ -20,7 +20,8 @@ export type ListenerType =
     | 'footerSize';
 
 export interface StateContext {
-    listeners: Map<ListenerType, () => void>;
+    hooks: Map<ListenerType, () => void>;
+    listeners: Map<ListenerType, Set<(value: any) => void>>;
     values: Map<ListenerType, any>;
 }
 
@@ -28,6 +29,7 @@ const ContextState = React.createContext<StateContext | null>(null);
 
 export function StateProvider({ children }: { children: React.ReactNode }) {
     const [value] = React.useState(() => ({
+        hooks: new Map(),
         listeners: new Map(),
         values: new Map(),
     }));
@@ -39,11 +41,23 @@ export function useStateContext() {
 }
 
 export function use$<T>(signalName: ListenerType): T {
-    const { listeners, values } = React.useContext(ContextState)!;
+    const { hooks, values } = React.useContext(ContextState)!;
     const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
-    listeners.set(signalName, forceUpdate);
+    hooks.set(signalName, forceUpdate);
 
     return values.get(signalName);
+}
+
+export function listen$<T>(ctx: StateContext, signalName: ListenerType, cb: (value: T) => void): () => void {
+    const { listeners } = ctx;
+    let setListeners = listeners.get(signalName);
+    if (!setListeners) {
+        setListeners = new Set();
+        listeners.set(signalName, setListeners);
+    }
+    setListeners!.add(cb);
+
+    return () => setListeners!.delete(cb);
 }
 
 export function peek$(ctx: StateContext, signalName: ListenerType) {
@@ -52,9 +66,15 @@ export function peek$(ctx: StateContext, signalName: ListenerType) {
 }
 
 export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
-    const { listeners, values } = ctx;
+    const { listeners, hooks, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
-        listeners.get(signalName)?.();
+        hooks.get(signalName)?.();
+        const setListeners = listeners.get(signalName);
+        if (setListeners) {
+            for (const listener of setListeners) {
+                listener(value);
+            }
+        }
     }
 }
