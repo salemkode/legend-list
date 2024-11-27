@@ -142,7 +142,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         // TODO: This needs to support horizontal and other ways of defining padding.
         set$(ctx, 'stylePaddingTop', styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
-        const addTotalSize = (add: number) => {
+        const addTotalSize = useCallback((add: number) => {
             const prev = refState.current!.totalSize;
             refState.current!.totalSize += add;
             const totalSize = refState.current!.totalSize;
@@ -161,7 +161,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             } else if (!refState.current!.animFrameTotalSize) {
                 refState.current!.animFrameTotalSize = requestAnimationFrame(doAdd);
             }
-        };
+        }, []);
 
         const getRenderedItem = useCallback(
             (index: number) => {
@@ -602,6 +602,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
+                addTotalSize={addTotalSize}
             />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
