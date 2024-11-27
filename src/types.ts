@@ -71,7 +71,7 @@ export interface LegendListRenderItemProps<ItemT> {
     index: number;
     useViewability: (configId: string, callback: ViewabilityCallback) => void;
     useRecyclingEffect: (effect: (info: LegendListRecyclingState<ItemT>) => void | (() => void)) => void;
-    useRecyclingState: <T>(updateState: (info: LegendListRecyclingState<ItemT>) => [T, React.Dispatch<T>]) => void;
+    useRecyclingState: <T>(updateState: (info: LegendListRecyclingState<ItemT>) => T) => [T, React.Dispatch<T>];
 }
 
 export type LegendListRef = {
