@@ -100,14 +100,20 @@ export const ItemCard = ({
     useRecyclingState,
     useViewability,
 }: LegendListRenderItemProps<Item>) => {
-    // const now = performance.now();
-    // if (EMULATE_SLOW_RENDER) {
-    //     while (performance.now() - now < EMULATE_SLOW_RENDER) {
-    //         // Just wait
-    //     }
-    // }
     const refSwipeable = useRef<SwipeableMethods>();
+
+    // A useState that resets when the item is recycled
     const [isExpanded, setIsExpanded] = useRecyclingState(() => false);
+
+    // A callback when the item is recycled
+    useRecyclingEffect(({ item, prevItem, index, prevIndex }) => {
+        refSwipeable?.current?.close();
+    });
+
+    // A callback when the item viewability (from viewabilityConfig) changes
+    useViewability('viewability', ({ item, isViewable, index }) => {
+        // console.log('viewable', viewToken.index, viewToken.isViewable);
+    });
 
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;
 
@@ -123,15 +129,6 @@ export const ItemCard = ({
     const avatarUrl = randomAvatars[indexForData % randomAvatars.length];
     const authorName = randomNames[indexForData % randomNames.length];
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
-
-    useRecyclingEffect?.((info) => {
-        console.log('recycling', info);
-        refSwipeable?.current?.close();
-    });
-
-    useViewability?.('viewability', (viewToken) => {
-        console.log('viewable', viewToken.index, viewToken.isViewable);
-    });
 
     return (
         <View style={styles.itemOuterContainer}>
