@@ -1,4 +1,5 @@
-import type * as React from 'react';
+// biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
+import * as React from 'react';
 import {
     type ForwardedRef,
     type ReactElement,

@@ -1,4 +1,3 @@
-import type {} from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
