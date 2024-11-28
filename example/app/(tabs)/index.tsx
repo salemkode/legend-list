@@ -2,7 +2,7 @@ import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } f
 import { useScrollTest } from '@/constants/useScrollTest';
 import { LegendList, type LegendListRef } from '@legendapp/list';
 import { useRef, useState } from 'react';
-import { LogBox, Platform, StyleSheet, View } from 'react-native';
+import { LogBox, Platform, StyleSheet, Text, View } from 'react-native';
 import { type Item, renderItem } from '../renderItem';
 
 LogBox.ignoreLogs(['Open debugger']);
@@ -55,6 +55,18 @@ export default function HomeScreen() {
                 }}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
+                ListEmptyComponentStyle={{ flex: 1 }}
+                ListEmptyComponent={
+                    <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Text>Empty</Text>
+                    </View>
+                }
                 viewabilityConfigCallbackPairs={[
                     {
                         viewabilityConfig: { id: 'viewability', viewAreaCoveragePercentThreshold: 50 },
@@ -73,6 +85,7 @@ export default function HomeScreen() {
                 // inverted
                 // horizontal
             />
+            //{' '}
         </View>
     );
 }
@@ -104,5 +117,6 @@ const styles = StyleSheet.create({
     listContainer: {
         // paddingHorizontal: 16,
         paddingTop: 48,
+        flexGrow: 1,
     },
 });
