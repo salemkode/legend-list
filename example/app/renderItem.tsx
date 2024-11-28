@@ -99,6 +99,7 @@ export const ItemCard = ({
     useRecyclingEffect,
     useRecyclingState,
     useViewability,
+    useViewabilityAmount,
 }: LegendListRenderItemProps<Item>) => {
     const refSwipeable = useRef<SwipeableMethods>();
 
@@ -113,6 +114,10 @@ export const ItemCard = ({
     // A callback when the item viewability (from viewabilityConfig) changes
     useViewability('viewability', ({ item, isViewable, index }) => {
         // console.log('viewable', viewToken.index, viewToken.isViewable);
+    });
+
+    useViewabilityAmount(({ index, sizeVisible, percentVisible }) => {
+        // console.log('viewable', index, percentVisible, sizeVisible);
     });
 
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;

@@ -69,6 +69,7 @@ export interface LegendListRenderItemProps<ItemT> {
     item: ItemT;
     index: number;
     useViewability: (configId: string, callback: ViewabilityCallback) => void;
+    useViewabilityAmount: (callback: ViewabilityAmountCallback) => void;
     useRecyclingEffect: (effect: (info: LegendListRecyclingState<ItemT>) => void | (() => void)) => void;
     useRecyclingState: <T>(updateState: (info: LegendListRecyclingState<ItemT>) => T) => [T, React.Dispatch<T>];
 }
@@ -107,6 +108,11 @@ export interface ViewToken<ItemT = any> {
     key: string;
     index: number;
     isViewable: boolean;
+}
+
+export interface ViewAmountToken<ItemT = any> extends ViewToken<ItemT> {
+    sizeVisible: number;
+    percentVisible: number;
 }
 
 export interface ViewabilityConfigCallbackPair {
@@ -155,6 +161,7 @@ export interface ViewabilityConfig {
 }
 
 export type ViewabilityCallback = (viewToken: ViewToken) => void;
+export type ViewabilityAmountCallback = (viewToken: ViewAmountToken) => void;
 
 export interface LegendListRecyclingState<T> {
     item: T;
