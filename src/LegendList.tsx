@@ -60,6 +60,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             getEstimatedItemSize,
             onEndReached,
             onViewableRangeChanged,
+            ListEmptyComponent,
             ...rest
         } = props;
 
@@ -658,6 +659,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
                 addTotalSize={addTotalSize}
+                ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
             />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
