@@ -27,6 +27,8 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
+    ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    ListEmptyComponentStyle?: StyleProp<ViewStyle> | undefined;
     ItemSeparatorComponent?: React.ComponentType<any>;
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;

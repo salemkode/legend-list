@@ -55,6 +55,8 @@ export const ListComponent = React.memo(function ListComponent({
     ListHeaderComponentStyle,
     ListFooterComponent,
     ListFooterComponentStyle,
+    ListEmptyComponent,
+    ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
     addTotalSize,
@@ -102,6 +104,12 @@ export const ListComponent = React.memo(function ListComponent({
                     }}
                 >
                     {getComponent(ListHeaderComponent)}
+                </View>
+            )}
+            {ListEmptyComponent && (
+                <View 
+                    style={ListEmptyComponentStyle}>
+                    {getComponent(ListEmptyComponent)}
                 </View>
             )}
 
