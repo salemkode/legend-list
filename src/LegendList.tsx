@@ -221,7 +221,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     useRecyclingEffect((state) => {
                         const newState = updateState(state);
-                        console.log('setting state', newState);
                         stateInfo[1](newState);
                     });
 

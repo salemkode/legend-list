@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import type { LegendListRenderItemProps } from '@legendapp/list';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
     Animated,
     Image,
@@ -114,7 +114,7 @@ export const ItemCard = ({
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled
-    const [isExpanded, setIsExpanded] = useRecyclingState(() => false);
+    const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
 
     // A callback when the item is recycled
     useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
@@ -212,7 +212,7 @@ export const ItemCard = ({
     );
 };
 
-export const renderItem = ItemCard;
+export const renderItem = (props: LegendListRenderItemProps<Item>) => <ItemCard {...props} />;
 
 const styles = StyleSheet.create({
     itemOuterContainer: {
