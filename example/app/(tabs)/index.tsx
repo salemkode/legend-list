@@ -64,7 +64,7 @@ export default function HomeScreen() {
                             alignItems: 'center',
                         }}
                     >
-                        <Text>Empty</Text>
+                        <Text style={{ color: 'white' }}>Empty</Text>
                     </View>
                 }
                 viewabilityConfigCallbackPairs={[
@@ -85,7 +85,6 @@ export default function HomeScreen() {
                 // inverted
                 // horizontal
             />
-            //{' '}
         </View>
     );
 }
