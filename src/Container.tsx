@@ -51,7 +51,7 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    getRenderedItem: (index: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
     onLayout: (index: number, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
