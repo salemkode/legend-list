@@ -30,11 +30,6 @@ export default function HomeScreen() {
             });
         });
     }
-    //   useEffect(() => {
-    //     let num = 0;
-    //     const interval = setInterval(() => {
-    //     }, 2000);
-    //   }, []);
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
