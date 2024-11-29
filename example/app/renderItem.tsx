@@ -1,7 +1,17 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import type { LegendListRenderItemProps } from '@legendapp/list';
 import { useRef } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from 'react-native';
+import {
+    Animated,
+    Image,
+    Platform,
+    Pressable,
+    StyleSheet,
+    Text,
+    UIManager,
+    View,
+    useAnimatedValue,
+} from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
@@ -107,17 +117,21 @@ export const ItemCard = ({
     const [isExpanded, setIsExpanded] = useRecyclingState(() => false);
 
     // A callback when the item is recycled
-    useRecyclingEffect(({ item, prevItem, index, prevIndex }) => {
+    useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
         refSwipeable?.current?.close();
     });
 
     // A callback when the item viewability (from viewabilityConfig) changes
-    useViewability('viewability', ({ item, isViewable, index }) => {
+    useViewability?.('viewability', ({ item, isViewable, index }) => {
         // console.log('viewable', viewToken.index, viewToken.isViewable);
     });
 
-    useViewabilityAmount(({ index, sizeVisible, percentVisible }) => {
-        // console.log('viewable', index, percentVisible, sizeVisible);
+    // @ts-ignore
+    const opacity = useViewabilityAmount ? useAnimatedValue(0) : 1;
+    useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
+        // @ts-ignore
+        opacity.setValue(Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5);
+        // console.log('viewable', sizeVisible, size, percentOfScroller);
     });
 
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;
@@ -136,7 +150,7 @@ export const ItemCard = ({
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
 
     return (
-        <View style={styles.itemOuterContainer}>
+        <Animated.View style={{ ...styles.itemOuterContainer, opacity }}>
             <Swipeable
                 renderRightActions={renderRightActions}
                 overshootRight={true}
@@ -194,7 +208,7 @@ export const ItemCard = ({
                     {/* <Breathe /> */}
                 </Pressable>
             </Swipeable>
-        </View>
+        </Animated.View>
     );
 };
 

@@ -112,7 +112,11 @@ export interface ViewToken<ItemT = any> {
 
 export interface ViewAmountToken<ItemT = any> extends ViewToken<ItemT> {
     sizeVisible: number;
+    size: number;
     percentVisible: number;
+    percentOfScroller: number;
+    position: number;
+    scrollSize: number;
 }
 
 export interface ViewabilityConfigCallbackPair {

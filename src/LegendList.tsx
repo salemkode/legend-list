@@ -177,13 +177,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return null;
                 }
 
-                const itemKey = getId(index);
-
                 const useViewability = (configId: string, callback: ViewabilityCallback) => {
-                    useEffect(() => registerViewabilityCallback(itemKey, configId, callback), []);
+                    useEffect(() => registerViewabilityCallback(containerIndex, configId, callback), []);
                 };
                 const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
-                    useEffect(() => registerViewabilityAmountCallback(itemKey, callback), []);
+                    useEffect(() => registerViewabilityAmountCallback(containerIndex, callback), []);
                 };
                 const useRecyclingEffect = (effect: (info: LegendListRecyclingState<T>) => void | (() => void)) => {
                     useEffect(() => {

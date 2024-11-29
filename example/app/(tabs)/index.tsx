@@ -37,7 +37,7 @@ export default function HomeScreen() {
     //   }, []);
 
     return (
-        <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
+        <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
                 ref={listRef}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}

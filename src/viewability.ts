@@ -20,7 +20,7 @@ const mapViewabilityConfigCallbackPairs = new Map<
     }
 >();
 const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
-const mapViewabilityAmountCallbacks = new Map<string, ViewabilityAmountCallback>();
+const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
 
 export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
@@ -154,26 +154,44 @@ function isViewable(
     const bottom = top + size;
     const isEntirelyVisible = top >= 0 && bottom <= scrollSize && bottom > top;
 
-    const visibleHeight = isEntirelyVisible ? size : Math.min(bottom, scrollSize) - Math.max(top, 0);
-    const percentVisible = isEntirelyVisible ? 100 : 100 * (visibleHeight / size);
-    const percent = isEntirelyVisible ? 100 : 100 * (visibleHeight / (viewAreaMode ? scrollSize : size));
+    const sizeVisible = isEntirelyVisible ? size : Math.min(bottom, scrollSize) - Math.max(top, 0);
+    const percentVisible = size ? (isEntirelyVisible ? 100 : 100 * (sizeVisible / size)) : 0;
+    const percentOfScroller = size ? 100 * (sizeVisible / scrollSize) : 0;
+    const percent = isEntirelyVisible ? 100 : viewAreaMode ? percentOfScroller : percentVisible;
 
     const isViewable = percent >= viewablePercentThreshold!;
 
     // TODO: This would run for each viewabilityConfig, maybe move it elsewhere?
-    const cb = mapViewabilityAmountCallbacks.get(key);
+    const containerId = findContainerId(state, ctx, index);
+    const cb = mapViewabilityAmountCallbacks.get(containerId);
+    // containerViewabilityAmounts;
     if (cb) {
         cb({
             index,
             isViewable,
             item,
             key,
-            percentVisible: percentVisible,
-            sizeVisible: visibleHeight,
+            percentVisible,
+            percentOfScroller,
+            sizeVisible,
+            size,
+            position: top,
+            scrollSize,
         });
     }
 
     return isViewable!;
+}
+
+function findContainerId(state: InternalState, ctx: StateContext, index: number) {
+    const numContainers = peek$(ctx, 'numContainers');
+    for (let i = 0; i < numContainers; i++) {
+        const itemIndex = peek$(ctx, `containerIndex${i}`);
+        if (itemIndex === index) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) {
@@ -184,8 +202,8 @@ function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) 
     cb?.(viewToken);
 }
 
-export function registerViewabilityCallback(itemKey: string, configId: string, callback: ViewabilityCallback) {
-    const key = itemKey + configId;
+export function registerViewabilityCallback(containerId: number, configId: string, callback: ViewabilityCallback) {
+    const key = containerId + configId;
 
     mapViewabilityCallbacks.set(key, callback);
 
@@ -194,10 +212,10 @@ export function registerViewabilityCallback(itemKey: string, configId: string, c
     };
 }
 
-export function registerViewabilityAmountCallback(itemKey: string, callback: ViewabilityAmountCallback) {
-    mapViewabilityAmountCallbacks.set(itemKey, callback);
+export function registerViewabilityAmountCallback(containerId: number, callback: ViewabilityAmountCallback) {
+    mapViewabilityAmountCallbacks.set(containerId, callback);
 
     return () => {
-        mapViewabilityAmountCallbacks.delete(itemKey);
+        mapViewabilityAmountCallbacks.delete(containerId);
     };
 }
