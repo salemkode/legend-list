@@ -421,19 +421,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                     }
-                    }
+                }
 
-                    if (refState.current!.viewabilityConfigCallbackPairs) {
-                        updateViewableItems(
-                            refState.current!,
-                            ctx,
-                            refState.current!.viewabilityConfigCallbackPairs,
-                            getId,
-                            scrollLength,
-                            startNoBuffer!,
-                            endNoBuffer!,
-                        );
-                    }
+                if (refState.current!.viewabilityConfigCallbackPairs) {
+                    updateViewableItems(
+                        refState.current!,
+                        ctx,
+                        refState.current!.viewabilityConfigCallbackPairs,
+                        getId,
+                        scrollLength,
+                        startNoBuffer!,
+                        endNoBuffer!,
+                    );
+                }
             });
         }, []);
 
@@ -504,6 +504,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (refState.current) {
                 refState.current.isEndReached = false;
             }
+            const numContainers = peek$(ctx, 'numContainers');
+            if (data.length < numContainers) {
+                for (let i = 0; i < numContainers; i++) {
+                    const itemIndex = peek$(ctx, `containerIndex${i}`);
+                    if (itemIndex >= data.length) {
+                        set$(ctx, `containerIndex${i}`, -1);
+                    }
+                }
+            }
+
             calculateItemsInView();
             checkAtBottom();
         }, [data]);
