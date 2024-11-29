@@ -25,6 +25,8 @@ import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from './types';
 import type { InternalState, LegendListProps } from './types';
 import {
+    mapViewabilityAmountValues,
+    mapViewabilityValues,
     registerViewabilityAmountCallback,
     registerViewabilityCallback,
     setupViewability,
@@ -178,9 +180,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
 
                 const useViewability = (configId: string, callback: ViewabilityCallback) => {
+                    useMemo(() => {
+                        const value = mapViewabilityValues.get(containerIndex + configId);
+                        if (value) {
+                            callback(value);
+                        }
+                    }, []);
                     useEffect(() => registerViewabilityCallback(containerIndex, configId, callback), []);
                 };
                 const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
+                    useMemo(() => {
+                        const value = mapViewabilityAmountValues.get(containerIndex);
+                        if (value) {
+                            callback(value);
+                        }
+                    }, []);
                     useEffect(() => registerViewabilityAmountCallback(containerIndex, callback), []);
                 };
                 const useRecyclingEffect = (effect: (info: LegendListRecyclingState<T>) => void | (() => void)) => {

@@ -2,6 +2,7 @@ import { type StateContext, peek$ } from './state';
 import type {
     InternalState,
     LegendListProps,
+    ViewAmountToken,
     ViewToken,
     ViewabilityAmountCallback,
     ViewabilityCallback,
@@ -20,7 +21,9 @@ const mapViewabilityConfigCallbackPairs = new Map<
     }
 >();
 const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
+export const mapViewabilityValues = new Map<string, ViewToken>();
 const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
+export const mapViewabilityAmountValues = new Map<number, ViewAmountToken>();
 
 export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
@@ -163,21 +166,22 @@ function isViewable(
 
     // TODO: This would run for each viewabilityConfig, maybe move it elsewhere?
     const containerId = findContainerId(state, ctx, index);
+    const value: ViewAmountToken = {
+        index,
+        isViewable,
+        item,
+        key,
+        percentVisible,
+        percentOfScroller,
+        sizeVisible,
+        size,
+        position: top,
+        scrollSize,
+    };
+    mapViewabilityAmountValues.set(containerId, value);
     const cb = mapViewabilityAmountCallbacks.get(containerId);
-    // containerViewabilityAmounts;
     if (cb) {
-        cb({
-            index,
-            isViewable,
-            item,
-            key,
-            percentVisible,
-            percentOfScroller,
-            sizeVisible,
-            size,
-            position: top,
-            scrollSize,
-        });
+        cb(value);
     }
 
     return isViewable!;
@@ -196,6 +200,8 @@ function findContainerId(state: InternalState, ctx: StateContext, index: number)
 
 function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) {
     const key = viewToken.key + configId;
+
+    mapViewabilityValues.set(key, viewToken);
 
     const cb = mapViewabilityCallbacks.get(key);
 
