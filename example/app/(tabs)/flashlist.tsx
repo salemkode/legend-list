@@ -1,7 +1,7 @@
 import renderItem from '@/app/renderItem';
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
 import { useScrollTest } from '@/constants/useScrollTest';
-import { FlashList, ListRenderItemInfo } from '@shopify/flash-list';
+import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { Fragment, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -37,7 +37,7 @@ export default function HomeScreen() {
     }
 
     return (
-        <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
+        <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="flashlist">
             <FlashList
                 // style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 data={data}

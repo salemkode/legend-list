@@ -1,4 +1,5 @@
-import type * as React from 'react';
+// biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
+import * as React from 'react';
 import {
     type ForwardedRef,
     type ReactElement,
@@ -21,9 +22,14 @@ import {
 } from 'react-native';
 import { ListComponent } from './ListComponent';
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from './state';
-import type { LegendListRecyclingState, LegendListRef, ViewabilityCallback } from './types';
+import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from './types';
 import type { InternalState, LegendListProps } from './types';
-import { registerViewabilityCallback, setupViewability, updateViewableItems } from './viewability';
+import {
+    registerViewabilityAmountCallback,
+    registerViewabilityCallback,
+    setupViewability,
+    updateViewableItems,
+} from './viewability';
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -172,10 +178,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return null;
                 }
 
-                const itemKey = getId(index);
-
                 const useViewability = (configId: string, callback: ViewabilityCallback) => {
-                    useEffect(() => registerViewabilityCallback(itemKey, configId, callback), []);
+                    useEffect(() => registerViewabilityCallback(containerIndex, configId, callback), []);
+                };
+                const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
+                    useEffect(() => registerViewabilityAmountCallback(containerIndex, callback), []);
                 };
                 const useRecyclingEffect = (effect: (info: LegendListRecyclingState<T>) => void | (() => void)) => {
                     useEffect(() => {
@@ -215,7 +222,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     useRecyclingEffect((state) => {
                         const newState = updateState(state);
-                        console.log('setting state', newState);
                         stateInfo[1](newState);
                     });
 
@@ -226,6 +232,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     item: data[index],
                     index,
                     useViewability,
+                    useViewabilityAmount,
                     useRecyclingEffect,
                     useRecyclingState,
                 });
