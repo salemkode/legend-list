@@ -65,7 +65,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             estimatedItemSize,
             getEstimatedItemSize,
             onEndReached,
-            onViewableRangeChanged,
             ListEmptyComponent,
             ...rest
         } = props;
@@ -378,6 +377,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                                 numContainers++;
                                 set$(ctx, `containerIndex${containerId}`, i);
+
+                                // TODO: This may not be necessary as it'll get st in the next loop?
                                 set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
                             }
                         }
@@ -406,26 +407,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                     }
-
-                    // TODO: Add the more complex onViewableItemsChanged
-                    if (onViewableRangeChanged) {
-                        if (
-                            startNoBuffer !== startNoBufferState ||
-                            startBuffered !== startBufferedState ||
-                            endNoBuffer !== endNoBufferState ||
-                            endBuffered !== endBufferedState
-                        ) {
-                            onViewableRangeChanged({
-                                start: startNoBuffer!,
-                                startBuffered,
-                                end: endNoBuffer!,
-                                endBuffered,
-                                items: data.slice(startNoBuffer!, endNoBuffer! + 1),
-                            });
-                        }
                     }
 
-                    // if (startNoBuffer !== startNoBufferState || endNoBuffer !== endNoBufferState) {
                     if (refState.current!.viewabilityConfigCallbackPairs) {
                         updateViewableItems(
                             refState.current!,
@@ -437,10 +420,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             endNoBuffer!,
                         );
                     }
-                    // }
-                }
             });
-        }, [data]);
+        }, []);
 
         // const adjustTopPad = (diff: number) => {
         //     // TODO: Experimental, find a better way to do this.

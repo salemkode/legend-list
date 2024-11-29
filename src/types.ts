@@ -22,7 +22,6 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
     renderItem?: (props: LegendListRenderItemProps<T>) => ReactNode;
-    onViewableRangeChanged?: (range: ViewableRange<T>) => void;
     ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;

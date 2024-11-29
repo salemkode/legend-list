@@ -48,7 +48,6 @@ interface PropsOptional {
     maintainScrollAtEndThreshold?: number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
-    onViewableRangeChanged?: (range: ViewableRange<T>) => void;
 }
 ```
 
