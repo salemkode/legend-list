@@ -80,7 +80,6 @@ export default function HomeScreen() {
                 // inverted
                 // horizontal
             />
-            //{' '}
         </View>
     );
 }
