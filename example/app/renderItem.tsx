@@ -132,7 +132,7 @@ export const ItemCard = ({
     const opacity = useViewabilityAmount ? useAnimatedValue(0) : 1;
     useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
         // @ts-ignore
-        opacity.setValue(Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5);
+        opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
         // console.log('viewable', sizeVisible, size, percentOfScroller);
     });
 
@@ -161,23 +161,21 @@ export const ItemCard = ({
                     keyExtractor={(item) => item.text}
                     data={[
                         {
-                            id: '1',
-                            text: 'List Item 1',
+                            id: "1",
+                            text: "List Item 1",
                         },
                         {
-                            id: '2',
-                            text: 'List Item 2',
+                            id: "2",
+                            text: "List Item 2",
                         },
                         {
-                            id: '3',
-                            text: 'List Item 3',
+                            id: "3",
+                            text: "List Item 3",
                         },
                     ]}
                     ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
                     renderItem={({ item }) => (
-                        <View
-                            style={styles.nestedListItem}
-                        >
+                        <View style={styles.nestedListItem}>
                             <Text>{item.text}</Text>
                         </View>
                     )}

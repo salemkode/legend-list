@@ -539,6 +539,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             const sizes = refState.current?.sizes!;
             const id = getId(index);
+            // TODO: I don't love this, can do it better?
             const wasInFirstRender = refState.current?.idsInFirstRender.has(id);
 
             const prevSize = sizes.get(id) || (wasInFirstRender ? getItemSize(index, data[index]) : 0);
