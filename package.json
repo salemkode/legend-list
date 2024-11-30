@@ -17,10 +17,10 @@
     "scripts": {
         "build": "tsup && bun run posttsup.ts",
         "publish:manual": "npm run build && cd dist && npm publish",
-        "lint": "npx biome check ./src && npx biome format ./src && yarn lint:example",
-        "lint:example": "npx biome check ./example/src && npx biome format ./example/src",
-        "lint:fix": "npx biome lint --write ./src && npx biome format --write ./src && npx biome check --write ./src && yarn lint:fix:example",
-        "lint:fix:example": "npx biome lint --write ./example/src && npx biome format --write ./example/src && npx biome check --write ./example/src"
+        "lint": "npx biome check ./src && npx biome format ./src && bun run lint:example",
+        "lint:example": "npx biome check ./example/app && npx biome format ./example/app",
+        "lint:fix": "npx biome lint --write ./src && npx biome format --write ./src && npx biome check --write ./src && bun run lint:fix:example",
+        "lint:fix:example": "npx biome lint --write ./example/app && npx biome format --write ./example/app && npx biome check --write ./example/app"
     },
     "peerDependencies": {
         "react": "*",
@@ -30,7 +30,6 @@
         "@biomejs/biome": "^1.9.4",
         "@types/bun": "^1.1.13",
         "@types/react": "^18.3.12",
-        "prettier": "3.3.3",
         "react": "^18.3.1",
         "react-native": "^0.76.2",
         "tsup": "^8.3.5",
