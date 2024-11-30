@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import type { LegendListRenderItemProps } from "@legendapp/list";
+import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { useRef, useState } from "react";
 import {
     Animated,
@@ -18,6 +18,7 @@ import Swipeable, { type SwipeableMethods } from "react-native-gesture-handler/R
 export interface Item {
     id: string;
 }
+const demoNestedList = false;
 
 // Generate random metadata
 const randomAvatars = Array.from({ length: 20 }, (_, i) => `https://i.pravatar.cc/150?img=${i + 1}`);
@@ -106,6 +107,7 @@ const renderRightActions = () => {
 
 export const ItemCard = ({
     item,
+    index,
     useRecyclingEffect,
     useRecyclingState,
     useViewability,
@@ -149,6 +151,40 @@ export const ItemCard = ({
     const authorName = randomNames[indexForData % randomNames.length];
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
 
+    if (index === 1 && demoNestedList) {
+        return (
+            <Animated.View style={[styles.nestedListContainer, { opacity }]}>
+                <LegendList
+                    showsHorizontalScrollIndicator={false}
+                    horizontal
+                    estimatedItemSize={400}
+                    keyExtractor={(item) => item.text}
+                    data={[
+                        {
+                            id: '1',
+                            text: 'List Item 1',
+                        },
+                        {
+                            id: '2',
+                            text: 'List Item 2',
+                        },
+                        {
+                            id: '3',
+                            text: 'List Item 3',
+                        },
+                    ]}
+                    ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                    renderItem={({ item }) => (
+                        <View
+                            style={styles.nestedListItem}
+                        >
+                            <Text>{item.text}</Text>
+                        </View>
+                    )}
+                />
+            </Animated.View>
+        );
+    }
     return (
         <Animated.View style={{ ...styles.itemOuterContainer, opacity }}>
             <Swipeable
@@ -215,6 +251,18 @@ export const ItemCard = ({
 export const renderItem = (props: LegendListRenderItemProps<Item>) => <ItemCard {...props} />;
 
 const styles = StyleSheet.create({
+    nestedListContainer: {
+        paddingVertical: 8,
+        paddingHorizontal: 8,
+        height: 200,
+    },
+    nestedListItem: {
+        backgroundColor: "white",
+        height: 200,
+        width: 200,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     itemOuterContainer: {
         paddingVertical: 8,
         paddingHorizontal: 8,
