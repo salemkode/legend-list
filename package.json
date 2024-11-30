@@ -16,11 +16,11 @@
     },
     "scripts": {
         "build": "tsup && bun run posttsup.ts",
-        "publish:manual": "npm run build && cd dist && npm publish",
-        "lint": "npx biome check ./src && npx biome format ./src && bun run lint:example",
-        "lint:example": "npx biome check ./example/app && npx biome format ./example/app",
-        "lint:fix": "npx biome lint --write ./src && npx biome format --write ./src && npx biome check --write ./src && bun run lint:fix:example",
-        "lint:fix:example": "npx biome lint --write ./example/app && npx biome format --write ./example/app && npx biome check --write ./example/app"
+        "publish:manual": "bun run build && cd dist && npm publish",
+        "lint": "bunx biome check ./src && bunx biome format ./src && bun run lint:example",
+        "lint:example": "bunx biome check ./example/app && bunx biome format ./example/app",
+        "lint:fix": "bunx biome lint --write ./src && bunx biome format --write ./src && bunx biome check --write ./src && bun run lint:fix:example",
+        "lint:fix:example": "bunx biome lint --write ./example/app && bunx biome format --write ./example/app && bunx biome check --write ./example/app"
     },
     "peerDependencies": {
         "react": "*",
