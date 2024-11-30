@@ -612,9 +612,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current!.scrollLength = scrollLength;
 
             if (__DEV__) {
-                if (scrollLength === 0) {
+                const isWidthZero = event.nativeEvent.layout.width === 0;
+                const isHeightZero = event.nativeEvent.layout.height === 0;
+                if (isWidthZero || isHeightZero) {
                     console.warn(
-                        `[legend-list] List ${horizontal ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because list children are absolutely positioned.`,
+                        `[legend-list] List ${isWidthZero ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
                     );
                 }
             }
