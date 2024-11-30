@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
 // This is an implementation of a simple state management system, inspired by Legend State.
 // It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
@@ -23,6 +24,10 @@ export interface StateContext {
     hooks: Map<ListenerType, () => void>;
     listeners: Map<ListenerType, Set<(value: any) => void>>;
     values: Map<ListenerType, any>;
+    mapViewabilityCallbacks: Map<string, ViewabilityCallback>;
+    mapViewabilityValues: Map<string, ViewToken>;
+    mapViewabilityAmountCallbacks: Map<number, ViewabilityAmountCallback>;
+    mapViewabilityAmountValues: Map<number, ViewAmountToken>;
 }
 
 const ContextState = React.createContext<StateContext | null>(null);
@@ -32,6 +37,10 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
         hooks: new Map(),
         listeners: new Map(),
         values: new Map(),
+        mapViewabilityCallbacks: new Map<string, ViewabilityCallback>(),
+        mapViewabilityValues: new Map<string, ViewToken>(),
+        mapViewabilityAmountCallbacks: new Map<number, ViewabilityAmountCallback>(),
+        mapViewabilityAmountValues: new Map<number, ViewAmountToken>(),
     }));
     return <ContextState.Provider value={value}>{children}</ContextState.Provider>;
 }
