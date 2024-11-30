@@ -20,9 +20,9 @@ const mapViewabilityConfigCallbackPairs = new Map<
         previousEnd: number;
     }
 >();
-const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
+export const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
 export const mapViewabilityValues = new Map<string, ViewToken>();
-const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
+export const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
 export const mapViewabilityAmountValues = new Map<number, ViewAmountToken>();
 
 export function setupViewability(props: LegendListProps<any>) {
@@ -206,22 +206,4 @@ function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) 
     const cb = mapViewabilityCallbacks.get(key);
 
     cb?.(viewToken);
-}
-
-export function registerViewabilityCallback(containerId: number, configId: string, callback: ViewabilityCallback) {
-    const key = containerId + configId;
-
-    mapViewabilityCallbacks.set(key, callback);
-
-    return () => {
-        mapViewabilityCallbacks.delete(key);
-    };
-}
-
-export function registerViewabilityAmountCallback(containerId: number, callback: ViewabilityAmountCallback) {
-    mapViewabilityAmountCallbacks.set(containerId, callback);
-
-    return () => {
-        mapViewabilityAmountCallbacks.delete(containerId);
-    };
 }

@@ -56,6 +56,7 @@ export interface InternalState {
     totalSize: number;
     timeouts: Set<number>;
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs;
+    renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
 }
 
 export interface ViewableRange<T> {
