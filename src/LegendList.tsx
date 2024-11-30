@@ -37,7 +37,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Le
                 <LegendListInner {...props} ref={forwardedRef} />
             </StateProvider>
         );
-    }) as any;
+    }) as never;
 
 const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
@@ -126,7 +126,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 isEndReached: false,
                 isAtBottom: false,
                 data: data,
-                idsInFirstRender: undefined as any,
+                idsInFirstRender: undefined as never,
                 hasScrolled: false,
                 scrollLength: Dimensions.get("window")[horizontal ? "width" : "height"],
                 startBuffered: 0,
@@ -136,10 +136,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scroll: initialContentOffset || 0,
                 totalSize: 0,
                 timeouts: new Set(),
-                viewabilityConfigCallbackPairs: undefined as any,
-                renderItem: undefined as any,
+                viewabilityConfigCallbackPairs: undefined as never,
+                renderItem: undefined as never,
             };
-            refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
+            refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
         }
         refState.current.data = data;
         refState.current.renderItem = renderItem!;
@@ -210,7 +210,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     [],
                 );
             };
-            const useRecyclingEffect = (effect: (info: LegendListRecyclingState<any>) => void | (() => void)) => {
+            const useRecyclingEffect = (effect: (info: LegendListRecyclingState<unknown>) => void | (() => void)) => {
                 useEffect(() => {
                     const state = refState.current!;
                     let prevIndex = index;
@@ -237,7 +237,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     });
                 }, []);
             };
-            const useRecyclingState = (updateState: (info: LegendListRecyclingState<any>) => any) => {
+            const useRecyclingState = (updateState: (info: LegendListRecyclingState<unknown>) => any) => {
                 const stateInfo = useState(() =>
                     updateState({
                         index,
@@ -275,10 +275,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     data,
                     scrollLength,
                     scroll: scrollState,
-                    startNoBuffer: startNoBufferState,
                     startBuffered: startBufferedState,
-                    endNoBuffer: endNoBufferState,
-                    endBuffered: endBufferedState,
                 } = refState.current!;
                 if (!data) {
                     return;
@@ -485,7 +482,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             calculateItemsInView();
 
             // Set an initial total height based on what we know
-            const sizes = refState.current?.sizes!;
+            const sizes = refState.current!.sizes!;
             let totalSize = 0;
             for (let i = 0; i < data.length; i++) {
                 const id = getId(i);
@@ -537,7 +534,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
-            const sizes = refState.current?.sizes!;
+            const sizes = refState.current!.sizes!;
             const id = getId(index);
             // TODO: I don't love this, can do it better?
             const wasInFirstRender = refState.current?.idsInFirstRender.has(id);
