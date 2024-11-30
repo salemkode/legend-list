@@ -607,14 +607,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
-            if (event.nativeEvent.layout.height === 0) {
-                if (__DEV__) {
-                    console.warn("[legend-list] Layout height is 0. You might be missing height style for your nested list.");
-                }
-            }
-
             const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
             refState.current!.scrollLength = scrollLength;
+
+            if (__DEV__) {
+                if (scrollLength === 0) {
+                    console.warn(
+                        `[legend-list] List ${horizontal ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because list children are absolutely positioned.`,
+                    );
+                }
+            }
         }, []);
 
         const handleScroll = useCallback(
