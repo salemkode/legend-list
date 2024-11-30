@@ -1,4 +1,4 @@
-import { type StateContext, peek$ } from './state';
+import { type StateContext, peek$ } from "./state";
 import type {
     InternalState,
     LegendListProps,
@@ -8,7 +8,7 @@ import type {
     ViewabilityCallback,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
-} from './types';
+} from "./types";
 
 const mapViewabilityConfigCallbackPairs = new Map<
     string,
@@ -29,7 +29,12 @@ export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
     viewabilityConfigCallbackPairs = viewabilityConfigCallbackPairs! || [
-        { viewabilityConfig: viewabilityConfig || { viewAreaCoveragePercentThreshold: 0 }, onViewableItemsChanged },
+        {
+            viewabilityConfig: viewabilityConfig || {
+                viewAreaCoveragePercentThreshold: 0,
+            },
+            onViewableItemsChanged,
+        },
     ];
 
     if (viewabilityConfigCallbackPairs) {
@@ -122,7 +127,11 @@ function updateViewableItemsWithConfig(
         }
     }
 
-    Object.assign(viewabilityState, { viewableItems, previousStart: start, previousEnd: end });
+    Object.assign(viewabilityState, {
+        viewableItems,
+        previousStart: start,
+        previousEnd: end,
+    });
 
     if (changed.length > 0) {
         viewabilityState.viewableItems = viewableItems;
@@ -148,7 +157,7 @@ function isViewable(
     index: number,
 ) {
     const { sizes, positions, scroll } = state;
-    const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
+    const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
@@ -188,7 +197,7 @@ function isViewable(
 }
 
 function findContainerId(state: InternalState, ctx: StateContext, index: number) {
-    const numContainers = peek$(ctx, 'numContainers');
+    const numContainers = peek$(ctx, "numContainers");
     for (let i = 0; i < numContainers; i++) {
         const itemIndex = peek$(ctx, `containerIndex${i}`);
         if (itemIndex === index) {

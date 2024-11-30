@@ -1,8 +1,4 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,36 +17,36 @@ SplashScreen.preventAutoHideAsync();
 enableFreeze(); // freeze inactive tabs in the tabbar, to improve benchmarking accuracy
 
 configureReanimatedLogger({
-  level: ReanimatedLogLevel.warn,
-  strict: false, // Reanimated runs in strict mode by default
+    level: ReanimatedLogLevel.warn,
+    strict: false, // Reanimated runs in strict mode by default
 });
 
 export default function RootLayout() {
-  console.log("starting", __DEV__);
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+    console.log("starting", __DEV__);
+    const colorScheme = useColorScheme();
+    const [loaded] = useFonts({
+        SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    });
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    useEffect(() => {
+        if (loaded) {
+            SplashScreen.hideAsync();
+        }
+    }, [loaded]);
+
+    if (!loaded) {
+        return null;
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </GestureHandlerRootView>
-  );
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+                <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen name="+not-found" />
+                </Stack>
+                <StatusBar style="auto" />
+            </ThemeProvider>
+        </GestureHandlerRootView>
+    );
 }

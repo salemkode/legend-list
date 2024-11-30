@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
-import * as React from 'react';
+import * as React from "react";
 import {
     type ForwardedRef,
     type ReactElement,
@@ -10,7 +10,7 @@ import {
     useMemo,
     useRef,
     useState,
-} from 'react';
+} from "react";
 import {
     Dimensions,
     type LayoutChangeEvent,
@@ -19,12 +19,12 @@ import {
     type ScrollView,
     StyleSheet,
     unstable_batchedUpdates,
-} from 'react-native';
-import { ListComponent } from './ListComponent';
-import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from './state';
-import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from './types';
-import type { InternalState, LegendListProps } from './types';
-import { useInit } from './useInit';
+} from "react-native";
+import { ListComponent } from "./ListComponent";
+import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
+import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
+import type { InternalState, LegendListProps } from "./types";
+import { useInit } from "./useInit";
 import {
     mapViewabilityAmountCallbacks,
     mapViewabilityAmountValues,
@@ -32,7 +32,7 @@ import {
     mapViewabilityValues,
     setupViewability,
     updateViewableItems,
-} from './viewability';
+} from "./viewability";
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -94,7 +94,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const getId = (index: number): string => {
             const data = refState.current?.data;
             if (!data) {
-                return '';
+                return "";
             }
             const ret = index < data.length ? (keyExtractor ? keyExtractor(data[index], index) : index) : null;
             return `${ret}`;
@@ -135,7 +135,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 data: data,
                 idsInFirstRender: undefined as any,
                 hasScrolled: false,
-                scrollLength: Dimensions.get('window')[horizontal ? 'width' : 'height'],
+                scrollLength: Dimensions.get("window")[horizontal ? "width" : "height"],
                 startBuffered: 0,
                 startNoBuffer: 0,
                 endBuffered: 0,
@@ -150,9 +150,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }
         refState.current.data = data;
         refState.current.renderItem = renderItem!;
-        set$(ctx, 'numItems', data.length);
+        set$(ctx, "numItems", data.length);
         // TODO: This needs to support horizontal and other ways of defining padding.
-        set$(ctx, 'stylePaddingTop', styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
+        set$(ctx, "stylePaddingTop", styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
         const addTotalSize = useCallback((add: number) => {
             const prev = refState.current!.totalSize;
@@ -161,11 +161,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const doAdd = () => {
                 refState.current!.animFrameTotalSize = null;
 
-                set$(ctx, 'totalSize', totalSize);
+                set$(ctx, "totalSize", totalSize);
                 const screenLength = refState.current!.scrollLength;
                 if (alignItemsAtEnd) {
-                    const listPaddingTop = peek$(ctx, 'stylePaddingTop');
-                    set$(ctx, 'paddingTop', Math.max(0, screenLength - totalSize - listPaddingTop));
+                    const listPaddingTop = peek$(ctx, "stylePaddingTop");
+                    set$(ctx, "paddingTop", Math.max(0, screenLength - totalSize - listPaddingTop));
                 }
             };
             if (!prev) {
@@ -290,7 +290,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (!data) {
                     return;
                 }
-                const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
+                const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
                 const scroll = scrollState - topPad;
 
                 const { sizes, positions } = refState.current!;
@@ -358,7 +358,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 });
 
                 if (startBuffered !== null && endBuffered !== null) {
-                    const prevNumContainers = ctx.values.get('numContainers');
+                    const prevNumContainers = ctx.values.get("numContainers");
                     let numContainers = prevNumContainers;
                     for (let i = startBuffered; i <= endBuffered; i++) {
                         let isContained = false;
@@ -402,7 +402,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             } else {
                                 if (__DEV__) {
                                     console.warn(
-                                        '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize',
+                                        "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize",
                                         i,
                                     );
                                 }
@@ -418,7 +418,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
 
                     if (numContainers !== prevNumContainers) {
-                        set$(ctx, 'numContainers', numContainers);
+                        set$(ctx, "numContainers", numContainers);
                     }
 
                     // Update top positions of all containers
@@ -487,7 +487,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
-            set$(ctx, 'numContainers', numContainers);
+            set$(ctx, "numContainers", numContainers);
 
             calculateItemsInView();
 
@@ -503,7 +503,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const checkAtBottom = () => {
             const { scrollLength, scroll } = refState.current!;
-            const totalSize = peek$(ctx, 'totalSize');
+            const totalSize = peek$(ctx, "totalSize");
             // Check if at end
             const distanceFromEnd = totalSize - scroll - scrollLength;
             if (refState.current) {
@@ -525,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             // Reset containers that aren't used anymore because the data has changed
-            const numContainers = peek$(ctx, 'numContainers');
+            const numContainers = peek$(ctx, "numContainers");
             if (data.length < numContainers) {
                 for (let i = 0; i < numContainers; i++) {
                     const itemIndex = peek$(ctx, `containerIndex${i}`);
@@ -614,7 +614,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
-            const scrollLength = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+            const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
             refState.current!.scrollLength = scrollLength;
         }, []);
 
@@ -632,7 +632,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return;
                 }
                 refState.current!.hasScrolled = true;
-                const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
+                const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
                 // Update the scroll position to use in checks
                 refState.current!.scroll = newScroll;
 
@@ -648,34 +648,38 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
-        useImperativeHandle(forwardedRef, () => {
-            const scrollToIndex = ({ index, animated }: Parameters<LegendListRef['scrollToIndex']>[0]) => {
-                // naive implementation to search element by index
-                // TODO: create some accurate search algorithm
-                // FlashList seems to be able to find index in the dynamic size list with some search
-                const offsetObj = calculateInitialOffset(index);
-                const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
-                refScroller.current!.scrollTo({ ...offset, animated });
-            };
-            return {
-                getNativeScrollRef: () => refScroller.current!,
-                getScrollableNode: refScroller.current!.getScrollableNode,
-                getScrollResponder: refScroller.current!.getScrollResponder,
-                flashScrollIndicators: refScroller.current!.flashScrollIndicators,
-                scrollToIndex,
-                scrollToOffset: ({ offset, animated }) => {
-                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
-                    refScroller.current!.scrollTo({ ...offsetObj, animated });
-                },
-                scrollToItem: ({ item, animated }) => {
-                    const index = data.indexOf(item);
-                    if (index !== -1) {
-                        scrollToIndex({ index, animated });
-                    }
-                },
-                scrollToEnd: refScroller.current!.scrollToEnd,
-            };
-        }, []);
+        useImperativeHandle(
+            forwardedRef,
+            () => {
+                const scrollToIndex = ({ index, animated }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
+                    // naive implementation to search element by index
+                    // TODO: create some accurate search algorithm
+                    // FlashList seems to be able to find index in the dynamic size list with some search
+                    const offsetObj = calculateInitialOffset(index);
+                    const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                    refScroller.current!.scrollTo({ ...offset, animated });
+                };
+                return {
+                    getNativeScrollRef: () => refScroller.current!,
+                    getScrollableNode: refScroller.current!.getScrollableNode,
+                    getScrollResponder: refScroller.current!.getScrollResponder,
+                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    scrollToIndex,
+                    scrollToOffset: ({ offset, animated }) => {
+                        const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
+                        refScroller.current!.scrollTo({ ...offsetObj, animated });
+                    },
+                    scrollToItem: ({ item, animated }) => {
+                        const index = data.indexOf(item);
+                        if (index !== -1) {
+                            scrollToIndex({ index, animated });
+                        }
+                    },
+                    scrollToEnd: refScroller.current!.scrollToEnd,
+                };
+            },
+            [],
+        );
 
         return (
             <ListComponent

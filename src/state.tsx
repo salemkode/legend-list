@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 // This is an implementation of a simple state management system, inspired by Legend State.
 // It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
@@ -9,15 +9,15 @@ import * as React from 'react';
 // which saves needing useEffect hooks or managing listeners in a Set.
 
 export type ListenerType =
-    | 'numContainers'
+    | "numContainers"
     | `containerIndex${number}`
     | `containerPosition${number}`
     | `numItems`
-    | 'totalSize'
-    | 'paddingTop'
-    | 'stylePaddingTop'
-    | 'headerSize'
-    | 'footerSize';
+    | "totalSize"
+    | "paddingTop"
+    | "stylePaddingTop"
+    | "headerSize"
+    | "footerSize";
 
 export interface StateContext {
     hooks: Map<ListenerType, () => void>;

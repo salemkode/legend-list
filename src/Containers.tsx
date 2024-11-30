@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { $View } from './$View';
-import { Container } from './Container';
-import { peek$, use$, useStateContext } from './state';
+import * as React from "react";
+import { $View } from "./$View";
+import { Container } from "./Container";
+import { peek$, use$, useStateContext } from "./state";
 
 interface ContainersProps {
     horizontal: boolean;
@@ -19,7 +19,7 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
 }: ContainersProps) {
     const ctx = useStateContext();
-    const numContainers = use$<number>('numContainers');
+    const numContainers = use$<number>("numContainers");
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -42,10 +42,10 @@ export const Containers = React.memo(function Containers({
             $style={() =>
                 horizontal
                     ? {
-                          width: peek$(ctx, 'totalSize'),
+                          width: peek$(ctx, "totalSize"),
                       }
                     : {
-                          height: peek$(ctx, 'totalSize'),
+                          height: peek$(ctx, "totalSize"),
                       }
             }
         >
