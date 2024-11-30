@@ -1,18 +1,9 @@
-<<<<<<< HEAD
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
-import { useScrollTest } from '@/constants/useScrollTest';
-import { LegendList, type LegendListRef } from '@legendapp/list';
-import { useRef, useState } from 'react';
-import { LogBox, Platform, StyleSheet, Text, View } from 'react-native';
-import { type Item, renderItem } from '../renderItem';
-=======
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from "@/constants/constants";
 import { useScrollTest } from "@/constants/useScrollTest";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
 import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
 import { type Item, renderItem } from "../renderItem";
->>>>>>> 27f3f8d859b6703ed814a35ecf3cbeb52d43632a
 
 LogBox.ignoreLogs(["Open debugger"]);
 
