@@ -25,14 +25,7 @@ import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
-import {
-    mapViewabilityAmountCallbacks,
-    mapViewabilityAmountValues,
-    mapViewabilityCallbacks,
-    mapViewabilityValues,
-    setupViewability,
-    updateViewableItems,
-} from "./viewability";
+import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -185,34 +178,34 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const key = containerIndex + configId;
 
                 useInit(() => {
-                    const value = mapViewabilityValues.get(key);
+                    const value = ctx.mapViewabilityValues.get(key);
                     if (value) {
                         callback(value);
                     }
                 });
 
-                mapViewabilityCallbacks.set(key, callback);
+                ctx.mapViewabilityCallbacks.set(key, callback);
 
                 useEffect(
                     () => () => {
-                        mapViewabilityCallbacks.delete(key);
+                        ctx.mapViewabilityCallbacks.delete(key);
                     },
                     [],
                 );
             };
             const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
                 useInit(() => {
-                    const value = mapViewabilityAmountValues.get(containerIndex);
+                    const value = ctx.mapViewabilityAmountValues.get(containerIndex);
                     if (value) {
                         callback(value);
                     }
                 });
 
-                mapViewabilityAmountCallbacks.set(containerIndex, callback);
+                ctx.mapViewabilityAmountCallbacks.set(containerIndex, callback);
 
                 useEffect(
                     () => () => {
-                        mapViewabilityAmountCallbacks.delete(containerIndex);
+                        ctx.mapViewabilityAmountCallbacks.delete(containerIndex);
                     },
                     [],
                 );

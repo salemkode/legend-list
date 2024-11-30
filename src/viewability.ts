@@ -4,8 +4,6 @@ import type {
     LegendListProps,
     ViewAmountToken,
     ViewToken,
-    ViewabilityAmountCallback,
-    ViewabilityCallback,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
 } from "./types";
@@ -20,10 +18,6 @@ const mapViewabilityConfigCallbackPairs = new Map<
         previousEnd: number;
     }
 >();
-export const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
-export const mapViewabilityValues = new Map<string, ViewToken>();
-export const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
-export const mapViewabilityAmountValues = new Map<number, ViewAmountToken>();
 
 export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
@@ -138,7 +132,7 @@ function updateViewableItemsWithConfig(
 
         for (let i = 0; i < changed.length; i++) {
             const change = changed[i];
-            maybeUpdateViewabilityCallback(configId, change);
+            maybeUpdateViewabilityCallback(ctx, configId, change);
         }
 
         if (onViewableItemsChanged) {
@@ -187,8 +181,8 @@ function isViewable(
         position: top,
         scrollSize,
     };
-    mapViewabilityAmountValues.set(containerId, value);
-    const cb = mapViewabilityAmountCallbacks.get(containerId);
+    ctx.mapViewabilityAmountValues.set(containerId, value);
+    const cb = ctx.mapViewabilityAmountCallbacks.get(containerId);
     if (cb) {
         cb(value);
     }
@@ -207,12 +201,12 @@ function findContainerId(state: InternalState, ctx: StateContext, index: number)
     return -1;
 }
 
-function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) {
+function maybeUpdateViewabilityCallback(ctx: StateContext, configId: string, viewToken: ViewToken) {
     const key = viewToken.key + configId;
 
-    mapViewabilityValues.set(key, viewToken);
+    ctx.mapViewabilityValues.set(key, viewToken);
 
-    const cb = mapViewabilityCallbacks.get(key);
+    const cb = ctx.mapViewabilityCallbacks.get(key);
 
     cb?.(viewToken);
 }
