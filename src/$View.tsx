@@ -1,8 +1,8 @@
 // biome-ignore lint/correctness/noUnusedImports: Example crashes if React is missing for some reason
-import * as React from 'react';
-import type { ViewProps, ViewStyle } from 'react-native';
-import { LeanView } from './LeanView';
-import { type ListenerType, use$ } from './state';
+import * as React from "react";
+import type { ViewProps, ViewStyle } from "react-native";
+import { LeanView } from "./LeanView";
+import { type ListenerType, use$ } from "./state";
 
 interface ContainerStyleProps extends ViewProps {
     $key: ListenerType;

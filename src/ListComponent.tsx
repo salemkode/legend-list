@@ -1,5 +1,5 @@
-import * as React from 'react';
-import type { ReactNode } from 'react';
+import * as React from "react";
+import type { ReactNode } from "react";
 import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
@@ -8,16 +8,16 @@ import {
     type StyleProp,
     View,
     type ViewStyle,
-} from 'react-native';
-import { $View } from './$View';
-import { Containers } from './Containers';
-import { peek$, set$, useStateContext } from './state';
-import type { LegendListProps } from './types';
+} from "react-native";
+import { $View } from "./$View";
+import { Containers } from "./Containers";
+import { peek$, set$, useStateContext } from "./state";
+import type { LegendListProps } from "./types";
 
 interface ListComponentProps
     extends Omit<
         LegendListProps<any>,
-        'data' | 'estimatedItemSize' | 'drawDistance' | 'maintainScrollAtEnd' | 'maintainScrollAtEndThreshold'
+        "data" | "estimatedItemSize" | "drawDistance" | "maintainScrollAtEnd" | "maintainScrollAtEndThreshold"
     > {
     style: StyleProp<ViewStyle>;
     contentContainerStyle: StyleProp<ViewStyle>;
@@ -73,7 +73,7 @@ export const ListComponent = React.memo(function ListComponent({
                 contentContainerStyle,
                 horizontal
                     ? {
-                          height: '100%',
+                          height: "100%",
                       }
                     : {},
             ]}
@@ -90,15 +90,15 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
-            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, 'paddingTop') })} />}
+            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
             {ListHeaderComponent && (
                 <View
                     style={ListHeaderComponentStyle}
                     onLayout={(event) => {
-                        const size = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
-                        const prevSize = peek$(ctx, 'headerSize') || 0;
+                        const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
+                        const prevSize = peek$(ctx, "headerSize") || 0;
                         if (size !== prevSize) {
-                            set$(ctx, 'headerSize', size);
+                            set$(ctx, "headerSize", size);
                             addTotalSize(size - prevSize);
                         }
                     }}
@@ -106,12 +106,7 @@ export const ListComponent = React.memo(function ListComponent({
                     {getComponent(ListHeaderComponent)}
                 </View>
             )}
-            {ListEmptyComponent && (
-                <View 
-                    style={ListEmptyComponentStyle}>
-                    {getComponent(ListEmptyComponent)}
-                </View>
-            )}
+            {ListEmptyComponent && <View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</View>}
 
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View

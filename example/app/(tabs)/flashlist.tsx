@@ -1,9 +1,9 @@
-import renderItem from '@/app/renderItem';
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
-import { useScrollTest } from '@/constants/useScrollTest';
-import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import { Fragment, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import renderItem from "@/app/renderItem";
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from "@/constants/constants";
+import { useScrollTest } from "@/constants/useScrollTest";
+import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
+import { Fragment, useRef } from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
     const data = Array.from({ length: 1000 }, (_, i) => ({ id: i.toString() }));
@@ -57,23 +57,23 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
     listHeader: {
-        alignSelf: 'center',
+        alignSelf: "center",
         height: 100,
         width: 100,
-        backgroundColor: '#456AAA',
+        backgroundColor: "#456AAA",
         borderRadius: 12,
         marginHorizontal: 8,
         marginTop: 8,
     },
     outerContainer: {
-        backgroundColor: '#456',
+        backgroundColor: "#456",
     },
     scrollContainer: {
         // paddingHorizontal: 8,
     },
     titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         gap: 8,
     },
     stepContainer: {
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         width: 290,
         bottom: 0,
         left: 0,
-        position: 'absolute',
+        position: "absolute",
     },
     itemContainer: {
         // padding: 4,
@@ -98,27 +98,27 @@ const styles = StyleSheet.create({
     },
     itemTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 8,
-        color: '#1a1a1a',
+        color: "#1a1a1a",
     },
     itemBody: {
         fontSize: 14,
-        color: '#666666',
+        color: "#666666",
         lineHeight: 20,
         flex: 1,
     },
     itemFooter: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
+        flexDirection: "row",
+        justifyContent: "flex-start",
         gap: 16,
         marginTop: 12,
         paddingTop: 12,
         borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
+        borderTopColor: "#f0f0f0",
     },
     footerText: {
         fontSize: 14,
-        color: '#888888',
+        color: "#888888",
     },
 });

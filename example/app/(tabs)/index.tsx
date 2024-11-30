@@ -1,14 +1,23 @@
+<<<<<<< HEAD
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
 import { useScrollTest } from '@/constants/useScrollTest';
 import { LegendList, type LegendListRef } from '@legendapp/list';
 import { useRef, useState } from 'react';
 import { LogBox, Platform, StyleSheet, Text, View } from 'react-native';
 import { type Item, renderItem } from '../renderItem';
+=======
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from "@/constants/constants";
+import { useScrollTest } from "@/constants/useScrollTest";
+import { LegendList, type LegendListRef } from "@legendapp/list";
+import { useRef, useState } from "react";
+import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
+import { type Item, renderItem } from "../renderItem";
+>>>>>>> 27f3f8d859b6703ed814a35ecf3cbeb52d43632a
 
-LogBox.ignoreLogs(['Open debugger']);
+LogBox.ignoreLogs(["Open debugger"]);
 
 // @ts-ignore
-const uiManager = global?.nativeFabricUIManager ? 'Fabric' : 'Paper';
+const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
 
 console.log(`Using ${uiManager}`);
 
@@ -30,11 +39,6 @@ export default function HomeScreen() {
             });
         });
     }
-    //   useEffect(() => {
-    //     let num = 0;
-    //     const interval = setInterval(() => {
-    //     }, 2000);
-    //   }, []);
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
@@ -51,7 +55,7 @@ export default function HomeScreen() {
                 // alignItemsAtEnd
                 // maintainScrollAtEnd
                 onEndReached={({ distanceFromEnd }) => {
-                    console.log('onEndReached', distanceFromEnd);
+                    console.log("onEndReached", distanceFromEnd);
                 }}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
@@ -60,16 +64,16 @@ export default function HomeScreen() {
                     <View
                         style={{
                             flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                            justifyContent: "center",
+                            alignItems: "center",
                         }}
                     >
-                        <Text>Empty</Text>
+                        <Text style={{ color: "white" }}>Empty</Text>
                     </View>
                 }
                 viewabilityConfigCallbackPairs={[
                     {
-                        viewabilityConfig: { id: 'viewability', viewAreaCoveragePercentThreshold: 50 },
+                        viewabilityConfig: { id: "viewability", viewAreaCoveragePercentThreshold: 50 },
                         // onViewableItemsChanged: ({ viewableItems, changed }) => {
                         //     console.log(
                         //         'onViewableItems',
@@ -92,17 +96,17 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
     listHeader: {
-        alignSelf: 'center',
+        alignSelf: "center",
         height: 100,
         width: 100,
-        backgroundColor: '#456AAA',
+        backgroundColor: "#456AAA",
         borderRadius: 12,
         marginHorizontal: 8,
         marginTop: 8,
     },
     outerContainer: {
-        backgroundColor: '#456',
-        bottom: Platform.OS === 'ios' ? 82 : 0,
+        backgroundColor: "#456",
+        bottom: Platform.OS === "ios" ? 82 : 0,
     },
     scrollContainer: {
         paddingHorizontal: 16,

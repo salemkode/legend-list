@@ -1,8 +1,8 @@
-import type { ComponentProps, ReactNode } from 'react';
-import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
-import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
+import type { ComponentProps, ReactNode } from "react";
+import type { ScrollResponderMixin, ScrollViewComponent } from "react-native";
+import type { ScrollView, StyleProp, ViewStyle } from "react-native";
 
-export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
+export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, "contentOffset"> & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
@@ -22,7 +22,6 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
     renderItem?: (props: LegendListRenderItemProps<T>) => ReactNode;
-    onViewableRangeChanged?: (range: ViewableRange<T>) => void;
     ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
@@ -57,6 +56,7 @@ export interface InternalState {
     totalSize: number;
     timeouts: Set<number>;
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs;
+    renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
 }
 
 export interface ViewableRange<T> {

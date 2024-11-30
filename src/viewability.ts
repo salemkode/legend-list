@@ -1,13 +1,14 @@
-import { type StateContext, peek$ } from './state';
+import { type StateContext, peek$ } from "./state";
 import type {
     InternalState,
     LegendListProps,
+    ViewAmountToken,
     ViewToken,
     ViewabilityAmountCallback,
     ViewabilityCallback,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
-} from './types';
+} from "./types";
 
 const mapViewabilityConfigCallbackPairs = new Map<
     string,
@@ -19,14 +20,21 @@ const mapViewabilityConfigCallbackPairs = new Map<
         previousEnd: number;
     }
 >();
-const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
-const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
+export const mapViewabilityCallbacks = new Map<string, ViewabilityCallback>();
+export const mapViewabilityValues = new Map<string, ViewToken>();
+export const mapViewabilityAmountCallbacks = new Map<number, ViewabilityAmountCallback>();
+export const mapViewabilityAmountValues = new Map<number, ViewAmountToken>();
 
 export function setupViewability(props: LegendListProps<any>) {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
     viewabilityConfigCallbackPairs = viewabilityConfigCallbackPairs! || [
-        { viewabilityConfig: viewabilityConfig || { viewAreaCoveragePercentThreshold: 0 }, onViewableItemsChanged },
+        {
+            viewabilityConfig: viewabilityConfig || {
+                viewAreaCoveragePercentThreshold: 0,
+            },
+            onViewableItemsChanged,
+        },
     ];
 
     if (viewabilityConfigCallbackPairs) {
@@ -119,7 +127,11 @@ function updateViewableItemsWithConfig(
         }
     }
 
-    Object.assign(viewabilityState, { viewableItems, previousStart: start, previousEnd: end });
+    Object.assign(viewabilityState, {
+        viewableItems,
+        previousStart: start,
+        previousEnd: end,
+    });
 
     if (changed.length > 0) {
         viewabilityState.viewableItems = viewableItems;
@@ -145,7 +157,7 @@ function isViewable(
     index: number,
 ) {
     const { sizes, positions, scroll } = state;
-    const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
+    const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
@@ -163,28 +175,29 @@ function isViewable(
 
     // TODO: This would run for each viewabilityConfig, maybe move it elsewhere?
     const containerId = findContainerId(state, ctx, index);
+    const value: ViewAmountToken = {
+        index,
+        isViewable,
+        item,
+        key,
+        percentVisible,
+        percentOfScroller,
+        sizeVisible,
+        size,
+        position: top,
+        scrollSize,
+    };
+    mapViewabilityAmountValues.set(containerId, value);
     const cb = mapViewabilityAmountCallbacks.get(containerId);
-    // containerViewabilityAmounts;
     if (cb) {
-        cb({
-            index,
-            isViewable,
-            item,
-            key,
-            percentVisible,
-            percentOfScroller,
-            sizeVisible,
-            size,
-            position: top,
-            scrollSize,
-        });
+        cb(value);
     }
 
     return isViewable!;
 }
 
 function findContainerId(state: InternalState, ctx: StateContext, index: number) {
-    const numContainers = peek$(ctx, 'numContainers');
+    const numContainers = peek$(ctx, "numContainers");
     for (let i = 0; i < numContainers; i++) {
         const itemIndex = peek$(ctx, `containerIndex${i}`);
         if (itemIndex === index) {
@@ -197,25 +210,9 @@ function findContainerId(state: InternalState, ctx: StateContext, index: number)
 function maybeUpdateViewabilityCallback(configId: string, viewToken: ViewToken) {
     const key = viewToken.key + configId;
 
+    mapViewabilityValues.set(key, viewToken);
+
     const cb = mapViewabilityCallbacks.get(key);
 
     cb?.(viewToken);
-}
-
-export function registerViewabilityCallback(containerId: number, configId: string, callback: ViewabilityCallback) {
-    const key = containerId + configId;
-
-    mapViewabilityCallbacks.set(key, callback);
-
-    return () => {
-        mapViewabilityCallbacks.delete(key);
-    };
-}
-
-export function registerViewabilityAmountCallback(containerId: number, callback: ViewabilityAmountCallback) {
-    mapViewabilityAmountCallbacks.set(containerId, callback);
-
-    return () => {
-        mapViewabilityAmountCallbacks.delete(containerId);
-    };
 }

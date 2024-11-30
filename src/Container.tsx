@@ -1,7 +1,7 @@
-import * as React from 'react';
-import type { LayoutChangeEvent, ViewStyle } from 'react-native';
-import { $View } from './$View';
-import { peek$, use$, useStateContext } from './state';
+import * as React from "react";
+import type { LayoutChangeEvent, ViewStyle } from "react-native";
+import { $View } from "./$View";
+import { peek$, use$, useStateContext } from "./state";
 
 interface InnerContainerProps {
     id: number;
@@ -12,7 +12,7 @@ interface InnerContainerProps {
 function InnerContainer({ id, getRenderedItem, recycleItems, ItemSeparatorComponent }: InnerContainerProps) {
     // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
     const itemIndex = use$<number>(`containerIndex${id}`);
-    const numItems = ItemSeparatorComponent ? use$<number>('numItems') : 0;
+    const numItems = ItemSeparatorComponent ? use$<number>("numItems") : 0;
 
     if (itemIndex < 0) {
         return null;
@@ -51,7 +51,7 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    getRenderedItem: (index: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
     onLayout: (index: number, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
@@ -61,15 +61,15 @@ export const Container = ({
         const position = peek$(ctx, `containerPosition${id}`);
         return horizontal
             ? {
-                  flexDirection: 'row',
-                  position: 'absolute',
+                  flexDirection: "row",
+                  position: "absolute",
                   top: 0,
                   bottom: 0,
                   left: position,
                   opacity: position < 0 ? 0 : 1,
               }
             : {
-                  position: 'absolute',
+                  position: "absolute",
                   left: 0,
                   right: 0,
                   top: position,
@@ -87,7 +87,7 @@ export const Container = ({
             onLayout={(event: LayoutChangeEvent) => {
                 const index = peek$(ctx, `containerIndex${id}`);
                 if (index >= 0) {
-                    const size = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+                    const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
                     onLayout(index, size);
                 }

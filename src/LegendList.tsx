@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
-import * as React from 'react';
+import * as React from "react";
 import {
     type ForwardedRef,
     type ReactElement,
@@ -10,7 +10,7 @@ import {
     useMemo,
     useRef,
     useState,
-} from 'react';
+} from "react";
 import {
     Dimensions,
     type LayoutChangeEvent,
@@ -19,17 +19,20 @@ import {
     type ScrollView,
     StyleSheet,
     unstable_batchedUpdates,
-} from 'react-native';
-import { ListComponent } from './ListComponent';
-import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from './state';
-import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from './types';
-import type { InternalState, LegendListProps } from './types';
+} from "react-native";
+import { ListComponent } from "./ListComponent";
+import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
+import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
+import type { InternalState, LegendListProps } from "./types";
+import { useInit } from "./useInit";
 import {
-    registerViewabilityAmountCallback,
-    registerViewabilityCallback,
+    mapViewabilityAmountCallbacks,
+    mapViewabilityAmountValues,
+    mapViewabilityCallbacks,
+    mapViewabilityValues,
     setupViewability,
     updateViewableItems,
-} from './viewability';
+} from "./viewability";
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
@@ -65,7 +68,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             estimatedItemSize,
             getEstimatedItemSize,
             onEndReached,
-            onViewableRangeChanged,
             ListEmptyComponent,
             ...rest
         } = props;
@@ -92,7 +94,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const getId = (index: number): string => {
             const data = refState.current?.data;
             if (!data) {
-                return '';
+                return "";
             }
             const ret = index < data.length ? (keyExtractor ? keyExtractor(data[index], index) : index) : null;
             return `${ret}`;
@@ -133,7 +135,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 data: data,
                 idsInFirstRender: undefined as any,
                 hasScrolled: false,
-                scrollLength: Dimensions.get('window')[horizontal ? 'width' : 'height'],
+                scrollLength: Dimensions.get("window")[horizontal ? "width" : "height"],
                 startBuffered: 0,
                 startNoBuffer: 0,
                 endBuffered: 0,
@@ -142,13 +144,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 totalSize: 0,
                 timeouts: new Set(),
                 viewabilityConfigCallbackPairs: undefined as any,
+                renderItem: undefined as any,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
-        set$(ctx, 'numItems', data.length);
+        refState.current.renderItem = renderItem!;
+        set$(ctx, "numItems", data.length);
         // TODO: This needs to support horizontal and other ways of defining padding.
-        set$(ctx, 'stylePaddingTop', styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
+        set$(ctx, "stylePaddingTop", styleFlattened?.paddingTop ?? contentContainerStyleFlattened?.paddingTop ?? 0);
 
         const addTotalSize = useCallback((add: number) => {
             const prev = refState.current!.totalSize;
@@ -157,11 +161,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const doAdd = () => {
                 refState.current!.animFrameTotalSize = null;
 
-                set$(ctx, 'totalSize', totalSize);
+                set$(ctx, "totalSize", totalSize);
                 const screenLength = refState.current!.scrollLength;
                 if (alignItemsAtEnd) {
-                    const listPaddingTop = peek$(ctx, 'stylePaddingTop');
-                    set$(ctx, 'paddingTop', Math.max(0, screenLength - totalSize - listPaddingTop));
+                    const listPaddingTop = peek$(ctx, "stylePaddingTop");
+                    set$(ctx, "paddingTop", Math.max(0, screenLength - totalSize - listPaddingTop));
                 }
             };
             if (!prev) {
@@ -171,76 +175,104 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const getRenderedItem = useCallback(
-            (index: number, containerIndex: number) => {
-                const data = refState.current?.data;
-                if (!data) {
-                    return null;
-                }
+        const getRenderedItem = useCallback((index: number, containerIndex: number) => {
+            const data = refState.current?.data;
+            if (!data) {
+                return null;
+            }
 
-                const useViewability = (configId: string, callback: ViewabilityCallback) => {
-                    useEffect(() => registerViewabilityCallback(containerIndex, configId, callback), []);
-                };
-                const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
-                    useEffect(() => registerViewabilityAmountCallback(containerIndex, callback), []);
-                };
-                const useRecyclingEffect = (effect: (info: LegendListRecyclingState<T>) => void | (() => void)) => {
-                    useEffect(() => {
-                        let prevIndex = index;
-                        let prevItem = data[index];
-                        const signal: ListenerType = `containerIndex${containerIndex}`;
+            const useViewability = (configId: string, callback: ViewabilityCallback) => {
+                const key = containerIndex + configId;
 
-                        listen$(ctx, signal, () => {
-                            const data = refState.current?.data;
-                            if (data) {
-                                const newIndex = peek$(ctx, signal);
-                                const newItem = data[newIndex];
-                                if (newItem) {
-                                    effect({
-                                        index: newIndex,
-                                        item: newItem,
-                                        prevIndex: prevIndex,
-                                        prevItem: prevItem,
-                                    });
-                                }
-
-                                prevIndex = newIndex;
-                                prevItem = newItem;
-                            }
-                        });
-                    }, []);
-                };
-                const useRecyclingState = (updateState: (info: LegendListRecyclingState<T>) => any) => {
-                    const stateInfo = useState(() =>
-                        updateState({
-                            index,
-                            item: data[index],
-                            prevIndex: undefined,
-                            prevItem: undefined,
-                        }),
-                    );
-
-                    useRecyclingEffect((state) => {
-                        const newState = updateState(state);
-                        stateInfo[1](newState);
-                    });
-
-                    return stateInfo;
-                };
-
-                const renderedItem = renderItem?.({
-                    item: data[index],
-                    index,
-                    useViewability,
-                    useViewabilityAmount,
-                    useRecyclingEffect,
-                    useRecyclingState,
+                useInit(() => {
+                    const value = mapViewabilityValues.get(key);
+                    if (value) {
+                        callback(value);
+                    }
                 });
 
-                return renderedItem;
-            },
-            [renderItem],
-        );
+                mapViewabilityCallbacks.set(key, callback);
+
+                useEffect(
+                    () => () => {
+                        mapViewabilityCallbacks.delete(key);
+                    },
+                    [],
+                );
+            };
+            const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
+                useInit(() => {
+                    const value = mapViewabilityAmountValues.get(containerIndex);
+                    if (value) {
+                        callback(value);
+                    }
+                });
+
+                mapViewabilityAmountCallbacks.set(containerIndex, callback);
+
+                useEffect(
+                    () => () => {
+                        mapViewabilityAmountCallbacks.delete(containerIndex);
+                    },
+                    [],
+                );
+            };
+            const useRecyclingEffect = (effect: (info: LegendListRecyclingState<any>) => void | (() => void)) => {
+                useEffect(() => {
+                    const state = refState.current!;
+                    let prevIndex = index;
+                    let prevItem = state.data[index];
+                    const signal: ListenerType = `containerIndex${containerIndex}`;
+
+                    listen$(ctx, signal, () => {
+                        const data = state.data;
+                        if (data) {
+                            const newIndex = peek$(ctx, signal);
+                            const newItem = data[newIndex];
+                            if (newItem) {
+                                effect({
+                                    index: newIndex,
+                                    item: newItem,
+                                    prevIndex: prevIndex,
+                                    prevItem: prevItem,
+                                });
+                            }
+
+                            prevIndex = newIndex;
+                            prevItem = newItem;
+                        }
+                    });
+                }, []);
+            };
+            const useRecyclingState = (updateState: (info: LegendListRecyclingState<any>) => any) => {
+                const stateInfo = useState(() =>
+                    updateState({
+                        index,
+                        item: refState.current!.data[index],
+                        prevIndex: undefined,
+                        prevItem: undefined,
+                    }),
+                );
+
+                useRecyclingEffect((state) => {
+                    const newState = updateState(state);
+                    stateInfo[1](newState);
+                });
+
+                return stateInfo;
+            };
+
+            const renderedItem = refState.current!.renderItem?.({
+                item: data[index],
+                index,
+                useViewability,
+                useViewabilityAmount,
+                useRecyclingEffect,
+                useRecyclingState,
+            });
+
+            return renderedItem;
+        }, []);
 
         const calculateItemsInView = useCallback(() => {
             // This should be a good optimization to make sure that all React updates happen in one frame
@@ -258,7 +290,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (!data) {
                     return;
                 }
-                const topPad = (peek$(ctx, 'stylePaddingTop') || 0) + (peek$(ctx, 'headerSize') || 0);
+                const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
                 const scroll = scrollState - topPad;
 
                 const { sizes, positions } = refState.current!;
@@ -326,7 +358,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 });
 
                 if (startBuffered !== null && endBuffered !== null) {
-                    const prevNumContainers = ctx.values.get('numContainers');
+                    const prevNumContainers = ctx.values.get("numContainers");
                     let numContainers = prevNumContainers;
                     for (let i = startBuffered; i <= endBuffered; i++) {
                         let isContained = false;
@@ -370,7 +402,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             } else {
                                 if (__DEV__) {
                                     console.warn(
-                                        '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize',
+                                        "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize",
                                         i,
                                     );
                                 }
@@ -378,13 +410,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                                 numContainers++;
                                 set$(ctx, `containerIndex${containerId}`, i);
+
+                                // TODO: This may not be necessary as it'll get st in the next loop?
                                 set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
                             }
                         }
                     }
 
                     if (numContainers !== prevNumContainers) {
-                        set$(ctx, 'numContainers', numContainers);
+                        set$(ctx, "numContainers", numContainers);
                     }
 
                     // Update top positions of all containers
@@ -406,41 +440,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                     }
+                }
 
-                    // TODO: Add the more complex onViewableItemsChanged
-                    if (onViewableRangeChanged) {
-                        if (
-                            startNoBuffer !== startNoBufferState ||
-                            startBuffered !== startBufferedState ||
-                            endNoBuffer !== endNoBufferState ||
-                            endBuffered !== endBufferedState
-                        ) {
-                            onViewableRangeChanged({
-                                start: startNoBuffer!,
-                                startBuffered,
-                                end: endNoBuffer!,
-                                endBuffered,
-                                items: data.slice(startNoBuffer!, endNoBuffer! + 1),
-                            });
-                        }
-                    }
-
-                    // if (startNoBuffer !== startNoBufferState || endNoBuffer !== endNoBufferState) {
-                    if (refState.current!.viewabilityConfigCallbackPairs) {
-                        updateViewableItems(
-                            refState.current!,
-                            ctx,
-                            refState.current!.viewabilityConfigCallbackPairs,
-                            getId,
-                            scrollLength,
-                            startNoBuffer!,
-                            endNoBuffer!,
-                        );
-                    }
-                    // }
+                if (refState.current!.viewabilityConfigCallbackPairs) {
+                    updateViewableItems(
+                        refState.current!,
+                        ctx,
+                        refState.current!.viewabilityConfigCallbackPairs,
+                        getId,
+                        scrollLength,
+                        startNoBuffer!,
+                        endNoBuffer!,
+                    );
                 }
             });
-        }, [data]);
+        }, []);
 
         // const adjustTopPad = (diff: number) => {
         //     // TODO: Experimental, find a better way to do this.
@@ -459,7 +473,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         //     }
         // };
 
-        useMemo(() => {
+        useInit(() => {
             refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
 
             // Allocate containers
@@ -473,7 +487,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
-            set$(ctx, 'numContainers', numContainers);
+            set$(ctx, "numContainers", numContainers);
 
             calculateItemsInView();
 
@@ -485,11 +499,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 totalSize += sizes.get(id) ?? getItemSize(i, data[i]);
             }
             addTotalSize(totalSize);
-        }, []);
+        });
 
         const checkAtBottom = () => {
             const { scrollLength, scroll } = refState.current!;
-            const totalSize = peek$(ctx, 'totalSize');
+            const totalSize = peek$(ctx, "totalSize");
             // Check if at end
             const distanceFromEnd = totalSize - scroll - scrollLength;
             if (refState.current) {
@@ -509,6 +523,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (refState.current) {
                 refState.current.isEndReached = false;
             }
+
+            // Reset containers that aren't used anymore because the data has changed
+            const numContainers = peek$(ctx, "numContainers");
+            if (data.length < numContainers) {
+                for (let i = 0; i < numContainers; i++) {
+                    const itemIndex = peek$(ctx, `containerIndex${i}`);
+                    if (itemIndex >= data.length) {
+                        set$(ctx, `containerIndex${i}`, -1);
+                    }
+                }
+            }
+
             calculateItemsInView();
             checkAtBottom();
         }, [data]);
@@ -588,7 +614,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
-            const scrollLength = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+            const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
             refState.current!.scrollLength = scrollLength;
         }, []);
 
@@ -606,7 +632,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return;
                 }
                 refState.current!.hasScrolled = true;
-                const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
+                const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
                 // Update the scroll position to use in checks
                 refState.current!.scroll = newScroll;
 
@@ -622,34 +648,38 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
-        useImperativeHandle(forwardedRef, () => {
-            const scrollToIndex = ({ index, animated }: Parameters<LegendListRef['scrollToIndex']>[0]) => {
-                // naive implementation to search element by index
-                // TODO: create some accurate search algorithm
-                // FlashList seems to be able to find index in the dynamic size list with some search
-                const offsetObj = calculateInitialOffset(index);
-                const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
-                refScroller.current!.scrollTo({ ...offset, animated });
-            };
-            return {
-                getNativeScrollRef: () => refScroller.current!,
-                getScrollableNode: refScroller.current!.getScrollableNode,
-                getScrollResponder: refScroller.current!.getScrollResponder,
-                flashScrollIndicators: refScroller.current!.flashScrollIndicators,
-                scrollToIndex,
-                scrollToOffset: ({ offset, animated }) => {
-                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
-                    refScroller.current!.scrollTo({ ...offsetObj, animated });
-                },
-                scrollToItem: ({ item, animated }) => {
-                    const index = data.indexOf(item);
-                    if (index !== -1) {
-                        scrollToIndex({ index, animated });
-                    }
-                },
-                scrollToEnd: refScroller.current!.scrollToEnd,
-            };
-        }, []);
+        useImperativeHandle(
+            forwardedRef,
+            () => {
+                const scrollToIndex = ({ index, animated }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
+                    // naive implementation to search element by index
+                    // TODO: create some accurate search algorithm
+                    // FlashList seems to be able to find index in the dynamic size list with some search
+                    const offsetObj = calculateInitialOffset(index);
+                    const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                    refScroller.current!.scrollTo({ ...offset, animated });
+                };
+                return {
+                    getNativeScrollRef: () => refScroller.current!,
+                    getScrollableNode: refScroller.current!.getScrollableNode,
+                    getScrollResponder: refScroller.current!.getScrollResponder,
+                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    scrollToIndex,
+                    scrollToOffset: ({ offset, animated }) => {
+                        const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
+                        refScroller.current!.scrollTo({ ...offsetObj, animated });
+                    },
+                    scrollToItem: ({ item, animated }) => {
+                        const index = data.indexOf(item);
+                        if (index !== -1) {
+                            scrollToIndex({ index, animated });
+                        }
+                    },
+                    scrollToEnd: refScroller.current!.scrollToEnd,
+                };
+            },
+            [],
+        );
 
         return (
             <ListComponent
