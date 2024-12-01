@@ -5,13 +5,13 @@ import { peek$, use$, useStateContext } from "./state";
 
 interface InnerContainerProps {
     id: number;
-    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
 }
 function InnerContainer({ id, getRenderedItem, recycleItems, ItemSeparatorComponent }: InnerContainerProps) {
     // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
-    const itemIndex = use$<number>(`containerIndex${id}`);
+    const itemIndex = use$<number>(`containerItemIndex${id}`);
     const numItems = ItemSeparatorComponent ? use$<number>("numItems") : 0;
 
     if (itemIndex < 0) {
@@ -33,7 +33,7 @@ function RenderedItem({
 }: {
     itemIndex: number;
     id: number;
-    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
 }) {
     const renderedItem = getRenderedItem(itemIndex, id);
 
@@ -51,7 +51,7 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    getRenderedItem: (index: number, containerIndex: number) => React.ReactNode;
+    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
     onLayout: (index: number, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
@@ -85,7 +85,7 @@ export const Container = ({
             $key={`containerPosition${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
-                const index = peek$(ctx, `containerIndex${id}`);
+                const index = peek$(ctx, `containerItemIndex${id}`);
                 if (index >= 0) {
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 

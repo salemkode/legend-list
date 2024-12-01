@@ -168,14 +168,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const getRenderedItem = useCallback((index: number, containerIndex: number) => {
+        const getRenderedItem = useCallback((index: number, containerId: number) => {
             const data = refState.current?.data;
             if (!data) {
                 return null;
             }
 
             const useViewability = (configId: string, callback: ViewabilityCallback) => {
-                const key = containerIndex + configId;
+                const key = containerId + configId;
 
                 useInit(() => {
                     const value = ctx.mapViewabilityValues.get(key);
@@ -195,17 +195,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             };
             const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
                 useInit(() => {
-                    const value = ctx.mapViewabilityAmountValues.get(containerIndex);
+                    const value = ctx.mapViewabilityAmountValues.get(containerId);
                     if (value) {
                         callback(value);
                     }
                 });
 
-                ctx.mapViewabilityAmountCallbacks.set(containerIndex, callback);
+                ctx.mapViewabilityAmountCallbacks.set(containerId, callback);
 
                 useEffect(
                     () => () => {
-                        ctx.mapViewabilityAmountCallbacks.delete(containerIndex);
+                        ctx.mapViewabilityAmountCallbacks.delete(containerId);
                     },
                     [],
                 );
@@ -215,7 +215,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const state = refState.current!;
                     let prevIndex = index;
                     let prevItem = state.data[index];
-                    const signal: ListenerType = `containerIndex${containerIndex}`;
+                    const signal: ListenerType = `containerItemIndex${containerId}`;
 
                     listen$(ctx, signal, () => {
                         const data = state.data;
@@ -352,17 +352,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     let numContainers = prevNumContainers;
                     for (let i = startBuffered; i <= endBuffered; i++) {
                         let isContained = false;
+                        const id = getId(i)!;
                         // See if this item is already in a container
                         for (let j = 0; j < numContainers; j++) {
-                            const index = peek$(ctx, `containerIndex${j}`);
-                            if (index === i) {
+                            const index = peek$(ctx, `containerItemIndex${j}`);
+                            const key = peek$(ctx, `containerItemKey${j}`);
+                            if (index === i && key === id) {
                                 isContained = true;
                                 break;
                             }
                         }
                         // If it's not in a container, then we need to recycle a container out of view
                         if (!isContained) {
-                            const id = getId(i)!;
                             const top = positions.get(id) || 0;
                             let furthestIndex = -1;
                             let furthestDistance = 0;
@@ -371,7 +372,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             // Note that since this is only checking top it may not be 100% accurate but that's fine.
 
                             for (let u = 0; u < numContainers; u++) {
-                                const index = peek$(ctx, `containerIndex${u}`);
+                                const index = peek$(ctx, `containerItemIndex${u}`);
                                 if (index < 0) {
                                     furthestIndex = u;
                                     break;
@@ -388,7 +389,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 }
                             }
                             if (furthestIndex >= 0) {
-                                set$(ctx, `containerIndex${furthestIndex}`, i);
+                                set$(ctx, `containerItemIndex${furthestIndex}`, i);
+                                set$(ctx, `containerItemKey${furthestIndex}`, id);
                             } else {
                                 if (__DEV__) {
                                     console.warn(
@@ -399,7 +401,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 const containerId = numContainers;
 
                                 numContainers++;
-                                set$(ctx, `containerIndex${containerId}`, i);
+                                set$(ctx, `containerItemIndex${containerId}`, i);
+                                set$(ctx, `containerItemKey${containerId}`, id);
 
                                 // TODO: This may not be necessary as it'll get st in the next loop?
                                 set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
@@ -415,11 +418,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // TODO: This could be optimized to only update the containers that have changed
                     // but it likely would have little impact. Remove this comment if not worth doing.
                     for (let i = 0; i < numContainers; i++) {
-                        const itemIndex = peek$(ctx, `containerIndex${i}`);
+                        const itemIndex = peek$(ctx, `containerItemIndex${i}`);
+                        const itemKey = peek$(ctx, `containerItemKey${i}`);
                         const item = data[itemIndex];
                         if (item) {
                             const id = getId(itemIndex);
-                            if (itemIndex < startBuffered || itemIndex > endBuffered) {
+                            if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                             } else {
                                 const pos = positions.get(id) ?? -1;
@@ -473,7 +477,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerIndex${i}`, -1);
+                set$(ctx, `containerItemIndex${i}`, -1);
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
@@ -518,9 +522,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const numContainers = peek$(ctx, "numContainers");
             if (data.length < numContainers) {
                 for (let i = 0; i < numContainers; i++) {
-                    const itemIndex = peek$(ctx, `containerIndex${i}`);
+                    const itemIndex = peek$(ctx, `containerItemIndex${i}`);
                     if (itemIndex >= data.length) {
-                        set$(ctx, `containerIndex${i}`, -1);
+                        set$(ctx, `containerItemIndex${i}`, -1);
                     }
                 }
             }

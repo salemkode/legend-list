@@ -193,7 +193,7 @@ function isViewable(
 function findContainerId(state: InternalState, ctx: StateContext, index: number) {
     const numContainers = peek$(ctx, "numContainers");
     for (let i = 0; i < numContainers; i++) {
-        const itemIndex = peek$(ctx, `containerIndex${i}`);
+        const itemIndex = peek$(ctx, `containerItemIndex${i}`);
         if (itemIndex === index) {
             return i;
         }
