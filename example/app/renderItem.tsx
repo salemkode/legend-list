@@ -129,10 +129,10 @@ export const ItemCard = ({
     });
 
     // @ts-ignore
-    const opacity = useViewabilityAmount ? useAnimatedValue(0) : 1;
+    const opacity = useViewabilityAmount ? useAnimatedValue(1) : 1;
     useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
         // @ts-ignore
-        opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
+        // opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
         // console.log('viewable', sizeVisible, size, percentOfScroller);
     });
 
