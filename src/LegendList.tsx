@@ -476,7 +476,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                  totalSize += sizes.get(id) ?? getItemSize(i, data[i]);
              }
              addTotalSize(totalSize);
-             console.log({totalSize})
         }
 
         useInit(() => {
