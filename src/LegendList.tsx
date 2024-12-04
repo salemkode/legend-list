@@ -127,6 +127,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 isStartReached: false,
                 isEndReached: false,
                 isAtBottom: false,
+                isAtTop: false,
                 data: data,
                 idsInFirstRender: undefined as never,
                 hasScrolled: false,
@@ -516,7 +517,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         };
 
         const checkAtTop = () => {
-            const { scroll } = refState.current!;
+            const { scrollLength, scroll } = refState.current!;
             if (refState.current) {
                 refState.current.isAtTop = scroll === 0;
             }
