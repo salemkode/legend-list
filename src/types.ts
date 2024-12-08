@@ -1,8 +1,8 @@
-import type { ComponentProps, ReactNode } from "react";
-import type { ScrollResponderMixin, ScrollViewComponent } from "react-native";
-import type { ScrollView, StyleProp, ViewStyle } from "react-native";
+import type { ComponentProps, ReactNode } from 'react';
+import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
+import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 
-export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, "contentOffset"> & {
+export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
@@ -56,8 +56,11 @@ export interface InternalState {
     endBuffered: number;
     endNoBuffer: number;
     scroll: number;
+    topPad: number;
     totalSize: number;
     timeouts: Set<number>;
+    fixingScroll: boolean;
+    nativeMarginTop: number;
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
 }
