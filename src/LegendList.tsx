@@ -16,7 +16,6 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    Platform,
     type ScrollView,
     StyleSheet,
     unstable_batchedUpdates,
@@ -30,6 +29,7 @@ import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_SCROLL_BUFFER = 0;
 const POSITION_OUT_OF_VIEW = -10000;
+const INITIAL_SCROLL_ADJUST = 10000;
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
@@ -108,16 +108,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         };
         const calculateInitialOffset = (index = initialScrollIndex) => {
             if (index) {
+                let offset = 0;
                 if (getEstimatedItemSize) {
-                    let offset = 0;
                     for (let i = 0; i < index; i++) {
                         offset += getEstimatedItemSize(i, data[i]);
                     }
-                    return offset;
+                } else if (estimatedItemSize) {
+                    offset = index * estimatedItemSize;
                 }
-                if (estimatedItemSize) {
-                    return index * estimatedItemSize;
-                }
+
+                return offset + INITIAL_SCROLL_ADJUST;
             }
             return undefined;
         };
@@ -149,38 +149,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 timeouts: new Set(),
                 viewabilityConfigCallbackPairs: undefined as never,
                 renderItem: undefined as never,
-                topPad: -500,
+                scrollAdjustPending: INITIAL_SCROLL_ADJUST,
                 nativeMarginTop: 0,
                 indexByKey: new Map(),
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
+            set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
         }
         const adjustScroll = (diff: number) => {
             if (supportsEstimationAdjustment && refScroller.current) {
-                // const useScroll = true;
-                // if (useScroll) {
-                //     const newScroll = refState.current!.scroll + diff;
-                //     console.log("adjustScroll", diff, newScroll);
-                //     // refState.current!.topPad += diff;
-                //     // const topPad = refState.current!.topPad;
-                //     refScroller.current.setNativeProps({
-                //         contentOffset: {
-                //             [horizontal ? "x" : "y"]: newScroll,
-                //         },
-                //         // contentContainerStyle: {
-                //         //     [horizontal ? "left" : "top"]: -newScroll,
-                //         // },
-                //     });
-                // } else {
-                refState.current!.topPad += diff;
-                // const topPad = refState.current!.topPad;
-                // console.log("adjustPad", diff, topPad);
-                //     refScroller.current.setNativeProps({
-                //         style: {
-                //             [horizontal ? "left" : "top"]: topPad,
-                //         },
-                //     });
-                // }
+                // console.log("adjustScroll", diff);
+                refState.current!.scrollAdjustPending -= diff;
             }
         };
 
@@ -364,8 +343,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return;
                 }
                 const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
-                const pad = -(refState.current!.topPad ?? 0);
-                const scroll = scrollState - topPad - pad;
+                const scrollAdjustPending = refState.current!.scrollAdjustPending ?? 0;
+                const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending);
 
                 const { sizes, positions } = refState.current!;
 
@@ -518,8 +497,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 const pos = positions.get(id) ?? -1;
                                 const prevPos = peek$(ctx, `containerPosition${i}`);
                                 if (pos >= 0 && pos !== prevPos) {
-                                    // console.log("pos", itemIndex, pos, prevPos);
-                                    set$(ctx, `containerPosition${i}`, pos + pad);
+                                    // console.log("pos", itemIndex, pos, pos + scrollAdjustPending);
+                                    set$(ctx, `containerPosition${i}`, pos + scrollAdjustPending);
                                     // if (itemIndex === startNoBuffer && prevPos >= 0) {
                                     //     const amtToAdjust = pos - prevPos;
                                     //     if (amtToAdjust !== 0) {
@@ -691,37 +670,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const handleScrollDebounced = useCallback(() => {
-            const newScroll = refState.current!.scroll;
+            const scrollAdjustPending = refState.current?.scrollAdjustPending ?? 0;
 
-            const topPadAdjust = -(refState.current?.topPad ?? 0);
-            // console.log("newScroll", newScroll, topPadAdjust);
-            if (Math.round(newScroll) < Math.max(0, Math.round(topPadAdjust))) {
-                if (refState.current!.nativeMarginTop !== -topPadAdjust) {
-                    refState.current!.nativeMarginTop = -topPadAdjust;
-                    if (Platform.OS === "ios") {
-                        // Set contentInset to adjust with the top padding
-                        refScroller.current?.setNativeProps({
-                            contentInset: {
-                                top: -topPadAdjust,
-                                left: 0,
-                            },
-                        });
-                    } else {
-                        // Set marginTop to adjust with the top padding because
-                        // contentInset is not supported on Android
-                        refScroller.current?.setNativeProps({
-                            style: {
-                                marginTop: -topPadAdjust,
-                            },
-                        });
-                        refScroller.current?.scrollTo({
-                            y: 0,
-                            animated: false,
-                        });
-                    }
-                }
-                // });
-            }
+            set$(ctx, "scrollAdjust", scrollAdjustPending);
 
             calculateItemsInView();
             checkAtBottom();
