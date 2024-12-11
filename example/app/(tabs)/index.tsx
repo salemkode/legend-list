@@ -41,7 +41,7 @@ export default function HomeScreen() {
                 renderItem={renderItem}
                 keyExtractor={(item) => `id${item.id}`}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
-                drawDistance={DRAW_DISTANCE}
+                drawDistance={DRAW_DISTANCE / 2}
                 recycleItems={RECYCLE_ITEMS}
                 initialScrollIndex={50}
                 // alignItemsAtEnd

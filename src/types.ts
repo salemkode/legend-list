@@ -56,12 +56,15 @@ export interface InternalState {
     endBuffered: number;
     endNoBuffer: number;
     scroll: number;
+    scrollTime: number;
+    scrollPrev: number;
+    scrollPrevTime: number;
     scrollAdjustPending: number;
     totalSize: number;
     timeouts: Set<number>;
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
-    viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs;
+    viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
 }
 

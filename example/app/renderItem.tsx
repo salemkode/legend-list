@@ -183,12 +183,13 @@ export const ItemCard = ({
             </Animated.View>
         );
     }
+
     return (
         <Animated.View style={{ ...styles.itemOuterContainer, opacity }}>
             <Swipeable
                 renderRightActions={renderRightActions}
                 overshootRight={true}
-                containerStyle={{ backgroundColor: "#4CAF50", borderRadius: 12 }}
+                containerStyle={styles.swipeableContainer}
                 ref={refSwipeable as any}
             >
                 <Pressable
@@ -333,6 +334,7 @@ const styles = StyleSheet.create({
         color: "#888888",
         marginTop: 2,
     },
+    swipeableContainer: { backgroundColor: "#4CAF50", borderRadius: 12 },
 });
 
 export default renderItem;

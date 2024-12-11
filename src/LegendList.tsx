@@ -333,24 +333,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return renderedItem;
         }, []);
 
-        const calculateItemsInView = useCallback((scrollExtra = 0) => {
+        const calculateItemsInView = useCallback((speed = 0) => {
+            const state = refState.current!;
+            const { data, scrollLength, scroll: scrollState, startBuffered: startBufferedState, positions } = state!;
+            if (state.animFrameLayout) {
+                cancelAnimationFrame(state.animFrameLayout);
+                state.animFrameLayout = null;
+            }
             // This should be a good optimization to make sure that all React updates happen in one frame
             // but it should be tested more with and without it to see if it's better.
             unstable_batchedUpdates(() => {
-                const {
-                    data,
-                    scrollLength,
-                    scroll: scrollState,
-                    startBuffered: startBufferedState,
-                } = refState.current!;
                 if (!data) {
                     return;
                 }
                 const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
-                const scrollAdjustPending = refState.current!.scrollAdjustPending ?? 0;
+                const scrollAdjustPending = state!.scrollAdjustPending ?? 0;
                 const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending + scrollExtra);
 
-                const { sizes, positions } = refState.current!;
 
                 let startNoBuffer: number | null = null;
                 let startBuffered: number | null = null;
@@ -475,7 +474,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 // set$(ctx, `containerItemIndex${containerId}`, i);
                                 set$(ctx, `containerItemKey${containerId}`, id);
 
-                                // TODO: This may not be necessary as it'll get st in the next loop?
+                                // TODO: This may not be necessary as it'll get a new one in the next loop?
                                 set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
                             }
                         }
@@ -664,7 +663,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const state = refState.current!;
                 // Calculate positions if not currently scrolling and have a calculate already pending
-                if (!state.animFrameScroll && !state.animFrameLayout) {
+                if (!state.animFrameLayout) {
                     state.animFrameLayout = requestAnimationFrame(() => {
                         state.animFrameLayout = null;
                         calculateItemsInView();
@@ -676,16 +675,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const handleScrollDebounced = useCallback(() => {
             const scrollAdjustPending = refState.current?.scrollAdjustPending ?? 0;
 
-            let scrollExtra = 0;
-            const time = refState.current!.scrollTime - refState.current!.scrollPrevTime;
-            if (time < 100) {
-                const diff = refState.current!.scroll - refState.current!.scrollPrev;
-                const speed = diff / time;
-                // Add the amount it will move in a single frame so that we are predicting what will need
-                // to render in the next frame
-                scrollExtra = Math.round(speed * 16);
-                // console.log("speed", scrollExtra, speed);
-            }
+            const scrollExtra = 0;
+            // const time = refState.current!.scrollTime - refState.current!.scrollPrevTime;
+            // if (time < 100) {
+            //     const diff = refState.current!.scroll - refState.current!.scrollPrev;
+            //     const speed = diff / time;
+            //     // Add the amount it will move in a single frame so that we are predicting what will need
+            //     // to render in the next frame
+            //     scrollExtra = Math.round(speed);
+            //     // console.log("speed", scrollExtra, speed);
+            //     // console.log("scrollExtra", scrollExtra, "\t", Math.round(diff), "\t", Math.round(time));
+            // }
 
             set$(ctx, "scrollAdjust", scrollAdjustPending);
 
@@ -735,9 +735,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 refState.current!.scrollTime = performance.now();
 
                 // Debounce a calculate if no calculate is already pending
-                if (refState.current && !refState.current.animFrameScroll) {
-                    refState.current.animFrameScroll = requestAnimationFrame(handleScrollDebounced);
-                }
+                // if (refState.current && !refState.current.animFrameScroll) {
+                handleScrollDebounced();
+                // refState.current.animFrameScroll = requestAnimationFrame(handleScrollDebounced);
+                // }
 
                 if (!fromSelf) {
                     onScrollProp?.(event as NativeSyntheticEvent<NativeScrollEvent>);

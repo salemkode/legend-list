@@ -19,8 +19,13 @@ function InnerContainer({ containerId, getRenderedItem, recycleItems, ItemSepara
     }
 
     return (
-        <React.Fragment key={recycleItems ? undefined : itemKey}>
-            <RenderedItem itemKey={itemKey} containerId={containerId} getRenderedItem={getRenderedItem} />
+        <React.Fragment>
+            <RenderedItem
+                key={recycleItems ? undefined : itemKey}
+                itemKey={itemKey}
+                containerId={containerId}
+                getRenderedItem={getRenderedItem}
+            />
             {ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
         </React.Fragment>
     );
