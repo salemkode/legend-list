@@ -18,7 +18,6 @@ import {
     type NativeSyntheticEvent,
     type ScrollView,
     StyleSheet,
-    unstable_batchedUpdates,
 } from "react-native";
 import { ListComponent } from "./ListComponent";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
@@ -342,7 +341,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             // This should be a good optimization to make sure that all React updates happen in one frame
             // but it should be tested more with and without it to see if it's better.
-            unstable_batchedUpdates(() => {
+            // unstable_batchedUpdates(() => {
                 if (!data) {
                     return;
                 }
@@ -526,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         endNoBuffer!,
                     );
                 }
-            });
+            // });
         }, []);
 
         useInit(() => {
