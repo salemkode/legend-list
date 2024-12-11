@@ -142,6 +142,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 renderItem: undefined as never,
                 scrollAdjustPending: INITIAL_SCROLL_ADJUST,
                 nativeMarginTop: 0,
+                scrollPrev: 0,
+                scrollPrevTime: 0,
+                scrollTime: 0,
                 indexByKey: new Map(),
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
@@ -330,7 +333,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return renderedItem;
         }, []);
 
-        const calculateItemsInView = useCallback(() => {
+        const calculateItemsInView = useCallback((scrollExtra = 0) => {
             // This should be a good optimization to make sure that all React updates happen in one frame
             // but it should be tested more with and without it to see if it's better.
             unstable_batchedUpdates(() => {
@@ -345,7 +348,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                 const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
                 const scrollAdjustPending = refState.current!.scrollAdjustPending ?? 0;
-                const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending);
+                const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending + scrollExtra);
 
                 const { sizes, positions } = refState.current!;
 
@@ -493,7 +496,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         if (item) {
                             const id = getId(itemIndex);
                             if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                                // set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                             } else {
                                 const pos = (positions.get(id) || 0) + scrollAdjustPending;
                                 const prevPos = peek$(ctx, `containerPosition${i}`);
@@ -673,9 +676,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const handleScrollDebounced = useCallback(() => {
             const scrollAdjustPending = refState.current?.scrollAdjustPending ?? 0;
 
+            let scrollExtra = 0;
+            const time = refState.current!.scrollTime - refState.current!.scrollPrevTime;
+            if (time < 100) {
+                const diff = refState.current!.scroll - refState.current!.scrollPrev;
+                const speed = diff / time;
+                // Add the amount it will move in a single frame so that we are predicting what will need
+                // to render in the next frame
+                scrollExtra = Math.round(speed * 16);
+                // console.log("speed", scrollExtra, speed);
+            }
+
             set$(ctx, "scrollAdjust", scrollAdjustPending);
 
-            calculateItemsInView();
+            calculateItemsInView(scrollExtra);
             checkAtBottom();
 
             if (refState.current) {
@@ -715,7 +729,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 refState.current!.hasScrolled = true;
                 const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
                 // Update the scroll position to use in checks
+                refState.current!.scrollPrev = refState.current!.scroll;
+                refState.current!.scrollPrevTime = refState.current!.scrollTime;
                 refState.current!.scroll = newScroll;
+                refState.current!.scrollTime = performance.now();
 
                 // Debounce a calculate if no calculate is already pending
                 if (refState.current && !refState.current.animFrameScroll) {
