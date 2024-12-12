@@ -40,8 +40,8 @@ export interface InternalState {
     positions: Map<string, number>;
     sizes: Map<string, number>;
     pendingAdjust: number;
-    animFrameScroll: number | null;
-    animFrameLayout: number | null;
+    // animFrameScroll: number | null;
+    animFrameLayout: any;
     animFrameTotalSize: number | null;
     isStartReached: boolean;
     isEndReached: boolean;
@@ -59,6 +59,7 @@ export interface InternalState {
     scrollTime: number;
     scrollPrev: number;
     scrollPrevTime: number;
+    scrollVelocity: number;
     scrollAdjustPending: number;
     totalSize: number;
     timeouts: Set<number>;
@@ -66,6 +67,7 @@ export interface InternalState {
     indexByKey: Map<string, number>;
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
+    scrollHistory: Array<{ scroll: number; time: number }>;
 }
 
 export interface ViewableRange<T> {

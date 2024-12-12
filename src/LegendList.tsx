@@ -119,7 +119,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 sizes: new Map(),
                 positions: new Map(),
                 pendingAdjust: 0,
-                animFrameScroll: null,
+                // animFrameScroll: null,
                 animFrameLayout: null,
                 animFrameTotalSize: null,
                 isStartReached: false,
@@ -145,6 +145,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollPrevTime: 0,
                 scrollTime: 0,
                 indexByKey: new Map(),
+                scrollHistory: [],
+                scrollVelocity: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
@@ -347,6 +349,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                 const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
                 const scrollAdjustPending = state!.scrollAdjustPending ?? 0;
+            const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
                 const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending + scrollExtra);
 
 
@@ -661,8 +664,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const state = refState.current!;
+                const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
-                if (!state.animFrameLayout) {
+                // TODO: This is still happening too often, need to find a better solution
+                if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 2)) {
+                    console.log("requestAnimationFrame");
                     state.animFrameLayout = requestAnimationFrame(() => {
                         state.animFrameLayout = null;
                         calculateItemsInView();
@@ -671,30 +677,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const handleScrollDebounced = useCallback(() => {
+        const handleScrollDebounced = useCallback((velocity: number) => {
             const scrollAdjustPending = refState.current?.scrollAdjustPending ?? 0;
-
-            const scrollExtra = 0;
-            // const time = refState.current!.scrollTime - refState.current!.scrollPrevTime;
-            // if (time < 100) {
-            //     const diff = refState.current!.scroll - refState.current!.scrollPrev;
-            //     const speed = diff / time;
-            //     // Add the amount it will move in a single frame so that we are predicting what will need
-            //     // to render in the next frame
-            //     scrollExtra = Math.round(speed);
-            //     // console.log("speed", scrollExtra, speed);
-            //     // console.log("scrollExtra", scrollExtra, "\t", Math.round(diff), "\t", Math.round(time));
-            // }
-
             set$(ctx, "scrollAdjust", scrollAdjustPending);
 
-            calculateItemsInView(scrollExtra);
+            // Use velocity to predict scroll position
+            calculateItemsInView(velocity);
             checkAtBottom();
-
-            if (refState.current) {
-                // Reset the debounce
-                refState.current.animFrameScroll = null;
-            }
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
@@ -719,25 +708,40 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 },
                 fromSelf?: boolean,
             ) => {
-                // in some cases when we set ScrollView contentOffset prop, there comes event from with 0 height and width
-                // this causes blank list display, looks to be Paper implementation problem
-                // let's filter out such events
                 if (event.nativeEvent?.contentSize?.height === 0 && event.nativeEvent.contentSize?.width === 0) {
                     return;
                 }
-                refState.current!.hasScrolled = true;
-                const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
-                // Update the scroll position to use in checks
-                refState.current!.scrollPrev = refState.current!.scroll;
-                refState.current!.scrollPrevTime = refState.current!.scrollTime;
-                refState.current!.scroll = newScroll;
-                refState.current!.scrollTime = performance.now();
 
-                // Debounce a calculate if no calculate is already pending
-                // if (refState.current && !refState.current.animFrameScroll) {
-                handleScrollDebounced();
-                // refState.current.animFrameScroll = requestAnimationFrame(handleScrollDebounced);
-                // }
+                const state = refState.current!;
+                state.hasScrolled = true;
+                const currentTime = performance.now();
+                const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
+
+                // Update scroll history
+                state.scrollHistory.push({ scroll: newScroll, time: currentTime });
+                // Keep only last 5 entries
+                if (state.scrollHistory.length > 5) {
+                    state.scrollHistory.shift();
+                }
+
+                // Calculate average velocity from history
+                let velocity = 0;
+                if (state.scrollHistory.length >= 2) {
+                    const newest = state.scrollHistory[state.scrollHistory.length - 1];
+                    const oldest = state.scrollHistory[0];
+                    const scrollDiff = newest.scroll - oldest.scroll;
+                    const timeDiff = newest.time - oldest.time;
+                    velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
+                }
+
+                // Update current scroll state
+                state.scrollPrev = state.scroll;
+                state.scrollPrevTime = state.scrollTime;
+                state.scroll = newScroll;
+                state.scrollTime = currentTime;
+                state.scrollVelocity = velocity;
+                // Pass velocity to calculateItemsInView
+                handleScrollDebounced(velocity);
 
                 if (!fromSelf) {
                     onScrollProp?.(event as NativeSyntheticEvent<NativeScrollEvent>);
