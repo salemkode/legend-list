@@ -19,7 +19,7 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
 }: ContainersProps) {
     const ctx = useStateContext();
-    const numContainers = use$<number>("numContainers");
+    const numContainers = use$<number>("numContainersPooled");
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {

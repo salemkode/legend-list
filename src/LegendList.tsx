@@ -464,12 +464,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 // set$(ctx, `containerItemIndex${furthestIndex}`, i);
                                 set$(ctx, `containerItemKey${furthestIndex}`, id);
                             } else {
-                                if (__DEV__) {
-                                    console.warn(
-                                        "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize. numContainers:",
-                                        numContainers,
-                                    );
-                                }
                                 const containerId = numContainers;
 
                                 numContainers++;
@@ -478,12 +472,22 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                                 // TODO: This may not be necessary as it'll get a new one in the next loop?
                                 set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+
+                            if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
+                                console.warn(
+                                    "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize. numContainers:",
+                                    numContainers,
+                                );
+                            }
                             }
                         }
                     }
 
                     if (numContainers !== prevNumContainers) {
                         set$(ctx, "numContainers", numContainers);
+                    if (numContainers > peek$<number>(ctx, "numContainersPooled")) {
+                        set$(ctx, "numContainersPooled", numContainers);
+                    }
                     }
 
                     // Update top positions of all containers
@@ -538,7 +542,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollLength = refState.current!.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
             const numContainers =
-                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) + 4;
+                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize);
 
             for (let i = 0; i < numContainers; i++) {
                 // set$(ctx, `containerItemIndex${i}`, -1);
@@ -546,6 +550,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             set$(ctx, "numContainers", numContainers);
+            set$(ctx, "numContainersPooled", numContainers * 2);
 
             calculateItemsInView();
         });

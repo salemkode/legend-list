@@ -11,6 +11,7 @@ import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, Viewability
 
 export type ListenerType =
     | "numContainers"
+    | "numContainersPooled"
     | `containerItemKey${number}`
     | `containerPosition${number}`
     | `lastItemKey`
