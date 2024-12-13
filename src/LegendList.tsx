@@ -27,8 +27,8 @@ import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_SCROLL_BUFFER = 0;
-const POSITION_OUT_OF_VIEW = -10000;
 const INITIAL_SCROLL_ADJUST = 10000;
+const POSITION_OUT_OF_VIEW = -10000000;
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
@@ -548,14 +548,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
 
             calculateItemsInView();
-
-            // Set an initial total height based on what we know
-            let totalSize = 0;
-            for (let i = 0; i < data.length; i++) {
-                const id = getId(i);
-                totalSize += getItemSize(id, i, data[i]);
-            }
-            addTotalSize(null, totalSize);
         });
 
         const checkAtBottom = () => {
@@ -598,12 +590,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // Reset containers that aren't used anymore because the data has changed
             const numContainers = peek$<number>(ctx, "numContainers");
-            if (data.length < numContainers) {
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    if (refState.current?.indexByKey.get(itemKey) === undefined) {
-                        set$(ctx, `containerItemKey${i}`, null);
-                    }
+                if (itemKey && refState.current?.indexByKey.get(itemKey) === undefined) {
+                    set$(ctx, `containerItemKey${i}`, undefined);
+                    set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                 }
             }
 
