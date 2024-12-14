@@ -3,7 +3,7 @@
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { FlashList } from "@shopify/flash-list";
-import { Image as RNImage, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
 
@@ -21,28 +21,8 @@ const cardStyles = StyleSheet.create({
     },
 });
 
-const MoviePortrait = ({ movie, isLegend }: { movie: Movie; isLegend: boolean }) => {
-    // useEffect(() => {
-    //     itemCount++;
-    //     console.log("itemCount", itemCount);
-    // }, []);
-
-    // console.log("movie", movie.id);
-
-    // const Image = isLegend ? ExpoImage : RNImage;
-    const Image = RNImage;
-
-    return (
-        <View style={cardStyles.image}>
-            <View style={cardStyles.background} />
-            <Image
-                source={{ uri: getImageUrl(movie.poster_path) }}
-                style={cardStyles.image}
-                // transition={{ duration: 0 }}
-                fadeDuration={0}
-            />
-        </View>
-    );
+const MoviePortrait = ({ movie }: { movie: Movie }) => {
+    return <Image source={{ uri: getImageUrl(movie.poster_path) }} style={cardStyles.image} fadeDuration={0} />;
 };
 
 const MarginBetweenItems = () => <View style={{ width: margins.s }} />;
@@ -87,11 +67,20 @@ const MovieRow = ({
 }) => {
     const movies = playlistData[playlist.id]();
     const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
+    let opacity = 0;
+    if (isLegend) {
+        const [_opacity, setOpacity] = useRecyclingState<number>(() => {
+            if (setOpacity) {
+                requestAnimationFrame(() => setOpacity(1));
+                return 0;
+            }
+            return 1;
+        });
+        opacity = _opacity;
+    } else {
+        opacity = 1;
+    }
 
-    const [opacity, setOpacity] = useRecyclingState<number>(() => {
-        requestAnimationFrame(() => setOpacity(1));
-        return 0;
-    });
     // const listRef = useRef<FlashList<Movie>>(null);
 
     //   const {onMomentumScrollBegin, onScroll} = useRememberListScroll(
@@ -136,7 +125,7 @@ const MovieRow = ({
                     estimatedItemSize={cardStyles.image.width + 5}
                     data={movies}
                     //   recycleItems
-                    renderItem={({ item }: { item: Movie }) => <MoviePortrait movie={item} isLegend={isLegend} />}
+                    renderItem={({ item }: { item: Movie }) => <MoviePortrait movie={item} />}
                     // ref={listRef}
                     //   onMomentumScrollBegin={onMomentumScrollBegin}
                     //   onScroll={onScroll}
