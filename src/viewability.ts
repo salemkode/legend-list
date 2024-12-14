@@ -6,6 +6,7 @@ import type {
     ViewToken,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
+    ViewabilityConfigCallbackPairs,
 } from './types';
 
 const mapViewabilityConfigCallbackPairs = new Map<
@@ -19,7 +20,7 @@ const mapViewabilityConfigCallbackPairs = new Map<
     }
 >();
 
-export function setupViewability(props: LegendListProps<any>) {
+export function setupViewability(props: LegendListProps<any>): ViewabilityConfigCallbackPairs | undefined {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
     if (viewabilityConfig || onViewableItemsChanged) {

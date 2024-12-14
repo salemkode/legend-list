@@ -1,9 +1,8 @@
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from "@/constants/constants";
-import { useScrollTest } from "@/constants/useScrollTest";
-import { LegendList, type LegendListRef } from "@legendapp/list";
-import { useRef, useState } from "react";
-import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
-import { type Item, renderItem } from "../renderItem";
+import {} from "@/constants/constants";
+import {} from "@legendapp/list";
+import {} from "react";
+import { LogBox, Platform, StyleSheet } from "react-native";
+import {} from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
@@ -13,76 +12,7 @@ const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
 console.log(`Using ${uiManager}`);
 
 export default function HomeScreen() {
-    const listRef = useRef<LegendListRef>(null);
-
-    const [data, setData] = useState<Item[]>(
-        () =>
-            Array.from({ length: 1000 }, (_, i) => ({
-                id: i.toString(),
-            })) as any[],
-    );
-
-    if (DO_SCROLL_TEST) {
-        useScrollTest((offset) => {
-            listRef.current?.scrollToOffset({
-                offset: offset,
-                animated: true,
-            });
-        });
-    }
-
-    return (
-        <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
-            <LegendList
-                ref={listRef}
-                style={[StyleSheet.absoluteFill, styles.scrollContainer]}
-                contentContainerStyle={styles.listContainer}
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={(item) => `id${item.id}`}
-                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
-                drawDistance={DRAW_DISTANCE / 2}
-                recycleItems={RECYCLE_ITEMS}
-                initialScrollIndex={50}
-                // alignItemsAtEnd
-                // maintainScrollAtEnd
-                onEndReached={({ distanceFromEnd }) => {
-                    console.log("onEndReached", distanceFromEnd);
-                }}
-                // ListHeaderComponent={<View />}
-                // ListHeaderComponentStyle={styles.listHeader}
-                ListEmptyComponentStyle={{ flex: 1 }}
-                ListEmptyComponent={
-                    <View
-                        style={{
-                            flex: 1,
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text style={{ color: "white" }}>Empty</Text>
-                    </View>
-                }
-                viewabilityConfigCallbackPairs={[
-                    {
-                        viewabilityConfig: { id: "viewability", viewAreaCoveragePercentThreshold: 50 },
-                        // onViewableItemsChanged: ({ viewableItems, changed }) => {
-                        //     console.log(
-                        //         'onViewableItems',
-                        //         viewableItems.map((v) => v.key),
-                        //     );
-                        //     // console.log('onViewableChanged', changed);
-                        // },
-                    },
-                ]}
-
-                // initialScrollOffset={20000}
-                // initialScrollIndex={500}
-                // inverted
-                // horizontal
-            />
-        </View>
-    );
+    return null;
 }
 
 const styles = StyleSheet.create({
