@@ -18,31 +18,14 @@ function InnerContainer({ containerId, getRenderedItem, recycleItems, ItemSepara
         return null;
     }
 
+    const renderedItem = getRenderedItem(itemKey, containerId);
+
     return (
-        <React.Fragment>
-            <RenderedItem
-                key={recycleItems ? undefined : itemKey}
-                itemKey={itemKey}
-                containerId={containerId}
-                getRenderedItem={getRenderedItem}
-            />
+        <React.Fragment key={recycleItems ? undefined : itemKey}>
+            {renderedItem}
             {ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
         </React.Fragment>
     );
-}
-
-function RenderedItem({
-    itemKey,
-    containerId,
-    getRenderedItem,
-}: {
-    itemKey: string;
-    containerId: number;
-    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
-}) {
-    const renderedItem = getRenderedItem(itemKey, containerId);
-
-    return renderedItem;
 }
 
 export const Container = ({
