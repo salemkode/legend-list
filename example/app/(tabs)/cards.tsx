@@ -7,11 +7,6 @@ import { type Item, renderItem } from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
-// @ts-ignore
-const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
-
-console.log(`Using ${uiManager}`);
-
 export default function HomeScreen() {
     const listRef = useRef<LegendListRef>(null);
 
