@@ -39,15 +39,18 @@ export const Containers = React.memo(function Containers({
     return (
         <$View
             $key="totalSize"
-            $style={() =>
-                horizontal
+            $key2="scrollAdjust"
+            $style={() => {
+                const size = peek$<number>(ctx, "totalSize") + peek$<number>(ctx, "scrollAdjust");
+
+                return horizontal
                     ? {
-                          width: peek$(ctx, "totalSize"),
+                          width: size,
                       }
                     : {
-                          height: peek$(ctx, "totalSize"),
-                      }
-            }
+                          height: size,
+                      };
+            }}
         >
             {containers}
         </$View>
