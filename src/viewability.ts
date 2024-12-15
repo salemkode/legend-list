@@ -35,17 +35,17 @@ export function setupViewability(props: LegendListProps<any>): ViewabilityConfig
                 onViewableItemsChanged,
             },
         ];
+    }
 
-        if (viewabilityConfigCallbackPairs) {
-            for (const pair of viewabilityConfigCallbackPairs) {
-                mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id, {
-                    viewableItems: [],
-                    start: -1,
-                    end: -1,
-                    previousStart: -1,
-                    previousEnd: -1,
-                });
-            }
+    if (viewabilityConfigCallbackPairs) {
+        for (const pair of viewabilityConfigCallbackPairs) {
+            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id, {
+                viewableItems: [],
+                start: -1,
+                end: -1,
+                previousStart: -1,
+                previousEnd: -1,
+            });
         }
     }
 
