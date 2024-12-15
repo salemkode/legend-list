@@ -659,12 +659,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const state = refState.current!;
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
-                // TODO: This is still happening too often, need to find a better solution
-                if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 2)) {
-                    console.log("requestAnimationFrame");
+                if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
                     state.animFrameLayout = requestAnimationFrame(() => {
                         state.animFrameLayout = null;
-                        calculateItemsInView();
+                        calculateItemsInView(state.scrollVelocity);
                     });
                 }
             }
