@@ -48,22 +48,19 @@ export const Container = ({
     const createStyle = (): ViewStyle => {
         const position = peek$<number>(ctx, `containerPosition${id}`);
         const visible = peek$<boolean>(ctx, `containerDidLayout${id}`);
-        // console.log("createStyle", id, position);
         return horizontal
             ? {
                   flexDirection: "row",
                   position: "absolute",
-                  top: 0,
+                  top: visible ? 0 : -10000000,
                   bottom: 0,
                   left: position,
-                  opacity: visible ? 1 : 0,
               }
             : {
                   position: "absolute",
-                  left: 0,
+                  left: visible ? 0 : -10000000,
                   right: 0,
                   top: position,
-                  opacity: visible ? 1 : 0,
               };
     };
 
