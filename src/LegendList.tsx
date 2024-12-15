@@ -27,7 +27,7 @@ import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
-const DEFAULT_SCROLL_BUFFER = 0;
+const DEFAULT_DRAW_DISTANCE = 250;
 const INITIAL_SCROLL_ADJUST = 10000;
 const POSITION_OUT_OF_VIEW = -10000000;
 
@@ -71,7 +71,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const internalRef = useRef<ScrollView>(null);
         const refScroller = internalRef as React.MutableRefObject<ScrollView>;
-        const scrollBuffer = drawDistance ?? DEFAULT_SCROLL_BUFFER;
+        const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
         const supportsEstimationAdjustment = true;
 
         const refState = useRef<InternalState>();
