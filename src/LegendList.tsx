@@ -202,7 +202,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const scrollAdjustPending = state!.scrollAdjustPending ?? 0;
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending + scrollExtra);
+            const scroll = Math.max(
+                0,
+                scrollState - topPad - (Platform.OS === "ios" ? scrollAdjustPending : 0) + scrollExtra,
+            );
 
             let startNoBuffer: number | null = null;
             let startBuffered: number | null = null;
