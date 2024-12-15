@@ -22,7 +22,12 @@ const cardStyles = StyleSheet.create({
 });
 
 const MoviePortrait = ({ movie }: { movie: Movie }) => {
-    return <Image source={{ uri: getImageUrl(movie.poster_path) }} style={cardStyles.image} fadeDuration={0} />;
+    return (
+        <View style={cardStyles.image}>
+            <View style={cardStyles.background} />
+            <Image source={{ uri: getImageUrl(movie.poster_path) }} style={cardStyles.image} fadeDuration={0} />
+        </View>
+    );
 };
 
 const MarginBetweenItems = () => <View style={{ width: margins.s }} />;
