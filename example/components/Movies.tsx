@@ -1,5 +1,5 @@
 // Forked from https://github.com/Almouro/rn-list-comparison-movies
-// Full Credit to Alex Moreaux (@Almouro) for the original code
+// Full credit to Alex Moreaux (@Almouro) for the original code
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { FlashList } from "@shopify/flash-list";
@@ -25,7 +25,12 @@ const MoviePortrait = ({ movie }: { movie: Movie }) => {
     return (
         <View style={cardStyles.image}>
             <View style={cardStyles.background} />
-            <Image source={{ uri: getImageUrl(movie.poster_path) }} style={cardStyles.image} fadeDuration={0} />
+            <Image
+                key={movie.id}
+                source={{ uri: getImageUrl(movie.poster_path) }}
+                style={cardStyles.image}
+                fadeDuration={0}
+            />
         </View>
     );
 };
