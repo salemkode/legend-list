@@ -16,11 +16,11 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    Platform,
     type ScrollView,
     StyleSheet,
 } from "react-native";
 import { ListComponent } from "./ListComponent";
+import { USE_CONTENT_INSET } from "./constants";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
@@ -72,10 +72,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const internalRef = useRef<ScrollView>(null);
         const refScroller = internalRef as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_SCROLL_BUFFER;
-        // Experimental: It works ok on iOS when scrolling up, but is doing weird things when sizes are changing.
-        // And it doesn't work at all on Android because it uses contentInset. I'll try it again later.
-        // Ideally it would work by adjusting the contentOffset but in previous attempts that was causing jitter.
-        const supportsEstimationAdjustment = true; //   Platform.OS === "ios";
+        const supportsEstimationAdjustment = true;
 
         const refState = useRef<InternalState>();
         const getId = (index: number): string => {
@@ -204,7 +201,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = Math.max(
                 0,
-                scrollState - topPad - (Platform.OS === "ios" ? scrollAdjustPending : 0) + scrollExtra,
+                scrollState - topPad - (USE_CONTENT_INSET ? scrollAdjustPending : 0) + scrollExtra,
             );
 
             let startNoBuffer: number | null = null;
@@ -269,7 +266,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered);
+            // console.log(
+            //     "start",
+            //     startBuffered,
+            //     startNoBuffer,
+            //     endNoBuffer,
+            //     endBuffered,
+            //     scroll,
+            //     scrollState,
+            //     topPad,
+            //     scrollAdjustPending,
+            //     scrollExtra,
+            // );
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers");
@@ -683,7 +691,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const onLayout = useCallback((event: LayoutChangeEvent) => {
             let scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
-            if (Platform.OS !== "ios") {
+            if (!USE_CONTENT_INSET) {
                 // Add the adjusted scroll, see $ScrollView for where this is applied
                 scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
             }

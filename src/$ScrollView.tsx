@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Platform, ScrollView, type ScrollViewProps, StyleSheet } from "react-native";
+import { ScrollView, type ScrollViewProps, StyleSheet } from "react-native";
+import { USE_CONTENT_INSET } from "./constants";
 import { use$ } from "./state";
 
 const OFFSET_TEST = 0;
@@ -13,7 +14,7 @@ export const $ScrollView = React.forwardRef(function $ScrollView(props: ScrollVi
     const adjustProps: ScrollViewProps = {};
 
     if (scrollAdjust !== 0) {
-        if (Platform.OS === "ios") {
+        if (USE_CONTENT_INSET) {
             adjustProps.contentInset = horizontal ? { left: -scrollAdjust } : { top: -scrollAdjust + OFFSET_TEST };
             if (OFFSET_TEST) {
                 adjustProps.contentContainerStyle = { marginTop: OFFSET_TEST };
