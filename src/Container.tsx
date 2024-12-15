@@ -1,7 +1,7 @@
-import * as React from "react";
+import React from "react";
 import type { LayoutChangeEvent, ViewStyle } from "react-native";
 import { $View } from "./$View";
-import { peek$, use$, useStateContext } from "./state";
+import { peek$, set$, use$, useStateContext } from "./state";
 
 interface InnerContainerProps {
     containerId: number;
@@ -64,6 +64,8 @@ export const Container = ({
 
     const createStyle = (): ViewStyle => {
         const position = peek$<number>(ctx, `containerPosition${id}`);
+        const visible = peek$<boolean>(ctx, `containerDidLayout${id}`);
+        // console.log("createStyle", id, position);
         return horizontal
             ? {
                   flexDirection: "row",
@@ -71,14 +73,14 @@ export const Container = ({
                   top: 0,
                   bottom: 0,
                   left: position,
-                  //   opacity: 1, //position < 0 ? 0 : 1,
+                  opacity: visible ? 1 : 0,
               }
             : {
                   position: "absolute",
                   left: 0,
                   right: 0,
                   top: position,
-                  //   opacity: 1, //position < 0 ? 0 : 1,
+                  opacity: visible ? 1 : 0,
               };
     };
 
@@ -88,13 +90,22 @@ export const Container = ({
     return (
         <$View
             $key={`containerPosition${id}`}
+            $key2={`containerDidLayout${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
                 if (key !== undefined) {
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
+                    // console.log("layout", key, size);
                     onLayout(key, size);
+
+                    const measured = peek$(ctx, `containerDidLayout${id}`);
+                    if (!measured) {
+                        requestAnimationFrame(() => {
+                            set$(ctx, `containerDidLayout${id}`, true);
+                        });
+                    }
                 }
             }}
         >

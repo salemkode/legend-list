@@ -40,7 +40,6 @@ export interface InternalState {
     positions: Map<string, number>;
     sizes: Map<string, number>;
     pendingAdjust: number;
-    // animFrameScroll: number | null;
     animFrameLayout: any;
     animFrameTotalSize: number | null;
     isStartReached: boolean;

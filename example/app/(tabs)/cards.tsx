@@ -7,7 +7,7 @@ import { type Item, renderItem } from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
-export default function HomeScreen() {
+export default function Cards() {
     const listRef = useRef<LegendListRef>(null);
 
     const [data, setData] = useState<Item[]>(

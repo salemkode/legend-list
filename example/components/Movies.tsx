@@ -62,13 +62,11 @@ const MovieRow = ({
     ListComponent,
     isLegend,
     useRecyclingState,
-    // useRecyclingEffect,
 }: {
     playlist: Playlist;
     ListComponent: typeof FlashList | typeof LegendList;
     isLegend: boolean;
     useRecyclingState: LegendListRenderItemProps<Playlist>["useRecyclingState"];
-    // useRecyclingEffect: (effect: (info: LegendListRecyclingState<Movie>) => void | (() => void)) => void;
 }) => {
     const movies = playlistData[playlist.id]();
     const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
@@ -160,11 +158,7 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
             data={playlists}
             keyExtractor={(playlist: Playlist) => playlist.id}
             estimatedItemSize={cardStyles.image.height + 50}
-            renderItem={({
-                item: playlist,
-                useRecyclingState,
-                useRecyclingEffect,
-            }: LegendListRenderItemProps<Playlist>) => (
+            renderItem={({ item: playlist, useRecyclingState }: LegendListRenderItemProps<Playlist>) => (
                 <MovieRow
                     ListComponent={ListComponent}
                     isLegend={isLegend}

@@ -91,6 +91,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             const size = getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
+            // TODO: I don't think I like this setting sizes when it's not really known, how to do
+            // that better and support viewability checking sizes
             refState.current!.sizes.set(key, size);
             return size;
         };
@@ -280,7 +282,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // );
 
             if (startBuffered !== null && endBuffered !== null) {
-                const prevNumContainers = ctx.values.get("numContainers");
+                const prevNumContainers = ctx.values.get("numContainers") as number;
                 let numContainers = prevNumContainers;
                 for (let i = startBuffered; i <= endBuffered; i++) {
                     let isContained = false;
@@ -367,6 +369,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         } else {
                             const pos = (positions.get(id) || 0) + scrollAdjustPending;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
+
                             if (pos >= 0 && pos !== prevPos) {
                                 // console.log("pos", itemIndex, pos, pos + scrollAdjustPending);
                                 set$(ctx, `containerPosition${i}`, pos);
@@ -621,10 +624,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
-            const sizes = refState.current!.sizes!;
-            const index = refState.current?.indexByKey.get(key)!;
+            const { sizes, indexByKey, idsInFirstRender } = refState.current!;
+            const index = indexByKey.get(key)!;
             // TODO: I don't love this, can do it better?
-            const wasInFirstRender = refState.current?.idsInFirstRender.has(key);
+            const wasInFirstRender = idsInFirstRender.has(key);
 
             const prevSize = sizes.get(key) || (wasInFirstRender ? getItemSize(key, index, data[index]) : 0);
             // let scrollNeedsAdjust = 0;
