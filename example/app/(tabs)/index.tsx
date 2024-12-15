@@ -1,8 +1,4 @@
-import {} from "@/constants/constants";
-import {} from "@legendapp/list";
-import {} from "react";
 import { LogBox, Platform, StyleSheet } from "react-native";
-import {} from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
