@@ -16,6 +16,7 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
+    Platform,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -195,9 +196,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 cancelAnimationFrame(state.animFrameLayout);
                 state.animFrameLayout = null;
             }
-            // This should be a good optimization to make sure that all React updates happen in one frame
-            // but it should be tested more with and without it to see if it's better.
-            // unstable_batchedUpdates(() => {
             if (!data) {
                 return;
             }
@@ -385,7 +383,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     endNoBuffer!,
                 );
             }
-            // });
         }, []);
 
         const checkAtBottom = () => {
@@ -683,7 +680,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
-            const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+            let scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+
+            if (Platform.OS !== "ios") {
+                // Add the adjusted scroll, see $ScrollView for where this is applied
+                scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
+            }
             refState.current!.scrollLength = scrollLength;
 
             if (__DEV__) {
