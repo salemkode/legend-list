@@ -97,20 +97,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#456",
         bottom: Platform.OS === "ios" ? 82 : 0,
     },
-    scrollContainer: {
-        paddingHorizontal: 16,
-        // paddingrVertical: 48,
-    },
-
-    itemContainer: {
-        // padding: 4,
-        // borderBottomWidth: 1,
-        // borderBottomColor: "#ccc",
-    },
+    scrollContainer: {},
     listContainer: {
-        // paddingHorizontal: 16,
-        // paddingTop: 48,
-        // flexGrow: 1,
-        // marginTop: -400,
+        width: 360,
+        maxWidth: "100%",
+        marginHorizontal: "auto",
     },
 });
