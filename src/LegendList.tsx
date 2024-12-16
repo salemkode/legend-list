@@ -152,7 +152,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }
         const adjustScroll = (diff: number) => {
             if (maintainVisibleContentPosition && refScroller.current) {
-                // console.log("adjustScroll", diff);
                 refState.current!.scrollAdjustPending -= diff;
             }
         };
@@ -290,7 +289,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const id = getId(i)!;
                     // See if this item is already in a container
                     for (let j = 0; j < numContainers; j++) {
-                        // const index = peek$(ctx, `containerItemIndex${j}`);
                         const key = peek$(ctx, `containerItemKey${j}`);
                         if (key === id) {
                             isContained = true;
@@ -326,13 +324,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                         if (furthestIndex >= 0) {
-                            // set$(ctx, `containerItemIndex${furthestIndex}`, i);
                             set$(ctx, `containerItemKey${furthestIndex}`, id);
                         } else {
                             const containerId = numContainers;
 
                             numContainers++;
-                            // set$(ctx, `containerItemIndex${containerId}`, i);
                             set$(ctx, `containerItemKey${containerId}`, id);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
@@ -359,28 +355,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // TODO: This could be optimized to only update the containers that have changed
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
-                    // const itemIndex = peek$<nu(ctx, `containerItemIndex${i}`);
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                     const itemIndex = refState.current?.indexByKey.get(itemKey)!;
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
-                        if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
-                            // set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                        } else {
+                        if (!(itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered)) {
                             const pos = (positions.get(id) || 0) + scrollAdjustPending;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
 
                             if (pos >= 0 && pos !== prevPos) {
-                                // console.log("pos", itemIndex, pos, pos + scrollAdjustPending);
                                 set$(ctx, `containerPosition${i}`, pos);
-                                // if (itemIndex === startNoBuffer && prevPos >= 0) {
-                                //     const amtToAdjust = pos - prevPos;
-                                //     if (amtToAdjust !== 0) {
-                                //         console.log("startNoBuffer", itemIndex, amtToAdjust, pos, prevPos);
-                                //         // requestAnimationFrame(() => adjustScroll(amtToAdjust));
-                                //     }
-                                // }
                             }
                         }
                     }
@@ -454,7 +439,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     adjustScroll(size);
                 }
             }
-            // console.log("setting totalSize", data.length, totalSize);
             addTotalSize(null, totalSize, true);
 
             if (maintainVisibleContentPosition) {
@@ -475,13 +459,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 refState.current.isEndReached = false;
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$<number>(ctx, "numContainers");
-                // console.log("resetting containers", numContainers);
                 for (let i = 0; i < numContainers; i++) {
-                    // const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    // if (itemKey && indexByKey.get(itemKey) === undefined) {
                     set$(ctx, `containerItemKey${i}`, undefined);
                     set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                    // }
                 }
                 calculateItemsInView();
                 checkAtBottom();
@@ -618,7 +598,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize);
 
             for (let i = 0; i < numContainers; i++) {
-                // set$(ctx, `containerItemIndex${i}`, -1);
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
@@ -639,18 +618,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const wasInFirstRender = idsInFirstRender.has(key);
 
             const prevSize = sizes.get(key) || (wasInFirstRender ? getItemSize(key, index, data[index]) : 0);
-            // let scrollNeedsAdjust = 0;
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
-                // TODO: Experimental scroll adjusting
-                // const diff = length - (prevLength || 0);
-                // const startNoBuffer = visibleRange$.startNoBuffer.peek();
-                // if (refPositions.current?.hasScrolled && wasInFirstRender && index <= startNoBuffer) {
-                //     scrollNeedsAdjust += diff;
-                // }
-
-                // console.log("size diff", key, size, prevSize);
-
                 sizes.set(key, size);
                 addTotalSize(key, size - prevSize);
 
@@ -775,7 +744,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollToIndex = ({ index, animated }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                     // naive implementation to search element by index
                     // TODO: create some accurate search algorithm
-                    // FlashList seems to be able to find index in the dynamic size list with some search
                     const offsetObj = calculateInitialOffset(index);
                     const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
                     refScroller.current!.scrollTo({ ...offset, animated });

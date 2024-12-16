@@ -17,7 +17,12 @@ import type { LegendListProps } from "./types";
 interface ListComponentProps
     extends Omit<
         LegendListProps<any>,
-        "data" | "estimatedItemSize" | "drawDistance" | "maintainScrollAtEnd" | "maintainScrollAtEndThreshold"
+        | "data"
+        | "estimatedItemSize"
+        | "drawDistance"
+        | "maintainScrollAtEnd"
+        | "maintainScrollAtEndThreshold"
+        | "maintainVisibleContentPosition"
     > {
     horizontal: boolean;
     initialContentOffset: number | undefined;
@@ -75,12 +80,8 @@ export const ListComponent = React.memo(function ListComponent({
                       }
                     : {},
             ]}
-            // contentInset={{
-            //     top: 200,
-            // }}
             onScroll={handleScroll}
             onLayout={onLayout}
-            // scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
                 initialContentOffset
@@ -119,15 +120,6 @@ export const ListComponent = React.memo(function ListComponent({
                     {getComponent(ListEmptyComponent)}
                 </$View>
             )}
-
-            {/* {supportsEstimationAdjustment && (
-                <Reactive.View
-                    $style={() => ({
-                        height: visibleRange$.topPad.get(),
-                        width: '100%',
-                    })}
-                />
-            )} */}
 
             <Containers
                 horizontal={horizontal!}

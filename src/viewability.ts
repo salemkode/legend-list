@@ -91,10 +91,7 @@ function updateViewableItemsWithConfig(
     const configId = viewabilityConfig.id;
     const viewabilityState = mapViewabilityConfigCallbackPairs.get(configId)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
-    // if (previousStart === start && previousEnd === end) {
-    //     // Already processed this, so skip it
-    //     return;
-    // }
+
     const changed: ViewToken[] = [];
     if (previousViewableItems) {
         for (const viewToken of previousViewableItems) {
