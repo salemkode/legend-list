@@ -119,7 +119,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 sizes: new Map(),
                 positions: new Map(),
                 pendingAdjust: 0,
-                // animFrameScroll: null,
                 animFrameLayout: null,
                 animFrameTotalSize: null,
                 isStartReached: false,
@@ -158,33 +157,35 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         };
         const addTotalSize = useCallback((key: string | null, add: number, set?: boolean) => {
-            const index = key === null ? 0 : refState.current?.indexByKey.get(key)!;
-            const isAbove = index < (refState.current?.startNoBuffer || 0);
-            const prev = refState.current!.totalSize;
+            const state = refState.current!;
+            const index = key === null ? 0 : state.indexByKey.get(key)!;
+            const isAbove = index < (state.startNoBuffer || 0);
+            const prev = state.totalSize;
             if (set) {
-                refState.current!.totalSize = add;
+                state.totalSize = add;
             } else {
-                refState.current!.totalSize += add;
+                state.totalSize += add;
             }
-            const totalSize = refState.current!.totalSize;
             const doAdd = () => {
-                refState.current!.animFrameTotalSize = null;
+                const totalSize = state.totalSize;
+                state.animFrameTotalSize = null;
 
                 set$(ctx, "totalSize", totalSize);
-                const screenLength = refState.current!.scrollLength;
+                const screenLength = state.scrollLength;
                 if (alignItemsAtEnd) {
                     const listPaddingTop = peek$<number>(ctx, "stylePaddingTop");
                     set$(ctx, "paddingTop", Math.max(0, screenLength - totalSize - listPaddingTop));
                 }
             };
-            // console.log("add size", add, isAbove, key, index, refState.current?.startNoBuffer || 0);
+
             if (isAbove) {
                 adjustScroll(add);
             }
-            if (!prev) {
+
+            if (!prev || set) {
                 doAdd();
-            } else if (!refState.current!.animFrameTotalSize) {
-                refState.current!.animFrameTotalSize = requestAnimationFrame(doAdd);
+            } else if (!state.animFrameTotalSize) {
+                state.animFrameTotalSize = requestAnimationFrame(doAdd);
             }
         }, []);
 
