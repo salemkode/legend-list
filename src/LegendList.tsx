@@ -172,8 +172,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 set$(ctx, "totalSize", totalSize);
                 const screenLength = state.scrollLength;
                 if (alignItemsAtEnd) {
-                    const listPaddingTop = peek$<number>(ctx, "stylePaddingTop");
-                    set$(ctx, "paddingTop", Math.max(0, screenLength - totalSize - listPaddingTop));
+                    const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
+                    const paddingTop = Math.max(0, Math.floor(screenLength - totalSize - listPaddingTop));
+                    set$(ctx, "paddingTop", paddingTop);
                 }
             };
 
@@ -385,6 +386,33 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
+        const doMaintainScrollAtEnd = () => {
+            console.log("doMaintainScrollAtEnd", refState.current?.isAtBottom, maintainScrollAtEnd);
+            if (refState.current?.isAtBottom && maintainScrollAtEnd) {
+                // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
+                // scrollRef.current?.setNativeProps({
+                //   contentContainerStyle: {
+                //     height:
+                //       visibleRange$.totalSize.get() + visibleRange$.topPad.get() + 48,
+                //   },
+                //   contentOffset: {
+                //     y:
+                //       visibleRange$.totalSize.peek() +
+                //       visibleRange$.topPad.peek() -
+                //       SCREEN_LENGTH +
+                //       48 * 3,
+                //   },
+                // });
+
+                // TODO: This kinda works too, but with more of a flash
+                requestAnimationFrame(() => {
+                    refScroller.current?.scrollToEnd({
+                        animated: true,
+                    });
+                });
+            }
+        };
+
         const checkAtBottom = () => {
             const { scrollLength, scroll } = refState.current!;
             const totalSize = peek$<number>(ctx, "totalSize");
@@ -421,6 +449,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data) {
+            const didAdd = data?.length > refState.current.data?.length;
             refState.current.data = data;
             let totalSize = 0;
             const indexByKey = new Map();
@@ -464,6 +493,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                 }
                 calculateItemsInView();
+
+                doMaintainScrollAtEnd();
                 checkAtBottom();
                 checkAtTop();
             }
@@ -623,29 +654,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 sizes.set(key, size);
                 addTotalSize(key, size - prevSize);
 
-                if (refState.current?.isAtBottom && maintainScrollAtEnd) {
-                    // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
-                    // scrollRef.current?.setNativeProps({
-                    //   contentContainerStyle: {
-                    //     height:
-                    //       visibleRange$.totalSize.get() + visibleRange$.topPad.get() + 48,
-                    //   },
-                    //   contentOffset: {
-                    //     y:
-                    //       visibleRange$.totalSize.peek() +
-                    //       visibleRange$.topPad.peek() -
-                    //       SCREEN_LENGTH +
-                    //       48 * 3,
-                    //   },
-                    // });
-
-                    // TODO: This kinda works too, but with more of a flash
-                    requestAnimationFrame(() => {
-                        refScroller.current?.scrollToEnd({
-                            animated: true,
-                        });
-                    });
-                }
+                doMaintainScrollAtEnd();
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const state = refState.current!;
