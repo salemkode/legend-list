@@ -2,7 +2,7 @@ import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constant
 import { useScrollTest } from "@/constants/useScrollTest";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
-import { LogBox, Platform, StyleSheet, View } from "react-native";
+import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
 import { type Item, renderItem } from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
@@ -48,18 +48,12 @@ export default function Cards() {
                 ListHeaderComponentStyle={styles.listHeader}
                 ListFooterComponent={<View />}
                 ListFooterComponentStyle={styles.listHeader}
-                // ListEmptyComponentStyle={{ flex: 1 }}
-                // ListEmptyComponent={
-                //     <View
-                //         style={{
-                //             flex: 1,
-                //             justifyContent: "center",
-                //             alignItems: "center",
-                //         }}
-                //     >
-                //         <Text style={{ color: "white" }}>Empty</Text>
-                //     </View>
-                // }
+                ListEmptyComponentStyle={{ flex: 1 }}
+                ListEmptyComponent={
+                    <View style={styles.listEmpty}>
+                        <Text style={{ color: "white" }}>Empty</Text>
+                    </View>
+                }
                 // viewabilityConfigCallbackPairs={[
                 //     {
                 //         viewabilityConfig: { id: "viewability", viewAreaCoveragePercentThreshold: 50 },
@@ -90,7 +84,14 @@ const styles = StyleSheet.create({
         backgroundColor: "#456AAA",
         borderRadius: 12,
         marginHorizontal: 8,
-        marginTop: 8,
+        marginVertical: 8,
+    },
+    listEmpty: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#6789AB",
+        paddingVertical: 16,
     },
     outerContainer: {
         backgroundColor: "#456",

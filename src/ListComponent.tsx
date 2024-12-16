@@ -109,7 +109,16 @@ export const ListComponent = React.memo(function ListComponent({
                     {getComponent(ListHeaderComponent)}
                 </$View>
             )}
-            {ListEmptyComponent && <View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</View>}
+            {ListEmptyComponent && (
+                <$View
+                    $key="scrollAdjust"
+                    $style={() =>
+                        StyleSheet.compose(ListEmptyComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
+                    }
+                >
+                    {getComponent(ListEmptyComponent)}
+                </$View>
+            )}
 
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
