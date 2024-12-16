@@ -11,10 +11,17 @@ type Message = {
 };
 
 let idCounter = 0;
+const MS_PER_SECOND = 1000;
 
 const defaultChatMessages: Message[] = [
-    { id: String(idCounter++), text: "Hello", sender: "bot", timeStamp: Date.now() },
-    { id: String(idCounter++), text: "How can I help you?", sender: "bot", timeStamp: Date.now() },
+    {
+        id: String(idCounter++),
+        text: "Hi, I have a question",
+        sender: "user",
+        timeStamp: Date.now() - MS_PER_SECOND * 5,
+    },
+    { id: String(idCounter++), text: "Hello", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
+    { id: String(idCounter++), text: "How can I help you?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 3 },
 ];
 
 const ChatExample = () => {
@@ -22,10 +29,11 @@ const ChatExample = () => {
     const [inputText, setInputText] = useState("");
 
     const sendMessage = () => {
-        if (inputText.trim()) {
+        const text = inputText || "Empty message";
+        if (text.trim()) {
             setMessages((messages) => [
                 ...messages,
-                { id: String(idCounter++), text: inputText, sender: "user", timeStamp: Date.now() },
+                { id: String(idCounter++), text: text, sender: "user", timeStamp: Date.now() },
             ]);
             setInputText("");
             setTimeout(() => {
@@ -33,7 +41,7 @@ const ChatExample = () => {
                     ...messages,
                     {
                         id: String(idCounter++),
-                        text: `Answer: ${inputText.toUpperCase()}`,
+                        text: `Answer: ${text.toUpperCase()}`,
                         sender: "bot",
                         timeStamp: Date.now(),
                     },
@@ -46,21 +54,26 @@ const ChatExample = () => {
         <SafeAreaView style={styles.container} edges={["bottom"]}>
             <LegendList
                 data={messages}
+                contentContainerStyle={styles.contentContainer}
                 keyExtractor={(item) => item.id}
                 estimatedItemSize={80}
                 maintainScrollAtEnd
+                alignItemsAtEnd
                 renderItem={({ item }) => (
                     <>
                         <View
                             style={[
                                 styles.messageContainer,
+                                item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
                                 item.sender === "bot" ? styles.botStyle : styles.userStyle,
                             ]}
                         >
-                            <Text style={styles.messageText}>{item.text}</Text>
+                            <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
+                                {item.text}
+                            </Text>
                         </View>
                         <View style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}>
-                            <Text>{new Date(item.timeStamp).toLocaleTimeString()}</Text>
+                            <Text style={styles.timeStampText}>{new Date(item.timeStamp).toLocaleTimeString()}</Text>
                         </View>
                     </>
                 )}
@@ -81,17 +94,21 @@ const ChatExample = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10,
         backgroundColor: "#fff",
+    },
+    contentContainer: {
+        paddingHorizontal: 16,
     },
     messageContainer: {
         padding: 16,
-        backgroundColor: "#f1f1f1",
-        borderRadius: 5,
-        marginVertical: 5,
+        borderRadius: 16,
+        marginVertical: 4,
     },
     messageText: {
         fontSize: 16,
+    },
+    userMessageText: {
+        color: "white",
     },
     inputContainer: {
         flexDirection: "row",
@@ -100,13 +117,20 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderColor: "#ccc",
     },
+    botMessageContainer: {
+        backgroundColor: "#f1f1f1",
+    },
+    userMessageContainer: {
+        backgroundColor: "#007AFF",
+    },
     botStyle: {
-        width: "60%",
+        maxWidth: "60%",
         alignSelf: "flex-start",
     },
     userStyle: {
-        width: "60%",
+        maxWidth: "60%",
         alignSelf: "flex-end",
+        alignItems: "flex-end",
     },
     input: {
         flex: 1,
@@ -118,6 +142,10 @@ const styles = StyleSheet.create({
     },
     timeStamp: {
         marginVertical: 5,
+    },
+    timeStampText: {
+        fontSize: 12,
+        color: "#888",
     },
 });
 
