@@ -1,17 +1,53 @@
-import renderItem from "@/app/renderItem";
-import { FlatList, StyleSheet, View } from "react-native";
+import renderItem from "@/app/cards-renderItem";
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from "@/constants/constants";
+import { useScrollTest } from "@/constants/useScrollTest";
+import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
+import { Fragment, useRef } from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
     const data = Array.from({ length: 1000 }, (_, i) => ({ id: i.toString() }));
 
+    const scrollRef = useRef<FlashList<any>>(null);
+
+    //   useEffect(() => {
+    //     let amtPerInterval = 4;
+    //     let index = amtPerInterval;
+    //     const interval = setInterval(() => {
+    //       scrollRef.current?.scrollToIndex({
+    //         index,
+    //       });
+    //       index += amtPerInterval;
+    //     }, 100);
+
+    //     return () => clearInterval(interval);
+    //   });
+
+    const renderItemFn = (info: ListRenderItemInfo<any>) => {
+        return RECYCLE_ITEMS ? renderItem(info) : <Fragment key={info.item.id}>{renderItem(info)}</Fragment>;
+    };
+
+    if (DO_SCROLL_TEST) {
+        useScrollTest((offset) => {
+            scrollRef.current?.scrollToOffset({
+                offset,
+                animated: true,
+            });
+        });
+    }
+
     return (
-        <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="flatlist">
-            <FlatList
-                style={[StyleSheet.absoluteFill, styles.scrollContainer]}
+        <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="flashlist">
+            <FlashList
+                // style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 data={data}
-                renderItem={renderItem}
+                renderItem={renderItemFn}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
+                drawDistance={DRAW_DISTANCE / 2} // FlashList seems to multiply the drawDistance internally so this makes it about even
+                // initialScrollIndex={500}
+                ref={scrollRef}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
             />
@@ -33,7 +69,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#456",
     },
     scrollContainer: {
-        // paddingHorizontal: 16,
+        // paddingHorizontal: 8,
     },
     titleContainer: {
         flexDirection: "row",

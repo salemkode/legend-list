@@ -1,9 +1,9 @@
+import { type Item, renderItem } from "@/app/cards-renderItem";
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { useScrollTest } from "@/constants/useScrollTest";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
 import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
-import { type Item, renderItem } from "../renderItem";
 
 LogBox.ignoreLogs(["Open debugger"]);
 

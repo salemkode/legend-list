@@ -1,44 +1,81 @@
-import { LogBox, Platform, StyleSheet } from "react-native";
+import { ThemedText } from "@/components/ThemedText";
+import { LegendList } from "@legendapp/list";
+import { Link, type LinkProps } from "expo-router";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-LogBox.ignoreLogs(["Open debugger"]);
+type ListElement = {
+    id: number;
+    title: string;
+    url: LinkProps["href"];
+};
 
-// @ts-ignore
-const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
+const data: ListElement[] = [
+    {
+        title: "Initial scroll index precise navigation",
+        url: "/initial-scroll-index",
+    },
+    {
+        title: "Chat example",
+        url: "/chat-example",
+    },
+    {
+        title: "Cards FlatList",
+        url: "/cards-flatlist",
+    },
+    {
+        title: "Cards FlashList",
+        url: "/cards-flashlist",
+    },
+    {
+        title: "Movies FlashList",
+        url: "/movies-flashlist",
+    },
+    // Add more items as needed
+].map(
+    (v, i) =>
+        ({
+            ...v,
+            id: i + 1,
+        }) as ListElement,
+);
 
-console.log(`Using ${uiManager}`);
+const RightIcon = () => <ThemedText type="subtitle">›</ThemedText>;
 
-export default function HomeScreen() {
-    return null;
-}
+const ListItem = ({ title, url }: ListElement) => (
+    <Link href={url}>
+        <View style={styles.item}>
+            <ThemedText>{title}</ThemedText>
+            <RightIcon />
+        </View>
+    </Link>
+);
+
+const ListElements = () => {
+    return (
+        <SafeAreaView style={styles.container}>
+            <LegendList
+                estimatedItemSize={80}
+                data={data}
+                renderItem={({ item }) => <ListItem {...item} />}
+                keyExtractor={(item) => item.id.toString()}
+            />
+        </SafeAreaView>
+    );
+};
 
 const styles = StyleSheet.create({
-    listHeader: {
-        alignSelf: "center",
-        height: 100,
-        width: 100,
-        backgroundColor: "#456AAA",
-        borderRadius: 12,
-        marginHorizontal: 8,
-        marginTop: 8,
+    container: {
+        flex: 1,
     },
-    outerContainer: {
-        backgroundColor: "#456",
-        bottom: Platform.OS === "ios" ? 82 : 0,
-    },
-    scrollContainer: {
-        paddingHorizontal: 16,
-        // paddingrVertical: 48,
-    },
-
-    itemContainer: {
-        // padding: 4,
-        // borderBottomWidth: 1,
-        // borderBottomColor: "#ccc",
-    },
-    listContainer: {
-        // paddingHorizontal: 16,
-        // paddingTop: 48,
-        // flexGrow: 1,
-        // marginTop: -400,
+    item: {
+        padding: 16,
+        borderBottomColor: "#ccc",
+        borderBottomWidth: 1,
+        width: "100%",
+        flexDirection: "row",
+        justifyContent: "space-between",
     },
 });
+
+export default ListElements;

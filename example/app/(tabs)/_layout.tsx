@@ -20,7 +20,6 @@ export default function TabLayout() {
                 tabBarBackground: TabBarBackground,
                 tabBarStyle: Platform.select({
                     ios: {
-                        // Use a transparent background on iOS to show the blur effect
                         position: "absolute",
                     },
                     default: {},
@@ -35,26 +34,26 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="flatlist"
+                name="cards"
                 options={{
-                    title: "FlatList",
+                    title: "Cards",
                     tabBarIcon: ({ color }) => (
                         <IconSymbol size={28} name="chevron.left.forwardslash.chevron.right" color={color} />
                     ),
                 }}
             />
             <Tabs.Screen
-                name="flashlist"
+                name="moviesL"
                 options={{
-                    title: "FlashList",
-                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+                    title: "Movies",
+                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="movieclapper" color={color} />,
                 }}
             />
             <Tabs.Screen
-                name="more"
+                name="moviesLR"
                 options={{
-                    title: "More",
-                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.dash" color={color} />,
+                    title: "Movies Recycle",
+                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="film" color={color} />,
                 }}
             />
         </Tabs>
