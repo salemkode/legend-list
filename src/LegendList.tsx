@@ -55,6 +55,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             maintainScrollAtEnd = false,
             maintainScrollAtEndThreshold = 0.1,
             alignItemsAtEnd = false,
+            maintainVisibleContentPosition = false,
             onScroll: onScrollProp,
             keyExtractor,
             renderItem,
@@ -72,7 +73,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const internalRef = useRef<ScrollView>(null);
         const refScroller = internalRef as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
-        const supportsEstimationAdjustment = true;
 
         const refState = useRef<InternalState>();
         const getId = (index: number): string => {
@@ -107,7 +107,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     offset = index * estimatedItemSize;
                 }
 
-                return offset + INITIAL_SCROLL_ADJUST;
+                return offset + (maintainVisibleContentPosition ? INITIAL_SCROLL_ADJUST : 0);
             }
             return undefined;
         };
@@ -138,7 +138,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 timeouts: new Set(),
                 viewabilityConfigCallbackPairs: undefined as never,
                 renderItem: undefined as never,
-                scrollAdjustPending: INITIAL_SCROLL_ADJUST,
+                scrollAdjustPending: maintainVisibleContentPosition ? INITIAL_SCROLL_ADJUST : 0,
                 nativeMarginTop: 0,
                 scrollPrev: 0,
                 scrollPrevTime: 0,
@@ -151,7 +151,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
         }
         const adjustScroll = (diff: number) => {
-            if (supportsEstimationAdjustment && refScroller.current) {
+            if (maintainVisibleContentPosition && refScroller.current) {
                 // console.log("adjustScroll", diff);
                 refState.current!.scrollAdjustPending -= diff;
             }
@@ -445,22 +445,30 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 totalSize += getItemSize(key, i, data[i]);
 
                 // This maintains position when items are added by adding the estimated size to the top padding
-                if (i < refState.current.startNoBuffer && !refState.current.indexByKey.has(key)) {
+                if (
+                    maintainVisibleContentPosition &&
+                    i < refState.current.startNoBuffer &&
+                    !refState.current.indexByKey.has(key)
+                ) {
                     const size = getItemSize(key, i, data[i]);
                     adjustScroll(size);
                 }
             }
             // console.log("setting totalSize", data.length, totalSize);
             addTotalSize(null, totalSize, true);
-            // This maintains positions when items are removed by removing their size from the top padding
-            for (const [key, index] of refState.current.indexByKey) {
-                if (index < refState.current.startNoBuffer && !indexByKey.has(key)) {
-                    const size = refState.current.sizes.get(key) ?? 0;
-                    if (size) {
-                        adjustScroll(-size);
+
+            if (maintainVisibleContentPosition) {
+                // This maintains positions when items are removed by removing their size from the top padding
+                for (const [key, index] of refState.current.indexByKey) {
+                    if (index < refState.current.startNoBuffer && !indexByKey.has(key)) {
+                        const size = refState.current.sizes.get(key) ?? 0;
+                        if (size) {
+                            adjustScroll(-size);
+                        }
                     }
                 }
             }
+
             refState.current.indexByKey = indexByKey;
 
             if (!isFirst) {

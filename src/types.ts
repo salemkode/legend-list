@@ -2,7 +2,10 @@ import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 
-export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset' | 'contentInset'> & {
+export type LegendListProps<T> = Omit<
+    ComponentProps<typeof ScrollView>,
+    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition'
+> & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
@@ -14,6 +17,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     maintainScrollAtEnd?: boolean;
     maintainScrollAtEndThreshold?: number;
     alignItemsAtEnd?: boolean;
+    maintainVisibleContentPosition?: boolean;
     // in most cases providing a constant value for item size enough
     estimatedItemSize: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item

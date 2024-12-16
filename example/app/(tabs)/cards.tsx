@@ -37,6 +37,7 @@ export default function Cards() {
                 keyExtractor={(item) => `id${item.id}`}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
+                maintainVisibleContentPosition
                 recycleItems={true}
                 // initialScrollIndex={50}
                 // alignItemsAtEnd
