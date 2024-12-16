@@ -1,13 +1,13 @@
 // biome-ignore lint/correctness/noUnusedImports: Example crashes if React is missing for some reason
 import * as React from "react";
-import type { ViewProps, ViewStyle } from "react-native";
+import type { StyleProp, ViewProps, ViewStyle } from "react-native";
 import { LeanView } from "./LeanView";
 import { type ListenerType, use$ } from "./state";
 
 interface ContainerStyleProps extends ViewProps {
     $key: ListenerType;
     $key2?: ListenerType;
-    $style: () => ViewStyle;
+    $style: () => StyleProp<ViewStyle>;
 }
 
 // A component that listens to a signal and updates its style based on the signal.

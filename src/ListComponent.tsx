@@ -5,6 +5,7 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     type ScrollView,
+    StyleSheet,
     View,
 } from "react-native";
 import { $ScrollView } from "./$ScrollView";
@@ -92,19 +93,21 @@ export const ListComponent = React.memo(function ListComponent({
         >
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
             {ListHeaderComponent && (
-                <View
-                    style={ListHeaderComponentStyle}
+                <$View
+                    $key="scrollAdjust"
+                    $style={() =>
+                        StyleSheet.compose(ListHeaderComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
+                    }
                     onLayout={(event) => {
                         const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
                         const prevSize = peek$<number>(ctx, "headerSize") || 0;
                         if (size !== prevSize) {
                             set$(ctx, "headerSize", size);
-                            addTotalSize(null, size - prevSize);
                         }
                     }}
                 >
                     {getComponent(ListHeaderComponent)}
-                </View>
+                </$View>
             )}
             {ListEmptyComponent && <View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</View>}
 

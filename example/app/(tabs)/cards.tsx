@@ -44,8 +44,10 @@ export default function Cards() {
                 // onEndReached={({ distanceFromEnd }) => {
                 //     console.log("onEndReached", distanceFromEnd);
                 // }}
-                // // ListHeaderComponent={<View />}
-                // // ListHeaderComponentStyle={styles.listHeader}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
+                ListFooterComponent={<View />}
+                ListFooterComponentStyle={styles.listHeader}
                 // ListEmptyComponentStyle={{ flex: 1 }}
                 // ListEmptyComponent={
                 //     <View
