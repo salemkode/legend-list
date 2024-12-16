@@ -1,43 +1,31 @@
-import * as React from "react";
+import React from "react";
 import type { LayoutChangeEvent, ViewStyle } from "react-native";
 import { $View } from "./$View";
-import { peek$, use$, useStateContext } from "./state";
+import { peek$, set$, use$, useStateContext } from "./state";
 
 interface InnerContainerProps {
-    id: number;
-    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
+    containerId: number;
+    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
 }
-function InnerContainer({ id, getRenderedItem, recycleItems, ItemSeparatorComponent }: InnerContainerProps) {
-    // Subscribe to the itemIndex so this re-renders when the itemIndex changes.
-    const itemIndex = use$<number>(`containerItemIndex${id}`);
-    const numItems = ItemSeparatorComponent ? use$<number>("numItems") : 0;
+function InnerContainer({ containerId, getRenderedItem, recycleItems, ItemSeparatorComponent }: InnerContainerProps) {
+    // Subscribe to the lastItemKey so this re-renders when the lastItemKey changes.
+    const lastItemKey = use$<string>("lastItemKey");
+    const itemKey = use$<string>(`containerItemKey${containerId}`);
 
-    if (itemIndex < 0) {
+    if (itemKey === undefined) {
         return null;
     }
 
+    const renderedItem = getRenderedItem(itemKey, containerId);
+
     return (
-        <React.Fragment key={recycleItems ? undefined : itemIndex}>
-            <RenderedItem itemIndex={itemIndex} id={id} getRenderedItem={getRenderedItem} />
-            {ItemSeparatorComponent && itemIndex < numItems - 1 && ItemSeparatorComponent}
+        <React.Fragment key={recycleItems ? undefined : itemKey}>
+            {renderedItem}
+            {ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
         </React.Fragment>
     );
-}
-
-function RenderedItem({
-    itemIndex,
-    id,
-    getRenderedItem,
-}: {
-    itemIndex: number;
-    id: number;
-    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
-}) {
-    const renderedItem = getRenderedItem(itemIndex, id);
-
-    return renderedItem;
 }
 
 export const Container = ({
@@ -51,29 +39,28 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
-    onLayout: (index: number, size: number) => void;
+    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
+    onLayout: (key: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
 
     const createStyle = (): ViewStyle => {
-        const position = peek$(ctx, `containerPosition${id}`);
+        const position = peek$<number>(ctx, `containerPosition${id}`);
+        const visible = peek$<boolean>(ctx, `containerDidLayout${id}`);
         return horizontal
             ? {
                   flexDirection: "row",
                   position: "absolute",
-                  top: 0,
+                  top: visible ? 0 : -10000000,
                   bottom: 0,
                   left: position,
-                  opacity: position < 0 ? 0 : 1,
               }
             : {
                   position: "absolute",
-                  left: 0,
+                  left: visible ? 0 : -10000000,
                   right: 0,
                   top: position,
-                  opacity: position < 0 ? 0 : 1,
               };
     };
 
@@ -83,18 +70,27 @@ export const Container = ({
     return (
         <$View
             $key={`containerPosition${id}`}
+            $key2={`containerDidLayout${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
-                const index = peek$(ctx, `containerItemIndex${id}`);
-                if (index >= 0) {
+                const key = peek$<string>(ctx, `containerItemKey${id}`);
+                if (key !== undefined) {
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
-                    onLayout(index, size);
+                    // console.log("layout", key, size);
+                    onLayout(key, size);
+
+                    const measured = peek$(ctx, `containerDidLayout${id}`);
+                    if (!measured) {
+                        requestAnimationFrame(() => {
+                            set$(ctx, `containerDidLayout${id}`, true);
+                        });
+                    }
                 }
             }}
         >
             <InnerContainer
-                id={id}
+                containerId={id}
                 getRenderedItem={getRenderedItem}
                 recycleItems={recycleItems!}
                 ItemSeparatorComponent={ItemSeparatorComponent}

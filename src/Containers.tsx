@@ -7,8 +7,8 @@ interface ContainersProps {
     horizontal: boolean;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
-    updateItemSize: (index: number, size: number) => void;
-    getRenderedItem: (index: number, containerId: number) => React.ReactNode;
+    updateItemSize: (key: string, size: number) => void;
+    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
 }
 
 export const Containers = React.memo(function Containers({
@@ -19,7 +19,7 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
 }: ContainersProps) {
     const ctx = useStateContext();
-    const numContainers = use$<number>("numContainers");
+    const numContainers = use$<number>("numContainersPooled");
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -39,15 +39,18 @@ export const Containers = React.memo(function Containers({
     return (
         <$View
             $key="totalSize"
-            $style={() =>
-                horizontal
+            $key2="scrollAdjust"
+            $style={() => {
+                const size = peek$<number>(ctx, "totalSize") + peek$<number>(ctx, "scrollAdjust");
+
+                return horizontal
                     ? {
-                          width: peek$(ctx, "totalSize"),
+                          width: size,
                       }
                     : {
-                          height: peek$(ctx, "totalSize"),
-                      }
-            }
+                          height: size,
+                      };
+            }}
         >
             {containers}
         </$View>

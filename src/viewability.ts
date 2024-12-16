@@ -1,4 +1,4 @@
-import { type StateContext, peek$ } from "./state";
+import { type StateContext, peek$ } from './state';
 import type {
     InternalState,
     LegendListProps,
@@ -6,7 +6,8 @@ import type {
     ViewToken,
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
-} from "./types";
+    ViewabilityConfigCallbackPairs,
+} from './types';
 
 const mapViewabilityConfigCallbackPairs = new Map<
     string,
@@ -19,17 +20,22 @@ const mapViewabilityConfigCallbackPairs = new Map<
     }
 >();
 
-export function setupViewability(props: LegendListProps<any>) {
+export function setupViewability(props: LegendListProps<any>): ViewabilityConfigCallbackPairs | undefined {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
-    viewabilityConfigCallbackPairs = viewabilityConfigCallbackPairs! || [
-        {
-            viewabilityConfig: viewabilityConfig || {
-                viewAreaCoveragePercentThreshold: 0,
+    if (viewabilityConfig || onViewableItemsChanged) {
+        viewabilityConfigCallbackPairs = [
+            ...(viewabilityConfigCallbackPairs! || []),
+            {
+                viewabilityConfig:
+                    viewabilityConfig ||
+                    ({
+                        viewAreaCoveragePercentThreshold: 0,
+                    } as any),
+                onViewableItemsChanged,
             },
-            onViewableItemsChanged,
-        },
-    ];
+        ];
+    }
 
     if (viewabilityConfigCallbackPairs) {
         for (const pair of viewabilityConfigCallbackPairs) {
@@ -42,6 +48,7 @@ export function setupViewability(props: LegendListProps<any>) {
             });
         }
     }
+
     return viewabilityConfigCallbackPairs;
 }
 
@@ -52,11 +59,11 @@ export function updateViewableItems(
     getId: (index: number) => string,
     scrollSize: number,
     start: number,
-    end: number,
+    end: number
 ) {
     for (const viewabilityConfigCallbackPair of viewabilityConfigCallbackPairs) {
         const viewabilityState = mapViewabilityConfigCallbackPairs.get(
-            viewabilityConfigCallbackPair.viewabilityConfig.id,
+            viewabilityConfigCallbackPair.viewabilityConfig.id
         )!;
         viewabilityState.start = start;
         viewabilityState.end = end;
@@ -78,16 +85,13 @@ function updateViewableItemsWithConfig(
     getId: (index: number) => string,
     state: InternalState,
     ctx: StateContext,
-    scrollSize: number,
+    scrollSize: number
 ) {
     const { viewabilityConfig, onViewableItemsChanged } = viewabilityConfigCallbackPair;
     const configId = viewabilityConfig.id;
     const viewabilityState = mapViewabilityConfigCallbackPairs.get(configId)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
-    // if (previousStart === start && previousEnd === end) {
-    //     // Already processed this, so skip it
-    //     return;
-    // }
+
     const changed: ViewToken[] = [];
     if (previousViewableItems) {
         for (const viewToken of previousViewableItems) {
@@ -148,10 +152,10 @@ function isViewable(
     key: string,
     scrollSize: number,
     item: any,
-    index: number,
+    index: number
 ) {
     const { sizes, positions, scroll } = state;
-    const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
+    const topPad = (peek$<number>(ctx, 'stylePaddingTop') || 0) + (peek$<number>(ctx, 'headerSize') || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
@@ -168,7 +172,7 @@ function isViewable(
     const isViewable = percent >= viewablePercentThreshold!;
 
     // TODO: This would run for each viewabilityConfig, maybe move it elsewhere?
-    const containerId = findContainerId(state, ctx, index);
+    const containerId = findContainerId(ctx, key);
     const value: ViewAmountToken = {
         index,
         isViewable,
@@ -190,11 +194,11 @@ function isViewable(
     return isViewable!;
 }
 
-function findContainerId(state: InternalState, ctx: StateContext, index: number) {
-    const numContainers = peek$(ctx, "numContainers");
+function findContainerId(ctx: StateContext, key: string) {
+    const numContainers = peek$<number>(ctx, 'numContainers');
     for (let i = 0; i < numContainers; i++) {
-        const itemIndex = peek$(ctx, `containerItemIndex${i}`);
-        if (itemIndex === index) {
+        const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+        if (itemKey === key) {
             return i;
         }
     }

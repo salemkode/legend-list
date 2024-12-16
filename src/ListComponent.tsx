@@ -1,14 +1,14 @@
-import * as React from "react";
 import type { ReactNode } from "react";
+import * as React from "react";
 import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    ScrollView,
-    type StyleProp,
+    type ScrollView,
+    StyleSheet,
     View,
-    type ViewStyle,
 } from "react-native";
+import { $ScrollView } from "./$ScrollView";
 import { $View } from "./$View";
 import { Containers } from "./Containers";
 import { peek$, set$, useStateContext } from "./state";
@@ -17,18 +17,21 @@ import type { LegendListProps } from "./types";
 interface ListComponentProps
     extends Omit<
         LegendListProps<any>,
-        "data" | "estimatedItemSize" | "drawDistance" | "maintainScrollAtEnd" | "maintainScrollAtEndThreshold"
+        | "data"
+        | "estimatedItemSize"
+        | "drawDistance"
+        | "maintainScrollAtEnd"
+        | "maintainScrollAtEndThreshold"
+        | "maintainVisibleContentPosition"
     > {
-    style: StyleProp<ViewStyle>;
-    contentContainerStyle: StyleProp<ViewStyle>;
     horizontal: boolean;
     initialContentOffset: number | undefined;
     refScroller: React.MutableRefObject<ScrollView>;
-    getRenderedItem: (index: number, containerId: number) => ReactNode;
-    updateItemSize: (index: number, size: number) => void;
+    getRenderedItem: (key: string, containerId: number) => ReactNode;
+    updateItemSize: (key: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
-    addTotalSize: (size: number) => void;
+    addTotalSize: (key: string | null, size: number) => void;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -66,7 +69,7 @@ export const ListComponent = React.memo(function ListComponent({
     const ctx = useStateContext();
 
     return (
-        <ScrollView
+        <$ScrollView
             {...rest}
             style={style}
             contentContainerStyle={[
@@ -79,7 +82,6 @@ export const ListComponent = React.memo(function ListComponent({
             ]}
             onScroll={handleScroll}
             onLayout={onLayout}
-            scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
                 initialContentOffset
@@ -92,30 +94,32 @@ export const ListComponent = React.memo(function ListComponent({
         >
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
             {ListHeaderComponent && (
-                <View
-                    style={ListHeaderComponentStyle}
+                <$View
+                    $key="scrollAdjust"
+                    $style={() =>
+                        StyleSheet.compose(ListHeaderComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
+                    }
                     onLayout={(event) => {
                         const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
-                        const prevSize = peek$(ctx, "headerSize") || 0;
+                        const prevSize = peek$<number>(ctx, "headerSize") || 0;
                         if (size !== prevSize) {
                             set$(ctx, "headerSize", size);
-                            addTotalSize(size - prevSize);
                         }
                     }}
                 >
                     {getComponent(ListHeaderComponent)}
-                </View>
+                </$View>
             )}
-            {ListEmptyComponent && <View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</View>}
-
-            {/* {supportsEstimationAdjustment && (
-                <Reactive.View
-                    $style={() => ({
-                        height: visibleRange$.topPad.get(),
-                        width: '100%',
-                    })}
-                />
-            )} */}
+            {ListEmptyComponent && (
+                <$View
+                    $key="scrollAdjust"
+                    $style={() =>
+                        StyleSheet.compose(ListEmptyComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
+                    }
+                >
+                    {getComponent(ListEmptyComponent)}
+                </$View>
+            )}
 
             <Containers
                 horizontal={horizontal!}
@@ -125,6 +129,6 @@ export const ListComponent = React.memo(function ListComponent({
                 updateItemSize={updateItemSize}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
-        </ScrollView>
+        </$ScrollView>
     );
 });
