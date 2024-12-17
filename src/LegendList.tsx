@@ -410,6 +410,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 //   },
                 // });
 
+                // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
+                refState.current.scroll = refState.current.totalSize - refState.current.scrollLength;
+
                 // TODO: This kinda works too, but with more of a flash
                 requestAnimationFrame(() => {
                     refScroller.current?.scrollToEnd({
@@ -682,6 +685,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // Use velocity to predict scroll position
             calculateItemsInView(velocity);
             checkAtBottom();
+            checkAtTop();
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
@@ -695,7 +699,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             doMaintainScrollAtEnd(false);
             doUpdatePaddingTop();
-
+            checkAtBottom();
+            checkAtTop();
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;
                 const isHeightZero = event.nativeEvent.layout.height === 0;

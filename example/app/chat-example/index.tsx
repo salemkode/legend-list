@@ -52,7 +52,7 @@ const ChatExample = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={["bottom"]}>
-            <KeyboardAvoidingView style={styles.container}>
+            <KeyboardAvoidingView style={styles.container} behavior="padding">
                 <LegendList
                     data={messages}
                     contentContainerStyle={styles.contentContainer}
