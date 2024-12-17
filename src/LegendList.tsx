@@ -170,11 +170,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 state.animFrameTotalSize = null;
 
                 set$(ctx, "totalSize", totalSize);
-                const screenLength = state.scrollLength;
+
                 if (alignItemsAtEnd) {
-                    const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
-                    const paddingTop = Math.max(0, Math.floor(screenLength - totalSize - listPaddingTop));
-                    set$(ctx, "paddingTop", paddingTop);
+                    doUpdatePaddingTop();
                 }
             };
 
@@ -385,6 +383,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 );
             }
         }, []);
+
+        const doUpdatePaddingTop = () => {
+            if (alignItemsAtEnd) {
+                const { scrollLength, totalSize } = refState.current!;
+                const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
+                const paddingTop = Math.max(0, Math.floor(scrollLength - totalSize - listPaddingTop));
+                set$(ctx, "paddingTop", paddingTop);
+            }
+        };
 
         const doMaintainScrollAtEnd = (animated: boolean) => {
             if (refState.current?.isAtBottom && maintainScrollAtEnd) {
@@ -684,14 +691,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // Add the adjusted scroll, see $ScrollView for where this is applied
                 scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
             }
-            const diff = scrollLength - refState.current!.scrollLength;
             refState.current!.scrollLength = scrollLength;
 
-            if (diff > 0) {
-                doMaintainScrollAtEnd(true);
-            } else {
-                doMaintainScrollAtEnd(false);
-            }
+            doMaintainScrollAtEnd(false);
+            doUpdatePaddingTop();
 
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;
