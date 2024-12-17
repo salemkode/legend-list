@@ -386,7 +386,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const doMaintainScrollAtEnd = () => {
+        const doMaintainScrollAtEnd = (animated: boolean) => {
             if (refState.current?.isAtBottom && maintainScrollAtEnd) {
                 // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
                 // scrollRef.current?.setNativeProps({
@@ -406,7 +406,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // TODO: This kinda works too, but with more of a flash
                 requestAnimationFrame(() => {
                     refScroller.current?.scrollToEnd({
-                        animated: true,
+                        animated,
                     });
                 });
             }
@@ -493,10 +493,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                 calculateItemsInView();
 
-                doMaintainScrollAtEnd();
-                checkAtBottom();
-                checkAtTop();
+                doMaintainScrollAtEnd(false);
             }
+            checkAtBottom();
+            checkAtTop();
         }
         refState.current.renderItem = renderItem!;
         set$(ctx, "lastItemKey", getId(data[data.length - 1]));
@@ -653,7 +653,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 sizes.set(key, size);
                 addTotalSize(key, size - prevSize);
 
-                doMaintainScrollAtEnd();
+                doMaintainScrollAtEnd(true);
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const state = refState.current!;
@@ -684,7 +684,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // Add the adjusted scroll, see $ScrollView for where this is applied
                 scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
             }
+            const diff = scrollLength - refState.current!.scrollLength;
             refState.current!.scrollLength = scrollLength;
+
+            if (diff > 0) {
+                doMaintainScrollAtEnd(true);
+            } else {
+                doMaintainScrollAtEnd(false);
+            }
 
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;

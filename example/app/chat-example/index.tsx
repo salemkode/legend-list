@@ -1,6 +1,6 @@
 import { LegendList } from "@legendapp/list";
 import { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Message = {
@@ -52,41 +52,47 @@ const ChatExample = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={["bottom"]}>
-            <LegendList
-                data={messages}
-                contentContainerStyle={styles.contentContainer}
-                keyExtractor={(item) => item.id}
-                estimatedItemSize={80}
-                maintainScrollAtEnd
-                alignItemsAtEnd
-                renderItem={({ item }) => (
-                    <>
-                        <View
-                            style={[
-                                styles.messageContainer,
-                                item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
-                                item.sender === "bot" ? styles.botStyle : styles.userStyle,
-                            ]}
-                        >
-                            <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
-                                {item.text}
-                            </Text>
-                        </View>
-                        <View style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}>
-                            <Text style={styles.timeStampText}>{new Date(item.timeStamp).toLocaleTimeString()}</Text>
-                        </View>
-                    </>
-                )}
-            />
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Type a message"
+            <KeyboardAvoidingView style={styles.container}>
+                <LegendList
+                    data={messages}
+                    contentContainerStyle={styles.contentContainer}
+                    keyExtractor={(item) => item.id}
+                    estimatedItemSize={80}
+                    maintainScrollAtEnd
+                    alignItemsAtEnd
+                    renderItem={({ item }) => (
+                        <>
+                            <View
+                                style={[
+                                    styles.messageContainer,
+                                    item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
+                                    item.sender === "bot" ? styles.botStyle : styles.userStyle,
+                                ]}
+                            >
+                                <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
+                                    {item.text}
+                                </Text>
+                            </View>
+                            <View
+                                style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}
+                            >
+                                <Text style={styles.timeStampText}>
+                                    {new Date(item.timeStamp).toLocaleTimeString()}
+                                </Text>
+                            </View>
+                        </>
+                    )}
                 />
-                <Button title="Send" onPress={sendMessage} />
-            </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Type a message"
+                    />
+                    <Button title="Send" onPress={sendMessage} />
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
