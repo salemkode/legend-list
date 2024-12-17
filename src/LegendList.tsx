@@ -121,7 +121,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 pendingAdjust: 0,
                 animFrameLayout: null,
                 animFrameTotalSize: null,
-                isStartReached: false,
+                isStartReached: true,
                 isEndReached: false,
                 isAtBottom: false,
                 isAtTop: false,
@@ -454,17 +454,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const { scrollLength, scroll } = refState.current;
-            refState.current.isAtTop = scroll === 0;
+            const scrollAdjust = peek$<number>(ctx, "scrollAdjust") || 0;
+            const distanceFromTop = scroll - scrollAdjust;
+            refState.current.isAtTop = distanceFromTop < 0;
 
             if (onStartReached) {
                 if (!refState.current.isStartReached) {
-                    if (scroll < onStartReachedThreshold! * scrollLength) {
+                    if (distanceFromTop < onStartReachedThreshold! * scrollLength) {
                         refState.current.isStartReached = true;
                         onStartReached({ distanceFromStart: scroll });
                     }
                 } else {
                     // reset flag when user scrolls back down
-                    if (scroll >= onStartReachedThreshold! * scrollLength) {
+                    if (distanceFromTop >= onStartReachedThreshold! * scrollLength) {
                         refState.current.isStartReached = false;
                     }
                 }
