@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { LegendList } from "@legendapp/list";
 import { Link, type LinkProps } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListElement = {
@@ -43,11 +43,13 @@ const data: ListElement[] = [
 const RightIcon = () => <ThemedText type="subtitle">›</ThemedText>;
 
 const ListItem = ({ title, url }: ListElement) => (
-    <Link href={url}>
-        <View style={styles.item}>
-            <ThemedText>{title}</ThemedText>
-            <RightIcon />
-        </View>
+    <Link href={url} asChild>
+        <Pressable>
+            <View style={styles.item}>
+                <ThemedText>{title}</ThemedText>
+                <RightIcon />
+            </View>
+        </Pressable>
     </Link>
 );
 
