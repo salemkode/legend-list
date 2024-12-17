@@ -130,11 +130,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#007AFF",
     },
     botStyle: {
-        maxWidth: "60%",
+        maxWidth: "75%",
         alignSelf: "flex-start",
     },
     userStyle: {
-        maxWidth: "60%",
+        maxWidth: "75%",
         alignSelf: "flex-end",
         alignItems: "flex-end",
     },
