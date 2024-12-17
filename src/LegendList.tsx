@@ -146,6 +146,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 indexByKey: new Map(),
                 scrollHistory: [],
                 scrollVelocity: 0,
+                contentSize: { width: 0, height: 0 },
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
@@ -423,10 +424,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         };
 
         const checkAtBottom = () => {
-            const { scrollLength, scroll } = refState.current!;
-            const totalSize = peek$<number>(ctx, "totalSize");
+            const { scrollLength, scroll, contentSize } = refState.current!;
             // Check if at end
-            const distanceFromEnd = totalSize - scroll - scrollLength;
+            const distanceFromEnd = contentSize[horizontal ? "width" : "height"] - scroll - scrollLength;
             if (refState.current) {
                 refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
             }
@@ -458,7 +458,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data) {
-            const didAdd = data?.length > refState.current.data?.length;
             refState.current.data = data;
             let totalSize = 0;
             const indexByKey = new Map();
@@ -504,9 +503,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 calculateItemsInView();
 
                 doMaintainScrollAtEnd(false);
+                checkAtTop();
+                checkAtBottom();
             }
-            checkAtBottom();
-            checkAtTop();
         }
         refState.current.renderItem = renderItem!;
         set$(ctx, "lastItemKey", getId(data[data.length - 1]));
@@ -697,10 +696,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             refState.current!.scrollLength = scrollLength;
 
-            doMaintainScrollAtEnd(false);
-            doUpdatePaddingTop();
-            checkAtBottom();
-            checkAtTop();
+            if (refState.current!.hasScrolled) {
+                doMaintainScrollAtEnd(false);
+                doUpdatePaddingTop();
+                checkAtBottom();
+                checkAtTop();
+            }
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;
                 const isHeightZero = event.nativeEvent.layout.height === 0;
@@ -725,6 +726,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 const state = refState.current!;
                 state.hasScrolled = true;
+                state.contentSize = event.nativeEvent.contentSize;
                 const currentTime = performance.now();
                 const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
 
