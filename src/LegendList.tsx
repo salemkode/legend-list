@@ -387,7 +387,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const doMaintainScrollAtEnd = () => {
-            console.log("doMaintainScrollAtEnd", refState.current?.isAtBottom, maintainScrollAtEnd);
             if (refState.current?.isAtBottom && maintainScrollAtEnd) {
                 // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
                 // scrollRef.current?.setNativeProps({
