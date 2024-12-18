@@ -521,7 +521,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+            if (!keyExtractor && !isFirst && data !== refState.current.data) {
+                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
+                refState.current.sizes.clear();
+                refState.current.positions.clear();
+            }
+
             refState.current.data = data;
+
             let totalSize = 0;
             const indexByKey = new Map();
             let column = 1;
@@ -573,6 +580,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     set$(ctx, `containerItemKey${i}`, undefined);
                     set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                     set$(ctx, `containerColumn${i}`, -1);
+                }
+                if (!keyExtractor) {
+                    refState.current.sizes.clear();
+                    refState.current.positions;
                 }
                 calculateItemsInView();
 
