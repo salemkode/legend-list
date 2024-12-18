@@ -4,7 +4,7 @@ import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 
 export type LegendListProps<T> = Omit<
     ComponentProps<typeof ScrollView>,
-    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition'
+    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'
 > & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
