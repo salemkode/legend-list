@@ -30,6 +30,7 @@ import { setupViewability, updateViewableItems } from "./viewability";
 const DEFAULT_DRAW_DISTANCE = 250;
 const INITIAL_SCROLL_ADJUST = 10000;
 const POSITION_OUT_OF_VIEW = -10000000;
+const DEFAULT_ITEM_SIZE = 100;
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
@@ -91,7 +92,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return sizeKnown;
             }
 
-            const size = getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
+            const size =
+                (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
             // TODO: I don't think I like this setting sizes when it's not really known, how to do
             // that better and support viewability checking sizes
             refState.current!.sizes.set(key, size);
@@ -149,6 +151,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollHistory: [],
                 scrollVelocity: 0,
                 contentSize: { width: 0, height: 0 },
+                sizesLaidOut: __DEV__ ? new Map() : undefined,
+                timeoutSizeMessage: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
@@ -703,7 +707,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // Allocate containers
             const scrollLength = refState.current!.scrollLength;
-            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
             const numContainers =
                 (initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize)) *
                 numColumnsProp;
@@ -724,7 +728,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
-            const { sizes, indexByKey, idsInFirstRender, columns } = refState.current!;
+            const state = refState.current!;
+            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
             const index = indexByKey.get(key)!;
             // TODO: I don't love this, can do it better?
             const wasInFirstRender = idsInFirstRender.has(key);
@@ -762,12 +767,33 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     diff = size - prevSize;
                 }
 
+                if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
+                    sizesLaidOut!.set(key, size);
+                    if (state.timeoutSizeMessage) {
+                        clearTimeout(state.timeoutSizeMessage);
+                    }
+
+                    state.timeoutSizeMessage = setTimeout(() => {
+                        state.timeoutSizeMessage = undefined;
+                        let total = 0;
+                        let num = 0;
+                        for (const [key, size] of sizesLaidOut!) {
+                            num++;
+                            total += size;
+                        }
+                        const avg = Math.round(total / num);
+
+                        console.warn(
+                            `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
+                        );
+                    }, 1000);
+                }
+
                 addTotalSize(key, diff);
 
                 doMaintainScrollAtEnd(true);
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
-                const state = refState.current!;
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
