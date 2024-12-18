@@ -198,6 +198,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scroll: scrollState,
                 startBuffered: startBufferedState,
                 positions,
+                sizes,
                 columns,
             } = state!;
             if (state.animFrameLayout) {
@@ -214,6 +215,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 0,
                 scrollState - topPad - (USE_CONTENT_INSET ? scrollAdjustPending : 0) + scrollExtra,
             );
+            const scrollBottom = scroll + scrollLength;
 
             let startNoBuffer: number | null = null;
             let startBuffered: number | null = null;
@@ -274,10 +276,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     startBuffered = i;
                 }
                 if (startNoBuffer !== null) {
-                    if (top <= scroll + scrollLength) {
+                    if (top <= scrollBottom) {
                         endNoBuffer = i;
                     }
-                    if (top <= scroll + scrollLength + scrollBuffer) {
+                    if (top <= scrollBottom + scrollBuffer) {
                         endBuffered = i;
                     } else {
                         break;
@@ -381,7 +383,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
-                        if (!(itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered)) {
+                        if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
+                            // This is fairly complex because we want to avoid setting container position if it's not even in view
+                            // because it will trigger a render
+                            const prevPos = peek$<number>(ctx, `containerPosition${i}`) - scrollAdjustPending;
+                            const pos = positions.get(id) || 0;
+                            const size = sizes.get(id) || 0;
+
+                            if (
+                                (pos + size >= scroll && pos <= scrollBottom) ||
+                                (prevPos + size >= scroll && prevPos <= scrollBottom)
+                            ) {
+                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                            }
+                        } else {
                             const pos = (positions.get(id) || 0) + scrollAdjustPending;
                             const column = columns.get(id) || 1;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
