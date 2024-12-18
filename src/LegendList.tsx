@@ -683,18 +683,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     listen$(ctx, signal, run);
                 }, []);
             };
-            const useRecyclingState = (updateState: (info: LegendListRecyclingState<unknown>) => any) => {
+            const useRecyclingState = (valueOrFun: ((info: LegendListRecyclingState<unknown>) => any) | any) => {
                 const stateInfo = useState(() =>
-                    updateState({
-                        index,
-                        item: refState.current!.data[index],
-                        prevIndex: undefined,
-                        prevItem: undefined,
-                    }),
+                    typeof valueOrFun === "function"
+                        ? valueOrFun({
+                              index,
+                              item: refState.current!.data[index],
+                              prevIndex: undefined,
+                              prevItem: undefined,
+                          })
+                        : valueOrFun,
                 );
 
                 useRecyclingEffect((state) => {
-                    const newState = updateState(state);
+                    const newState = typeof valueOrFun === "function" ? valueOrFun(state) : valueOrFun;
                     stateInfo[1](newState);
                 });
 
