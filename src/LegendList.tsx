@@ -444,7 +444,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     extraStyle.minWidth = size;
                 }
             }
-            return StyleSheet.compose(styleProp, extraStyle) as StyleProp<ViewStyle>;
+            return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
         }, []);
 
         const doUpdatePaddingTop = () => {
