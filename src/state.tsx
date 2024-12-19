@@ -23,7 +23,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize";
+    | "footerSize"
+    | "otherAxisSize";
 
 export interface StateContext {
     hooks: Map<ListenerType, () => void>;

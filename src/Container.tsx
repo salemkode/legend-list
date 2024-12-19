@@ -90,6 +90,9 @@ export const Container = ({
                     // console.log("layout", key, size);
                     onLayout(key, size);
 
+                    const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
+                    set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
+
                     const measured = peek$(ctx, `containerDidLayout${id}`);
                     if (!measured) {
                         requestAnimationFrame(() => {

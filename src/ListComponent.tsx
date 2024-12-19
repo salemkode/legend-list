@@ -11,7 +11,7 @@ import {
 import { $ScrollView } from "./$ScrollView";
 import { $View } from "./$View";
 import { Containers } from "./Containers";
-import { peek$, set$, useStateContext } from "./state";
+import { peek$, set$, use$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 
 interface ListComponentProps
@@ -67,6 +67,22 @@ export const ListComponent = React.memo(function ListComponent({
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
+    const otherAxisSize = use$<number>("otherAxisSize") || 0;
+
+    // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
+    // the screen size
+    // const style = React.useMemo(() => {
+    //     const extraStyle: StyleProp<ViewStyle> = {};
+    //     if (otherAxisSize > 0) {
+    //         if (horizontal) {
+    //             extraStyle.minHeight = otherAxisSize;
+    //         } else {
+    //             extraStyle.minWidth = otherAxisSize;
+    //         }
+    //     }
+    //     console.log("style", StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>);
+    //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
+    // }, [otherAxisSize]);
 
     return (
         <$ScrollView
