@@ -17,7 +17,9 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     type ScrollView,
+    type StyleProp,
     StyleSheet,
+    type ViewStyle,
 } from "react-native";
 import { ListComponent } from "./ListComponent";
 import { USE_CONTENT_INSET } from "./constants";
@@ -59,6 +61,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             maintainVisibleContentPosition = false,
             onScroll: onScrollProp,
             numColumns: numColumnsProp = 1,
+            style: styleProp,
             keyExtractor,
             renderItem,
             estimatedItemSize,
@@ -68,7 +71,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             ListEmptyComponent,
             ...rest
         } = props;
-        const { style, contentContainerStyle } = rest;
+        const { contentContainerStyle } = props;
 
         const ctx = useStateContext();
 
@@ -428,6 +431,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     endNoBuffer!,
                 );
             }
+        }, []);
+
+        const style = useMemo(() => {
+            // TODO: Should this be updated as items render and the height changes?
+            const extraStyle: StyleProp<ViewStyle> = {};
+            if (data.length > 0) {
+                const size = getItemSize(getId(0), 0, data[0]);
+                if (horizontal) {
+                    extraStyle.minHeight = size;
+                } else {
+                    extraStyle.minWidth = size;
+                }
+            }
+            return StyleSheet.compose(styleProp, extraStyle) as StyleProp<ViewStyle>;
         }, []);
 
         const doUpdatePaddingTop = () => {
@@ -950,6 +967,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 alignItemsAtEnd={alignItemsAtEnd}
                 addTotalSize={addTotalSize}
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
+                style={style}
             />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
