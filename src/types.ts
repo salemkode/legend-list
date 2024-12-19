@@ -155,7 +155,7 @@ export interface ViewabilityConfig {
     /**
      * A unique ID to identify this viewability config
      */
-    id: string;
+    id?: string;
 
     /**
      * Minimum amount of time (in milliseconds) that an item must be physically viewable before the
