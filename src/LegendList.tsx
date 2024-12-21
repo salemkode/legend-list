@@ -59,7 +59,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             maintainVisibleContentPosition = false,
             onScroll: onScrollProp,
             numColumns: numColumnsProp = 1,
-            keyExtractor,
+            keyExtractor: keyExtractorProp,
             renderItem,
             estimatedItemSize,
             getEstimatedItemSize,
@@ -75,6 +75,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const internalRef = useRef<ScrollView>(null);
         const refScroller = internalRef as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
+        const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
         const refState = useRef<InternalState>();
         const getId = (index: number): string => {
@@ -475,25 +476,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { scrollLength, scroll, contentSize } = refState.current;
             const contentLength = contentSize[horizontal ? "width" : "height"];
             if (scroll > 0 && contentLength > 0) {
-            // Check if at end
+                // Check if at end
                 const distanceFromEnd = contentLength - scroll - scrollLength;
-            if (refState.current) {
-                refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
-            }
+                if (refState.current) {
+                    refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
+                }
 
-            if (onEndReached) {
-                if (!refState.current.isEndReached) {
-                    if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
-                        refState.current.isEndReached = true;
-                        onEndReached({ distanceFromEnd });
-                    }
-                } else {
-                    // reset flag when user scrolls back up
-                    if (distanceFromEnd >= onEndReachedThreshold! * scrollLength) {
-                        refState.current.isEndReached = false;
+                if (onEndReached) {
+                    if (!refState.current.isEndReached) {
+                        if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
+                            refState.current.isEndReached = true;
+                            onEndReached({ distanceFromEnd });
+                        }
+                    } else {
+                        // reset flag when user scrolls back up
+                        if (distanceFromEnd >= onEndReachedThreshold! * scrollLength) {
+                            refState.current.isEndReached = false;
+                        }
                     }
                 }
-            }
             }
         };
 
@@ -524,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-            if (!keyExtractor && !isFirst && data !== refState.current.data) {
+            if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
                 // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
                 refState.current.sizes.clear();
                 refState.current.positions.clear();
@@ -582,14 +583,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const numContainers = peek$<number>(ctx, "numContainers");
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    if (!keyExtractor || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
-                    set$(ctx, `containerItemKey${i}`, undefined);
-                    set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                    set$(ctx, `containerColumn${i}`, -1);
-                }
+                    if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
+                        set$(ctx, `containerItemKey${i}`, undefined);
+                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerColumn${i}`, -1);
+                    }
                 }
 
-                if (!keyExtractor) {
+                if (!keyExtractorProp) {
                     refState.current.sizes.clear();
                     refState.current.positions;
                 }
@@ -819,10 +820,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
                     if (!peek$(ctx, `containerDidLayout${containerId}`)) {
-                    state.animFrameLayout = requestAnimationFrame(() => {
-                        state.animFrameLayout = null;
-                        calculateItemsInView(state.scrollVelocity);
-                    });
+                        state.animFrameLayout = requestAnimationFrame(() => {
+                            state.animFrameLayout = null;
+                            calculateItemsInView(state.scrollVelocity);
+                        });
                     } else {
                         calculateItemsInView(state.scrollVelocity);
                     }
