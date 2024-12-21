@@ -818,10 +818,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
+                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
                     state.animFrameLayout = requestAnimationFrame(() => {
                         state.animFrameLayout = null;
                         calculateItemsInView(state.scrollVelocity);
                     });
+                    } else {
+                        calculateItemsInView(state.scrollVelocity);
+                    }
                 }
             }
         }, []);
