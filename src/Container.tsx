@@ -33,14 +33,14 @@ export const Container = ({
     recycleItems,
     horizontal,
     getRenderedItem,
-    onLayout,
+    updateItemSize,
     ItemSeparatorComponent,
 }: {
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
-    onLayout: (key: string, size: number) => void;
+    updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
@@ -88,7 +88,7 @@ export const Container = ({
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
                     // console.log("layout", key, size);
-                    onLayout(key, size);
+                    updateItemSize(id, key, size);
 
                     const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));

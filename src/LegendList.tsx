@@ -577,13 +577,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (!isFirst) {
                 refState.current.isEndReached = false;
+
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$<number>(ctx, "numContainers");
                 for (let i = 0; i < numContainers; i++) {
+                    const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                    if (!keyExtractor || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                     set$(ctx, `containerItemKey${i}`, undefined);
                     set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                     set$(ctx, `containerColumn${i}`, -1);
                 }
+                }
+
                 if (!keyExtractor) {
                     refState.current.sizes.clear();
                     refState.current.positions;
@@ -739,24 +744,24 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             calculateItemsInView();
         });
 
-        const updateItemSize = useCallback((key: string, size: number) => {
+        const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
             const data = refState.current?.data;
             if (!data) {
                 return;
             }
             const state = refState.current!;
             const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
-            const index = indexByKey.get(key)!;
+            const index = indexByKey.get(itemKey)!;
             // TODO: I don't love this, can do it better?
-            const wasInFirstRender = idsInFirstRender.has(key);
+            const wasInFirstRender = idsInFirstRender.has(itemKey);
 
-            const prevSize = sizes.get(key) || (wasInFirstRender ? getItemSize(key, index, data[index]) : 0);
+            const prevSize = sizes.get(itemKey) || (wasInFirstRender ? getItemSize(itemKey, index, data[index]) : 0);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
                 const numColumns = peek$<number>(ctx, "numColumns");
                 if (numColumns > 1) {
-                    const column = columns.get(key);
+                    const column = columns.get(itemKey);
                     const loopStart = index - (column! - 1);
                     let prevMaxSizeInRow = 0;
 
@@ -768,7 +773,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         prevMaxSizeInRow = Math.max(prevMaxSizeInRow, size);
                     }
 
-                    sizes.set(key, size);
+                    sizes.set(itemKey, size);
 
                     let nextMaxSizeInRow = 0;
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
@@ -779,12 +784,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     diff = nextMaxSizeInRow - prevMaxSizeInRow;
                 } else {
-                    sizes.set(key, size);
+                    sizes.set(itemKey, size);
                     diff = size - prevSize;
                 }
 
                 if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
-                    sizesLaidOut!.set(key, size);
+                    sizesLaidOut!.set(itemKey, size);
                     if (state.timeoutSizeMessage) {
                         clearTimeout(state.timeoutSizeMessage);
                     }
@@ -805,7 +810,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }, 1000);
                 }
 
-                addTotalSize(key, diff);
+                addTotalSize(itemKey, diff);
 
                 doMaintainScrollAtEnd(true);
 
