@@ -473,8 +473,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const { scrollLength, scroll, contentSize } = refState.current;
+            const contentLength = contentSize[horizontal ? "width" : "height"];
+            if (scroll > 0 && contentLength > 0) {
             // Check if at end
-            const distanceFromEnd = contentSize[horizontal ? "width" : "height"] - scroll - scrollLength;
+                const distanceFromEnd = contentLength - scroll - scrollLength;
             if (refState.current) {
                 refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
             }
@@ -491,6 +493,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         refState.current.isEndReached = false;
                     }
                 }
+            }
             }
         };
 
