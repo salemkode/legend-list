@@ -1,18 +1,20 @@
 import type { ReactNode } from "react";
 import * as React from "react";
 import {
+    Animated,
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     type ScrollView,
     StyleSheet,
     View,
+    type ViewStyle,
 } from "react-native";
 import { $ScrollView } from "./$ScrollView";
-import { $View } from "./$View";
 import { Containers } from "./Containers";
-import { peek$, set$, use$, useStateContext } from "./state";
+import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
+import { useValue$ } from "./useValue$";
 
 interface ListComponentProps
     extends Omit<
@@ -67,7 +69,9 @@ export const ListComponent = React.memo(function ListComponent({
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
-    const otherAxisSize = use$<number>("otherAxisSize") || 0;
+    const { numColumns } = rest;
+    const animPaddingTop = useValue$("paddingTop");
+    const animScrollAdjust = useValue$("scrollAdjust");
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
@@ -108,13 +112,12 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
-            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
+            {alignItemsAtEnd && <Animated.View style={{ height: animPaddingTop }} />}
             {ListHeaderComponent && (
-                <$View
-                    $key="scrollAdjust"
-                    $style={() =>
-                        StyleSheet.compose(ListHeaderComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
-                    }
+                <Animated.View
+                    style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListHeaderComponentStyle, {
+                        top: animScrollAdjust,
+                    })}
                     onLayout={(event) => {
                         const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
                         const prevSize = peek$<number>(ctx, "headerSize") || 0;
@@ -124,17 +127,16 @@ export const ListComponent = React.memo(function ListComponent({
                     }}
                 >
                     {getComponent(ListHeaderComponent)}
-                </$View>
+                </Animated.View>
             )}
             {ListEmptyComponent && (
-                <$View
-                    $key="scrollAdjust"
-                    $style={() =>
-                        StyleSheet.compose(ListEmptyComponentStyle, { top: peek$<number>(ctx, "scrollAdjust") })
-                    }
+                <Animated.View
+                    style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListEmptyComponentStyle, {
+                        top: animScrollAdjust,
+                    })}
                 >
                     {getComponent(ListEmptyComponent)}
-                </$View>
+                </Animated.View>
             )}
 
             <Containers

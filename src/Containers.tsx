@@ -1,7 +1,8 @@
 import * as React from "react";
-import { $View } from "./$View";
+import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { Container } from "./Container";
 import { peek$, use$, useStateContext } from "./state";
+import { useValue$ } from "./useValue$";
 
 interface ContainersProps {
     horizontal: boolean;
@@ -20,6 +21,7 @@ export const Containers = React.memo(function Containers({
 }: ContainersProps) {
     const ctx = useStateContext();
     const numContainers = use$<number>("numContainersPooled");
+    const animSize = useValue$("totalSize", (v) => v + peek$<number>(ctx, "scrollAdjust"), "scrollAdjust");
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -36,23 +38,7 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    return (
-        <$View
-            $key="totalSize"
-            $key2="scrollAdjust"
-            $style={() => {
-                const size = peek$<number>(ctx, "totalSize") + peek$<number>(ctx, "scrollAdjust");
+    const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
-                return horizontal
-                    ? {
-                          width: size,
-                      }
-                    : {
-                          height: size,
-                      };
-            }}
-        >
-            {containers}
-        </$View>
-    );
+    return <Animated.View style={style}>{containers}</Animated.View>;
 });
