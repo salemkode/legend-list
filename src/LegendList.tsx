@@ -900,7 +900,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
 
                 state.scrollTimer = setTimeout(() => {
-                    console.log("Resetting velocity",   state.scrollVelocity);
                     state.scrollVelocity = 0;
                 },500);
 
@@ -919,7 +918,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 state.scrollPrevTime = state.scrollTime;
                 state.scroll = newScroll;
                 state.scrollTime = currentTime;
-                console.log("Setting velocity", velocity, state.scrollHistory);
                 state.scrollVelocity = velocity;
                 // Pass velocity to calculateItemsInView
                 handleScrollDebounced(velocity);
