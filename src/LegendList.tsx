@@ -884,12 +884,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const currentTime = performance.now();
                 const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
 
-                // Update scroll history
-                state.scrollHistory.push({ scroll: newScroll, time: currentTime });
+                // don't add to the history, if it's initial scroll event
+                // otherwise invalid velocity will be calculated
+                if (!(state.scrollHistory.length === 0 && newScroll === initialContentOffset)) {
+                    // Update scroll history
+                    state.scrollHistory.push({ scroll: newScroll, time: currentTime });
+                }
                 // Keep only last 5 entries
                 if (state.scrollHistory.length > 5) {
                     state.scrollHistory.shift();
                 }
+
+                if (state.scrollTimer !== undefined) {
+                    clearTimeout(state.scrollTimer);
+                }
+
+                state.scrollTimer = setTimeout(() => {
+                    console.log("Resetting velocity",   state.scrollVelocity);
+                    state.scrollVelocity = 0;
+                },500);
 
                 // Calculate average velocity from history
                 let velocity = 0;
@@ -906,6 +919,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 state.scrollPrevTime = state.scrollTime;
                 state.scroll = newScroll;
                 state.scrollTime = currentTime;
+                console.log("Setting velocity", velocity, state.scrollHistory);
                 state.scrollVelocity = velocity;
                 // Pass velocity to calculateItemsInView
                 handleScrollDebounced(velocity);
