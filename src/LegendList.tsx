@@ -154,6 +154,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 contentSize: { width: 0, height: 0 },
                 sizesLaidOut: __DEV__ ? new Map() : undefined,
                 timeoutSizeMessage: 0,
+                scrollTimer: undefined,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             set$(ctx, "scrollAdjust", refState.current.scrollAdjustPending);
@@ -901,7 +902,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 state.scrollTimer = setTimeout(() => {
                     state.scrollVelocity = 0;
-                },500);
+                }, 500);
 
                 // Calculate average velocity from history
                 let velocity = 0;
