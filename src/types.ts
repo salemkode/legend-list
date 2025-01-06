@@ -1,12 +1,13 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
+import type Animated from 'react-native-reanimated';
 import type { ScrollAdjustHandler } from './ScrollAdjustHandler';
 
-export type LegendListProps<ItemT> = Omit<
-    ComponentProps<typeof ScrollView>,
-    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'
-> & {
+export type LegendListPropsBase<
+    ItemT,
+    TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>
+> = Omit<TScrollView, 'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'> & {
     data: ArrayLike<any> & ItemT[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
@@ -20,6 +21,8 @@ export type LegendListProps<ItemT> = Omit<
     alignItemsAtEnd?: boolean;
     maintainVisibleContentPosition?: boolean;
     numColumns?: number;
+    refScrollView?: React.Ref<ScrollView>;
+    refLegendList?: React.Ref<LegendListRef>;
     // in most cases providing a constant value for item size enough
     estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
@@ -42,11 +45,13 @@ export type LegendListProps<ItemT> = Omit<
     onViewableItemsChanged?: OnViewableItemsChanged | undefined;
 };
 
+export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
+
 export interface InternalState {
     anchorElement?: {
         id: string;
         coordinate: number;
-    }
+    };
     belowAnchorElementPositions?: Map<string, number>;
     rowHeights: Map<number, number>;
     positions: Map<string, number>;

@@ -65,14 +65,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onEndReached,
             onStartReached,
             ListEmptyComponent,
+            refScrollView,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
 
         const ctx = useStateContext();
 
-        const internalRef = useRef<ScrollView>(null);
-        const refScroller = internalRef as React.MutableRefObject<ScrollView>;
+        const refScroller = (refScrollView ?? useRef<ScrollView>(null)) as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
         const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
@@ -1077,7 +1077,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             <ListComponent
                 {...rest}
                 horizontal={horizontal!}
-                refScroller={refScroller}
+                refScrollView={refScrollView}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
