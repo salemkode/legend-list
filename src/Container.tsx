@@ -56,8 +56,9 @@ export const Container = ({
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
+    const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
-    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey]);
+    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
@@ -69,7 +70,7 @@ export const Container = ({
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
                 if (key !== undefined) {
                     // Round to nearest quater pixel to avoid accumulating rounding errors
-                    const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"]*8)/8;
+                    const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
                     updateItemSize(id, key, size);
 
