@@ -843,7 +843,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     };
 
                     run();
-                    listen$(ctx, signal, run);
+                    return listen$(ctx, signal, run);
                 }, []);
             };
             const useRecyclingState = (valueOrFun: ((info: LegendListRecyclingState<unknown>) => any) | any) => {
