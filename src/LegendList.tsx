@@ -495,7 +495,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             numContainers++;
                             set$(ctx, `containerItemKey${containerId}`, id);
                             const index = refState.current?.indexByKey.get(id)!;
-                            set$(ctx, `containerItemData${furthestIndex}`, data[index]);
+                            set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
