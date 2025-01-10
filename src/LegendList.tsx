@@ -978,6 +978,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         calculateItemsInView(state.scrollVelocity);
                     }
                 }
+            } else {
+                // Size is the same as estimated so mark it as laid out
+                set$(ctx, `containerDidLayout${containerId}`, true);
             }
         }, []);
 
