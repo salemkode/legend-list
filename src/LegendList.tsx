@@ -676,6 +676,39 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         };
 
+        const resetContainers = () => {
+            // Reset the endReached flag if new data has been added
+            const state = refState.current;
+            if (state) {
+                if (data.length > state.data.length) {
+                    state.isEndReached = false;
+                }
+
+                state.data = data;
+
+                // Reset containers that aren't used anymore because the data has changed
+                const numContainers = peek$<number>(ctx, "numContainers");
+                for (let i = 0; i < numContainers; i++) {
+                    const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                    if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
+                        set$(ctx, `containerItemKey${i}`, undefined);
+                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerColumn${i}`, -1);
+                    }
+                }
+
+                if (!keyExtractorProp) {
+                    state.sizes.clear();
+                    state.positions;
+                }
+
+                calculateItemsInView(state!.scrollVelocity);
+                doMaintainScrollAtEnd(false);
+                checkAtTop();
+                checkAtBottom();
+            }
+        };
+
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
@@ -717,44 +750,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
-
-            if (!isFirst) {
-                // Reset the endReached flag if new data has been added
-                if (data.length > refState.current.data.length) {
-                    refState.current.isEndReached = false;
-                }
-
-                refState.current.data = data;
-
-                // Reset containers that aren't used anymore because the data has changed
-                const numContainers = peek$<number>(ctx, "numContainers");
-                for (let i = 0; i < numContainers; i++) {
-                    const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
-                        set$(ctx, `containerItemKey${i}`, undefined);
-                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                        set$(ctx, `containerColumn${i}`, -1);
-                    }
-                }
-
-                if (!keyExtractorProp) {
-                    refState.current.sizes.clear();
-                    refState.current.positions;
-                }
-                // Following bug is creating various problems with the render state, which is making app super fiddly and results in the incorrect values
-                // in the scrollstate
-                //  Warning: Cannot update a component (`Container`) while rendering a different component (`ForwardRef(LegendListInner)`). To locate the bad setState() call inside `ForwardRef(LegendListInner)`, follow the stack trace as described in https://react.dev/link/setstate-in-render
-                // that's why I added setTimeout there
-                // setTimeout is called instead of requestAnimationFrame because it should be called much faster then between frames
-                // requestAnimationFrame(fn) is not the same as setTimeout(fn, 0) - the former will fire after all the frames have flushed, whereas the latter will fire as quickly as possible (over 1000x per second on a iPhone 5S).
-                setTimeout(() => {
-                    calculateItemsInView(refState.current!.scrollVelocity);
-                    doMaintainScrollAtEnd(false);
-                    checkAtTop();
-                    checkAtBottom();
-                }, 0);
-            }
         }
+
+        useEffect(() => {
+            if (!isFirst) {
+                resetContainers();
+            }
+        }, [isFirst, data, numColumnsProp]);
+
         refState.current.renderItem = renderItem!;
         set$(ctx, "lastItemKey", getId(data[data.length - 1]));
         set$(ctx, "numColumns", numColumnsProp);
