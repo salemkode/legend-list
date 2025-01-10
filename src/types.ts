@@ -90,6 +90,7 @@ export interface InternalState {
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
+    layoutsPending: Set<number>;
 }
 
 export interface ViewableRange<T> {
