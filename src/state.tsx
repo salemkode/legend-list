@@ -25,8 +25,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize"
-    | "otherAxisSize";
+    | "footerSize";
+// | "otherAxisSize";
 
 export interface StateContext {
     listeners: Map<ListenerType, Set<(value: any) => void>>;

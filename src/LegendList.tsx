@@ -158,6 +158,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
+                layoutsPending: new Set(),
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -307,6 +308,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 positions,
                 columns,
                 scrollAdjustHandler,
+                layoutsPending,
             } = state!;
             if (state.animFrameLayout) {
                 cancelAnimationFrame(state.animFrameLayout);
@@ -315,6 +317,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
+
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
@@ -556,6 +559,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                     }
                 }
+            }
+
+            if (layoutsPending.size > 0) {
+                for (const containerId of layoutsPending) {
+                    set$(ctx, `containerDidLayout${containerId}`, true);
+                }
+                layoutsPending.clear();
             }
 
             if (refState.current!.viewabilityConfigCallbackPairs) {
@@ -901,6 +911,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);
+
+            const measured = peek$(ctx, `containerDidLayout${containerId}`);
+            if (!measured) {
+                state.layoutsPending.add(containerId);
+            }
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
