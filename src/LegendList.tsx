@@ -159,6 +159,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
                 layoutsPending: new Set(),
+                scrollForNextCalculateItemsInView: undefined,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -323,6 +324,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
+            // Check precomputed scroll range to see if we can skip this check
+            if (refState.current!.scrollForNextCalculateItemsInView) {
+                const { top, bottom } = refState.current!.scrollForNextCalculateItemsInView;
+                if (scroll > top && scroll < bottom) {
+                    return;
+                }
+            }
+
             const scrollBottom = scroll + scrollLength;
 
             let startNoBuffer: number | null = null;
@@ -440,6 +449,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endBuffered,
                 endNoBuffer,
             });
+
+            // Precompute the scroll that will be needed for the range to change
+            // so it can be skipped if not needed
+            const nextTop = Math.ceil(startBuffered ? positions.get(startBufferedId!)! + scrollBuffer : 0);
+            const nextBottom = Math.floor(
+                endBuffered ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
+            );
+            refState.current!.scrollForNextCalculateItemsInView =
+                nextTop >= 0 && nextBottom >= 0
+                    ? {
+                          top: nextTop,
+                          bottom: nextBottom,
+                      }
+                    : undefined;
 
             // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
@@ -684,6 +707,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     state.isEndReached = false;
                 }
 
+                refState.current!.scrollForNextCalculateItemsInView = undefined;
                 state.data = data;
 
                 // Reset containers that aren't used anymore because the data has changed
@@ -969,6 +993,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         );
                     }, 1000);
                 }
+
+                // Reset scrollForNextCalculateItemsInView because a position may have changed making the previous
+                // precomputed scroll range invalid
+                refState.current!.scrollForNextCalculateItemsInView = undefined;
 
                 addTotalSize(itemKey, diff, 0);
 
