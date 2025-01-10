@@ -759,14 +759,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, [isFirst, data, numColumnsProp]);
 
         refState.current.renderItem = renderItem!;
-        set$(ctx, "lastItemKey", getId(data[data.length - 1]));
-        set$(ctx, "numColumns", numColumnsProp);
+        const lastItemKey = getId(data[data.length - 1]);
         // TODO: This needs to support horizontal and other ways of defining padding
-        set$(
-            ctx,
-            "stylePaddingTop",
-            StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0,
-        );
+        const stylePaddingTop =
+            StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
+
+        const initalizeStateVars = () => {
+            set$(ctx, "lastItemKey", lastItemKey);
+            set$(ctx, "numColumns", numColumnsProp);
+            set$(ctx, "stylePaddingTop", stylePaddingTop);
+        };
+        if (isFirst) {
+            initalizeStateVars();
+        }
+        useEffect(initalizeStateVars, [lastItemKey, numColumnsProp, stylePaddingTop]);
 
         const getRenderedItem = useCallback((key: string, containerId: number) => {
             const state = refState.current;
