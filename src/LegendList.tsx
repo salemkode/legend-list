@@ -16,6 +16,7 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
+    Platform,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -65,6 +66,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onEndReached,
             onStartReached,
             ListEmptyComponent,
+            scrollEventThrottle,
             refScrollView,
             ...rest
         } = props;
@@ -1170,6 +1172,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 alignItemsAtEnd={alignItemsAtEnd}
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
+                scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 style={style}
             />
         );
