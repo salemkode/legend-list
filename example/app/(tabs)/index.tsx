@@ -77,10 +77,13 @@ const ListElements = () => {
     return (
         <SafeAreaView style={styles.container}>
             <LegendList
-                estimatedItemSize={80}
+                estimatedItemSize={60}
                 data={data}
                 renderItem={({ item }) => <ListItem {...item} />}
                 keyExtractor={(item) => item.id.toString()}
+                onItemSizeChanged={(info) => {
+                    console.log("item size changed", info);
+                }}
             />
         </SafeAreaView>
     );
