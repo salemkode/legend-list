@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     },
     item: {
         padding: 16,
+        height: 60,
         borderBottomColor: "#ccc",
         borderBottomWidth: 1,
         width: "100%",
