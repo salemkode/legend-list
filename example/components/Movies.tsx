@@ -156,7 +156,10 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
     const playlists = require("../api/data/rows.json");
 
     const ListComponent = isLegend ? LegendList : FlashList;
-    const DRAW_DISTANCE = isLegend ? 0 : 0;
+
+    // Flashlist appears to internally multiple the draw distance by 2-3 so increase the draw distance
+    // for the Legend version to get the same effect
+    const DRAW_DISTANCE = isLegend ? 500 : 250;
     console.log("is legend", isLegend, DRAW_DISTANCE);
 
     return (
