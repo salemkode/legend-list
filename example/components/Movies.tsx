@@ -76,19 +76,19 @@ const MovieRow = ({
 }) => {
     const movies = playlistData[playlist.id]();
     const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
-    let opacity = 0;
-    if (isLegend) {
-        const [_opacity, setOpacity] = useRecyclingState<number>(() => {
-            if (setOpacity) {
-                requestAnimationFrame(() => setOpacity(1));
-                return 0;
-            }
-            return 1;
-        });
-        opacity = _opacity;
-    } else {
-        opacity = 1;
-    }
+    // let opacity = 0;
+    // if (isLegend) {
+    //     const [_opacity, setOpacity] = useRecyclingState<number>(() => {
+    //         if (setOpacity) {
+    //             requestAnimationFrame(() => setOpacity(1));
+    //             return 0;
+    //         }
+    //         return 1;
+    //     });
+    //     opacity = _opacity;
+    // } else {
+    // opacity = 1;
+    // }
 
     // const listRef = useRef<FlashList<Movie>>(null);
 
@@ -123,7 +123,7 @@ const MovieRow = ({
             <Text numberOfLines={1} style={rowStyles.title}>
                 {playlist.title}
             </Text>
-            <View style={[rowStyles.container, { opacity }]}>
+            <View style={[rowStyles.container]}>
                 <ListComponent
                     contentContainerStyle={rowStyles.listContainer}
                     // See https://shopify.github.io/flash-list/docs/fundamentals/performant-components/#remove-key-prop
