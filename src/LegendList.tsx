@@ -66,6 +66,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onEndReached,
             onStartReached,
             ListEmptyComponent,
+            onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
             ...rest
@@ -1016,6 +1017,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     } else {
                         calculateItemsInView(state.scrollVelocity);
                     }
+                }
+
+                if (onItemSizeChanged) {
+                    onItemSizeChanged({ size, previous: prevSize, index, itemKey, itemData: data[index] });
                 }
             } else {
                 // Size is the same as estimated so mark it as laid out

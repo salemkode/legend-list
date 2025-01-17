@@ -163,7 +163,7 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
         <ListComponent
             data={playlists}
             keyExtractor={(playlist: Playlist) => playlist.id}
-            estimatedItemSize={cardStyles.image.height + 50}
+            estimatedItemSize={cardStyles.image.height + 52}
             renderItem={({ item: playlist, useRecyclingState }: LegendListRenderItemProps<Playlist>) => (
                 <MovieRow
                     ListComponent={ListComponent}
