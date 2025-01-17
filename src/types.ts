@@ -43,7 +43,13 @@ export type LegendListPropsBase<
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
     onViewableItemsChanged?: OnViewableItemsChanged | undefined;
-    onItemSizeChanged?: (info: { size: number; previous: number; index: number; itemKey: string; itemData: T }) => void;
+    onItemSizeChanged?: (info: {
+        size: number;
+        previous: number;
+        index: number;
+        itemKey: string;
+        itemData: ItemT;
+    }) => void;
 };
 
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
