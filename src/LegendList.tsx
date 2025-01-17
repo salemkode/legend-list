@@ -154,7 +154,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 indexByKey: new Map(),
                 scrollHistory: [],
                 scrollVelocity: 0,
-                contentSize: { width: 0, height: 0 },
                 sizesLaidOut: __DEV__ ? new Map() : undefined,
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
@@ -649,11 +648,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!refState.current) {
                 return;
             }
-            const { scrollLength, scroll, contentSize } = refState.current;
-            const contentLength = contentSize[horizontal ? "width" : "height"];
-            if (scroll > 0 && contentLength > 0) {
+            const { scrollLength, scroll, totalSize } = refState.current;
+            if (totalSize > 0) {
                 // Check if at end
-                const distanceFromEnd = contentLength - scroll - scrollLength;
+                const distanceFromEnd = totalSize - scroll - scrollLength;
                 if (refState.current) {
                     refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
                 }
@@ -1068,7 +1066,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 const state = refState.current!;
                 state.hasScrolled = true;
-                state.contentSize = event.nativeEvent.contentSize;
                 const currentTime = performance.now();
                 const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
 

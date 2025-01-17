@@ -92,7 +92,6 @@ export interface InternalState {
     timeoutSizeMessage: any;
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
-    contentSize: { width: number; height: number };
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;
