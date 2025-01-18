@@ -41,7 +41,6 @@ interface PropsOptional {
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     maintainScrollAtEnd?: boolean;

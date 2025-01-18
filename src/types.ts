@@ -12,7 +12,6 @@ export type LegendListPropsBase<
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialNumContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     onStartReachedThreshold?: number | null | undefined;
