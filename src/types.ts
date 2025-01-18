@@ -49,6 +49,11 @@ export type LegendListPropsBase<
         itemKey: string;
         itemData: ItemT;
     }) => void;
+    /**
+     * Render custom ScrollView component.
+     * @default (props) => <ScrollView {...props} />
+     */
+    renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
 };
 
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
