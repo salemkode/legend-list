@@ -68,6 +68,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
+            extraData,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -181,6 +182,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "extraData", extraData);
         }
 
         const getAnchorElementIndex = () => {
@@ -793,6 +795,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         useEffect(() => {
             checkResetContainers(/*reset*/ !isFirst);
         }, [isFirst, data, numColumnsProp]);
+
+        useEffect(() => {
+            set$(ctx, "extraData", extraData);
+        }, [extraData]);
 
         refState.current.renderItem = renderItem!;
         const lastItemKey = getId(data[data.length - 1]);
