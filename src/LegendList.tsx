@@ -249,7 +249,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             let rowHeight = 0;
             const startEl = n * numColumnsProp;
-            for (let i = startEl; i < startEl + numColumnsProp; i++) {
+            for (let i = startEl; i < startEl + numColumnsProp && i < data.length; i++) {
                 const id = getId(i);
                 const size = getItemSize(id, i, data[i]);
                 rowHeight = Math.max(rowHeight, size);
@@ -772,10 +772,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (maintainVisibleContentPosition && anchorElementIndex !== undefined && i < anchorElementIndex) {
                         totalSizeBelowIndex += maxSizeInRow;
                     }
+
                     totalSize += maxSizeInRow;
                     column = 1;
                     maxSizeInRow = 0;
                 }
+            }
+
+            // If have any height leftover from a row that doesn't extend through the last column
+            // add it to total size
+            if (maxSizeInRow > 0) {
+                totalSize += maxSizeInRow;
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
         }
@@ -960,7 +967,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const column = columns.get(itemKey);
                     const loopStart = index - (column! - 1);
                     let nextMaxSizeInRow = 0;
-                    for (let i = loopStart; i < loopStart + numColumns; i++) {
+                    for (let i = loopStart; i < loopStart + numColumns && i < data.length; i++) {
                         const id = getId(i)!;
                         const size = getItemSize(id, i, data[i]);
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
