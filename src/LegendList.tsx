@@ -322,8 +322,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
             // Check precomputed scroll range to see if we can skip this check
-            if (refState.current!.scrollForNextCalculateItemsInView) {
-                const { top, bottom } = refState.current!.scrollForNextCalculateItemsInView;
+            if (state.scrollForNextCalculateItemsInView) {
+                const { top, bottom } = state.scrollForNextCalculateItemsInView;
                 if (scroll > top && scroll < bottom) {
                     return;
                 }
@@ -439,7 +439,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            Object.assign(refState.current!, {
+            Object.assign(state, {
                 startBuffered,
                 startBufferedId,
                 startNoBuffer,
@@ -494,7 +494,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 break;
                             }
 
-                            const index = refState.current?.indexByKey.get(key)!;
+                            const index = state.indexByKey.get(key)!;
                             const pos = peek$<number>(ctx, `containerPosition${u}`);
 
                             if (index < startBuffered || index > endBuffered) {
@@ -507,14 +507,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                         if (furthestIndex >= 0) {
                             set$(ctx, `containerItemKey${furthestIndex}`, id);
-                            const index = refState.current?.indexByKey.get(id)!;
+                            const index = state.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${furthestIndex}`, data[index]);
                         } else {
                             const containerId = numContainers;
 
                             numContainers++;
                             set$(ctx, `containerItemKey${containerId}`, id);
-                            const index = refState.current?.indexByKey.get(id)!;
+                            const index = state.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
@@ -543,7 +543,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    const itemIndex = refState.current?.indexByKey.get(itemKey)!;
+                    const itemIndex = state.indexByKey.get(itemKey)!;
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
@@ -588,11 +588,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 layoutsPending.clear();
             }
 
-            if (refState.current!.viewabilityConfigCallbackPairs) {
+            if (state.viewabilityConfigCallbackPairs) {
                 updateViewableItems(
-                    refState.current!,
+                    state,
                     ctx,
-                    refState.current!.viewabilityConfigCallbackPairs,
+                    state.viewabilityConfigCallbackPairs,
                     getId,
                     scrollLength,
                     startNoBuffer!,
