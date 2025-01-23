@@ -450,9 +450,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // Precompute the scroll that will be needed for the range to change
             // so it can be skipped if not needed
-            const nextTop = Math.ceil(startBuffered ? positions.get(startBufferedId!)! + scrollBuffer : 0);
+            const nextTop = Math.ceil(startBuffered !== null ? positions.get(startBufferedId!)! + scrollBuffer : 0);
             const nextBottom = Math.floor(
-                endBuffered ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
+                endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
             if (state.enableScrollForNextCalculateItemsInView) {
                 state.scrollForNextCalculateItemsInView =
