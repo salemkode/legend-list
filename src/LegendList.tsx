@@ -161,6 +161,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 startReachedBlockedByTimer: false,
                 layoutsPending: new Set(),
                 scrollForNextCalculateItemsInView: undefined,
+                enableScrollForNextCalculateItemsInView: true,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -453,13 +454,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const nextBottom = Math.floor(
                 endBuffered ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
-            refState.current!.scrollForNextCalculateItemsInView =
-                nextTop >= 0 && nextBottom >= 0
-                    ? {
-                          top: nextTop,
-                          bottom: nextBottom,
-                      }
-                    : undefined;
+            if (state.enableScrollForNextCalculateItemsInView) {
+                state.scrollForNextCalculateItemsInView =
+                    nextTop >= 0 && nextBottom >= 0
+                        ? {
+                              top: nextTop,
+                              bottom: nextBottom,
+                          }
+                        : undefined;
+            }
 
             // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
@@ -921,10 +924,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         useInit(() => {
-            refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
+            const state = refState.current!;
+            const viewability = setupViewability(props);
+            state.viewabilityConfigCallbackPairs = viewability;
+            state.enableScrollForNextCalculateItemsInView = !viewability;
 
             // Allocate containers
-            const scrollLength = refState.current!.scrollLength;
+            const scrollLength = state.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
@@ -936,7 +942,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * 2);
 
-            calculateItemsInView(refState.current!.scrollVelocity);
+            calculateItemsInView(state.scrollVelocity);
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
