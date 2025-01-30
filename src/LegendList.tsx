@@ -214,7 +214,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     isAboveAnchor = true;
                 }
             }
-            const prev = state.totalSize;
             if (key === null) {
                 state.totalSize = add;
                 state.totalSizeBelowAnchor = totalSizeBelowAnchor;
@@ -331,7 +330,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
+            const scroll = scrollState - previousScrollAdjust - topPad;
+
+            let scrollBufferTop = scrollBuffer;
+            let scrollBufferBottom = scrollBuffer;
+
+            
+            if (scrollExtra > 8) {
+                scrollBufferTop = 0;
+                scrollBufferBottom = scrollBuffer + scrollExtra;
+            } else {
+                scrollBufferTop = scrollBuffer - scrollExtra;
+                scrollBufferBottom = 0;
+            }
+
+            //console.log(scrollExtra,scrollBufferTop,scrollBufferBottom)
 
             // Check precomputed scroll range to see if we can skip this check
             if (state.scrollForNextCalculateItemsInView) {
@@ -428,7 +441,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (startNoBuffer === null && top + size > scroll) {
                     startNoBuffer = i;
                 }
-                if (startBuffered === null && top + size > scroll - scrollBuffer) {
+                if (startBuffered === null && top + size > scroll - scrollBufferTop) {
                     startBuffered = i;
                     startBufferedId = id;
                 }
@@ -436,7 +449,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (top <= scrollBottom) {
                         endNoBuffer = i;
                     }
-                    if (top <= scrollBottom + scrollBuffer) {
+                    if (top <= scrollBottom + scrollBufferBottom) {
                         endBuffered = i;
                     } else {
                         break;
@@ -465,7 +478,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const nextBottom = Math.floor(
                 endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
-            if (state.enableScrollForNextCalculateItemsInView) {
+            if (false) {
                 state.scrollForNextCalculateItemsInView =
                     nextTop >= 0 && nextBottom >= 0
                         ? {
