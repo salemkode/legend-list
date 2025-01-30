@@ -339,7 +339,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (scrollExtra > 8) {
                 scrollBufferTop = 0;
                 scrollBufferBottom = scrollBuffer + scrollExtra;
-            } else {
+            } 
+            if (scrollExtra < -8) {
                 scrollBufferTop = scrollBuffer - scrollExtra;
                 scrollBufferBottom = 0;
             }
@@ -478,7 +479,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const nextBottom = Math.floor(
                 endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
-            if (false) {
+            if (state.enableScrollForNextCalculateItemsInView) {
                 state.scrollForNextCalculateItemsInView =
                     nextTop >= 0 && nextBottom >= 0
                         ? {
