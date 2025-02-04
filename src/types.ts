@@ -77,7 +77,7 @@ export interface InternalState {
     sizes: Map<string, number>;
     sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
-    animFrameLayout: any;
+    waitingForMicrotask: any;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;
