@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
@@ -95,6 +95,21 @@ export const Container = ({
         }
     };
 
+    const ref = useRef<View>(null);
+    useLayoutEffect(() => {
+        if (itemKey) {
+            // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
+            const measured = ref.current?.unstable_getBoundingClientRect?.();
+            if (measured) {
+                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+
+                if (size) {
+                    updateItemSize(id, itemKey, size);
+                }
+            }
+        }
+    }, [itemKey]);
+
     const contextValue = useMemo(
         () => ({ containerId: id, itemKey, index: index!, value: data }),
         [id, itemKey, index, data],
@@ -116,7 +131,7 @@ export const Container = ({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
-            <LeanView style={style}>
+            <LeanView style={style} ref={ref}>
                 <LeanView style={anchorStyle} onLayout={onLayout}>
                     {contentFragment}
                 </LeanView>
@@ -127,7 +142,7 @@ export const Container = ({
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <LeanView style={style} onLayout={onLayout}>
+        <LeanView style={style} onLayout={onLayout} ref={ref}>
             {contentFragment}
         </LeanView>
     );
