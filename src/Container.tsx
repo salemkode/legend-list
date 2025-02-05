@@ -49,7 +49,7 @@ export const Container = ({
           };
 
     if (waitForInitialLayout) {
-        const visible = use$<boolean>(`containerDidLayout${id}`);
+        const visible = use$<boolean>("containersDidLayout");
         style.opacity = visible ? 1 : 0;
     }
 

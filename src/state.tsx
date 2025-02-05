@@ -18,6 +18,7 @@ export type ListenerType =
     | `containerPosition${number}`
     | `containerColumn${number}`
     | `containerDidLayout${number}`
+    | "containersDidLayout"
     | "extraData"
     | "numColumns"
     | "lastItemKey"
@@ -26,8 +27,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize" 
-    | "maintainVisibleContentPosition"
+    | "footerSize"
+    | "maintainVisibleContentPosition";
 // | "otherAxisSize";
 
 export interface StateContext {

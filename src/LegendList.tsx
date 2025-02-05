@@ -620,6 +620,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                 layoutsPending.clear();
             }
+            set$(ctx, "containersDidLayout", true);
 
             if (state.viewabilityConfigCallbackPairs) {
                 updateViewableItems(
