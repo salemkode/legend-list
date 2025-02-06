@@ -59,6 +59,10 @@ const data: ListElement[] = [
         title: "Countries List",
         url: "/countries",
     },
+    {
+        title: "Countries FlashList",
+        url: "/countries-flashlist",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>
