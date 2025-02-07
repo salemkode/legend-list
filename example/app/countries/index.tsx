@@ -128,12 +128,12 @@ const styles = StyleSheet.create({
         //     elevation: 3,
     },
     selectedItem: {
-        backgroundColor: "#e3f2fd",
-        borderColor: "#1976d2",
-        borderWidth: 1,
+        // backgroundColor: "#e3f2fd",
+        // borderColor: "#1976d2",
+        // borderWidth: 1,
     },
     pressedItem: {
-        backgroundColor: "#f0f0f0",
+        // backgroundColor: "#f0f0f0",
     },
     flagContainer: {
         marginRight: 16,

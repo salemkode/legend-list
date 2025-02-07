@@ -1,4 +1,3 @@
-
 import { FlashList } from "@shopify/flash-list";
 import { type TCountryCode, countries, getEmojiFlag } from "countries-list";
 import { useMemo, useState } from "react";
@@ -88,7 +87,6 @@ const App = () => {
                     //scrollEventThrottle={200}
                     drawDistance={125}
                     disableAutoLayout
-                    
                 />
             </SafeAreaView>
         </SafeAreaProvider>
@@ -123,15 +121,15 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#fff",
         borderRadius: 12,
-        elevation: 3,
+        // elevation: 3,
     },
     selectedItem: {
-        backgroundColor: "#e3f2fd",
-        borderColor: "#1976d2",
-        borderWidth: 1,
+        // backgroundColor: "#e3f2fd",
+        // borderColor: "#1976d2",
+        // borderWidth: 1,
     },
     pressedItem: {
-        backgroundColor: "#f0f0f0",
+        // backgroundColor: "#f0f0f0",
     },
     flagContainer: {
         marginRight: 16,
