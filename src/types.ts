@@ -61,7 +61,7 @@ export type AnchoredPosition = {
     type: 'top' | 'bottom';
     relativeCoordinate: number; // used for display
     top: number; // used for calculating the position of the container
-}
+};
 
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
 
@@ -108,7 +108,6 @@ export interface InternalState {
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
-    layoutsPending: Set<number>;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
 }

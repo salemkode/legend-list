@@ -172,7 +172,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
-                layoutsPending: new Set(),
                 scrollForNextCalculateItemsInView: undefined,
                 enableScrollForNextCalculateItemsInView: true,
             };
@@ -321,7 +320,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 positions,
                 columns,
                 scrollAdjustHandler,
-                layoutsPending,
             } = state!;
             if (state.animFrameLayout) {
                 cancelAnimationFrame(state.animFrameLayout);
@@ -614,12 +612,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            if (layoutsPending.size > 0) {
-                for (const containerId of layoutsPending) {
-                    set$(ctx, `containerDidLayout${containerId}`, true);
-                }
-                layoutsPending.clear();
-            }
             set$(ctx, "containersDidLayout", true);
 
             if (state.viewabilityConfigCallbackPairs) {
@@ -816,10 +808,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         refState.current.anchorElement = newAnchorElement;
                         refState.current.belowAnchorElementPositions?.clear();
                         // reset scroll to 0 and schedule rerender
-                        refScroller.current!.scrollTo({x:0, y:0, animated: false });
+                        refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
                         setTimeout(() => {
                             calculateItemsInView(0);
-                        },0);
+                        }, 0);
                     } else {
                         refState.current.startBufferedId = undefined;
                     }
@@ -836,10 +828,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         refState.current.startBufferedId = undefined;
                     }
                     // reset scroll to 0 and schedule rerender
-                    refScroller.current!.scrollTo({x:0, y:0, animated: false });
+                    refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
                     setTimeout(() => {
                         calculateItemsInView(0);
-                    },0);
+                    }, 0);
                 }
             }
 
@@ -968,11 +960,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);
 
-            const measured = peek$(ctx, `containerDidLayout${containerId}`);
-            if (!measured) {
-                state.layoutsPending.add(containerId);
-            }
-
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
 
@@ -1029,7 +1016,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
+                    if (!peek$(ctx, "containersDidLayout")) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
                             calculateItemsInView(state.scrollVelocity);
@@ -1042,9 +1029,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (onItemSizeChanged) {
                     onItemSizeChanged({ size, previous: prevSize, index, itemKey, itemData: data[index] });
                 }
-            } else {
-                // Size is the same as estimated so mark it as laid out
-                set$(ctx, `containerDidLayout${containerId}`, true);
             }
         }, []);
 

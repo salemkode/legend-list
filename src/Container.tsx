@@ -10,7 +10,6 @@ export const Container = ({
     id,
     recycleItems,
     horizontal,
-    waitForInitialLayout,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
@@ -18,7 +17,6 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    waitForInitialLayout: boolean | undefined;
     getRenderedItem: (key: string) => { index: number; renderedItem: React.ReactNode } | null;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
@@ -47,11 +45,6 @@ export const Container = ({
               width: otherAxisSize,
               top: position.relativeCoordinate,
           };
-
-    if (waitForInitialLayout) {
-        const visible = use$<boolean>("containersDidLayout");
-        style.opacity = visible ? 1 : 0;
-    }
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
