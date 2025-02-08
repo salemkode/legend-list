@@ -92,14 +92,13 @@ export const Container = ({
     const ref = useRef<View>(null);
     useLayoutEffect(() => {
         if (itemKey) {
-            // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
-            const measured = ref.current?.unstable_getBoundingClientRect?.();
-            if (measured) {
-                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+            let size: number | undefined = undefined;
+            ref.current?.measure((x, y, width, height) => {
+                size = Math.floor(horizontal ? width : height * 8) / 8;
+            });
 
-                if (size) {
-                    updateItemSize(id, itemKey, size);
-                }
+            if (size) {
+                updateItemSize(id, itemKey, size);
             }
         }
     }, [itemKey]);
