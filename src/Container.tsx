@@ -6,6 +6,9 @@ import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
 
+// @ts-expect-error nativeFabricUIManager is not defined in the global object types
+const isNewArchitecture = global.nativeFabricUIManager != null;
+
 export const Container = ({
     id,
     recycleItems,
@@ -90,18 +93,20 @@ export const Container = ({
     };
 
     const ref = useRef<View>(null);
-    useLayoutEffect(() => {
-        if (itemKey) {
-            let size: number | undefined = undefined;
-            ref.current?.measure((x, y, width, height) => {
-                size = Math.floor(horizontal ? width : height * 8) / 8;
-            });
+    if (isNewArchitecture) {
+        useLayoutEffect(() => {
+            if (itemKey) {
+                let size: number | undefined = undefined;
+                ref.current?.measure?.((x, y, width, height) => {
+                    size = Math.floor(horizontal ? width : height * 8) / 8;
+                });
 
-            if (size) {
-                updateItemSize(id, itemKey, size);
+                if (size) {
+                    updateItemSize(id, itemKey, size);
+                }
             }
-        }
-    }, [itemKey]);
+        }, [itemKey]);
+    }
 
     const contextValue = useMemo(
         () => ({ containerId: id, itemKey, index: index!, value: data }),
