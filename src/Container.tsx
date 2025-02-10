@@ -1,9 +1,9 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
-import { peek$, use$, useStateContext } from "./state";
+import { use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
 
 // @ts-expect-error nativeFabricUIManager is not defined in the global object types
@@ -54,7 +54,9 @@ export const Container = ({
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
-    const refLastSize = useRef<number>();
+    const refLastItemKey = useRef<string>();
+
+    refLastItemKey.current = itemKey;
 
     const renderedItemInfo = useMemo(
         () => itemKey !== undefined && getRenderedItem(itemKey),
@@ -62,26 +64,8 @@ export const Container = ({
     );
     const { index, renderedItem } = renderedItemInfo || {};
 
-    const didLayout = false;
-
-    useEffect(() => {
-        // Catch a rare bug where a container is reused and is the exact same size as the previous item
-        // so it does not fire an onLayout, so we need to trigger it manually.
-        // TODO: There must be a better way to do this?
-        if (itemKey) {
-            const timeout = setTimeout(() => {
-                if (!didLayout && refLastSize.current) {
-                    updateItemSize(id, itemKey, refLastSize.current);
-                }
-            }, 16);
-            return () => {
-                clearTimeout(timeout);
-            };
-        }
-    }, [itemKey]);
-
     const onLayout = (event: LayoutChangeEvent) => {
-        const key = peek$<string>(ctx, `containerItemKey${id}`);
+        const key = refLastItemKey.current
         if (key !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
