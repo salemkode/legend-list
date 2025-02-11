@@ -54,9 +54,6 @@ export const Container = ({
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
-    const refLastItemKey = useRef<string>();
-
-    refLastItemKey.current = itemKey;
 
     const renderedItemInfo = useMemo(
         () => itemKey !== undefined && getRenderedItem(itemKey),
@@ -65,15 +62,14 @@ export const Container = ({
     const { index, renderedItem } = renderedItemInfo || {};
 
     const onLayout = (event: LayoutChangeEvent) => {
-        const key = refLastItemKey.current
-        if (key !== undefined) {
+        if (itemKey !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
             if (size === 0) {
                 console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, key);
                 return;
             }
-            updateItemSize(id, key, size);
+            updateItemSize(id, itemKey, size);
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
