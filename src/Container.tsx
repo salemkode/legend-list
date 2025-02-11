@@ -66,7 +66,7 @@ export const Container = ({
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
             if (size === 0) {
-                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, key);
+                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, itemKey);
                 return;
             }
             updateItemSize(id, itemKey, size);
