@@ -37,7 +37,6 @@ export type LegendListPropsBase<
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
-    ListEmptyComponentStyle?: StyleProp<ViewStyle> | undefined;
     ItemSeparatorComponent?: React.ComponentType<any>;
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
