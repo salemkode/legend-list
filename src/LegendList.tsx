@@ -81,6 +81,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refScrollView,
             waitForInitialLayout = true,
             extraData,
+            onLayout: onLayoutProp,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -1073,6 +1074,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         `[legend-list] List ${isWidthZero ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
                     );
                 }
+            }
+            if (onLayoutProp) {
+                onLayoutProp(event);
             }
         }, []);
 
