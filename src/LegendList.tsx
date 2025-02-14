@@ -1163,9 +1163,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
-                    getScrollableNode: refScroller.current!.getScrollableNode,
-                    getScrollResponder: refScroller.current!.getScrollResponder,
-                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    getScrollableNode: () => refScroller.current!.getScrollableNode(),
+                    getScrollResponder: () => refScroller.current!.getScrollResponder(),
+                    flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
                     scrollToIndex,
                     scrollToOffset: ({ offset, animated }) => {
                         const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
@@ -1177,7 +1177,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             scrollToIndex({ index, animated });
                         }
                     },
-                    scrollToEnd: refScroller.current!.scrollToEnd,
+                    scrollToEnd: () => refScroller.current!.scrollToEnd(),
                 };
             },
             [],
