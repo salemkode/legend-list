@@ -73,17 +73,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             renderItem,
             estimatedItemSize,
             getEstimatedItemSize,
-            onEndReached,
-            onStartReached,
             ListEmptyComponent,
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
             waitForInitialLayout = true,
             extraData,
+            onLayout: onLayoutProp,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
+
+        const callbacks = useRef({
+            onStartReached: rest.onStartReached,
+            onEndReached: rest.onEndReached,
+        });
+
+        // ensure that the callbacks are updated
+        callbacks.current.onStartReached = rest.onStartReached;
+        callbacks.current.onEndReached = rest.onEndReached;
 
         const ctx = useStateContext();
 
@@ -335,11 +343,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let scrollBufferTop = scrollBuffer;
             let scrollBufferBottom = scrollBuffer;
 
-            
             if (scrollExtra > 8) {
                 scrollBufferTop = 0;
                 scrollBufferBottom = scrollBuffer + scrollExtra;
-            } 
+            }
             if (scrollExtra < -8) {
                 scrollBufferTop = scrollBuffer - scrollExtra;
                 scrollBufferBottom = 0;
@@ -693,6 +700,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
                 }
 
+                const { onEndReached } = callbacks.current;
+
                 if (onEndReached) {
                     if (!refState.current.isEndReached) {
                         if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
@@ -716,6 +725,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { scrollLength, scroll } = refState.current;
             const distanceFromTop = scroll;
             refState.current.isAtTop = distanceFromTop < 0;
+
+            const { onStartReached } = callbacks.current;
 
             if (onStartReached) {
                 if (!refState.current.isStartReached && !refState.current!.startReachedBlockedByTimer) {
@@ -1074,6 +1085,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     );
                 }
             }
+            if (onLayoutProp) {
+                onLayoutProp(event);
+            }
         }, []);
 
         const handleScroll = useCallback(
@@ -1149,9 +1163,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
-                    getScrollableNode: refScroller.current!.getScrollableNode,
-                    getScrollResponder: refScroller.current!.getScrollResponder,
-                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    getScrollableNode: () => refScroller.current!.getScrollableNode(),
+                    getScrollResponder: () => refScroller.current!.getScrollResponder(),
+                    flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
                     scrollToIndex,
                     scrollToOffset: ({ offset, animated }) => {
                         const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
@@ -1163,7 +1177,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             scrollToIndex({ index, animated });
                         }
                     },
-                    scrollToEnd: refScroller.current!.scrollToEnd,
+                    scrollToEnd: () => refScroller.current!.scrollToEnd(),
                 };
             },
             [],
