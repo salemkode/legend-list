@@ -182,6 +182,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 startReachedBlockedByTimer: false,
                 scrollForNextCalculateItemsInView: undefined,
                 enableScrollForNextCalculateItemsInView: true,
+                minIndexSizeChanged: 0,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -370,8 +371,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let endNoBuffer: number | null = null;
             let endBuffered: number | null = null;
 
-            const originalStartId = startBufferedIdOrig && state.indexByKey.get(startBufferedIdOrig);
-            let loopStart = originalStartId || 0;
+            let loopStart: number = startBufferedIdOrig ? state.indexByKey.get(startBufferedIdOrig) || 0 : 0;
+
+            if (state.minIndexSizeChanged !== undefined) {
+                loopStart = Math.min(state.minIndexSizeChanged, loopStart);
+                state.minIndexSizeChanged = undefined;
+            }
 
             const anchorElementIndex = getAnchorElementIndex()!;
 
@@ -988,6 +993,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
+
+            state.minIndexSizeChanged =
+                state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
 
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);

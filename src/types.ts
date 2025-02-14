@@ -109,6 +109,7 @@ export interface InternalState {
     startReachedBlockedByTimer: boolean;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
+    minIndexSizeChanged: number | undefined;
 }
 
 export interface ViewableRange<T> {
