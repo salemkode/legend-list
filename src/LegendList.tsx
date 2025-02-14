@@ -762,13 +762,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
                             set$(ctx, `containerItemKey${i}`, undefined);
+                            set$(ctx, `containerItemData${i}`, undefined);
                             set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${i}`, -1);
                         }
                     }
 
                     if (!keyExtractorProp) {
-                        state.sizes.clear();
                         state.positions.clear();
                     }
 
@@ -791,8 +791,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
             if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
-                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
-                refState.current.sizes.clear();
+                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset.
+                // Note: don't want to clear sizes because if sizes don't change they won't update from onLayout
+                // so it's safer to fallback to previous sizes than to the estimate.
                 refState.current.positions.clear();
             }
 
