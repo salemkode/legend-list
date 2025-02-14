@@ -808,6 +808,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
+                if (__DEV__) {
+                    if (indexByKey.has(key)) {
+                        console.error(
+                            `[legend-list] Error: Detected overlapping key (${key}) which causes missing items and gaps and other terrrible things. Check that keyExtractor returns unique values.`,
+                        );
+                    }
+                }
                 indexByKey.set(key, i);
                 // save positions for items that are still in the list at the same indices
                 // throw out everything else
