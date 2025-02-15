@@ -985,26 +985,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-            const data = refState.current?.data;
+            const state = refState.current!;
+            const { sizes, indexByKey, columns, sizesLaidOut, data } = state;
             if (!data) {
                 return;
             }
-            const state = refState.current!;
-            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
 
             state.minIndexSizeChanged =
                 state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
 
-            const row = Math.floor(index / numColumns);
-            const prevSize = getRowHeight(row);
+            const prevSize = getItemSize(itemKey, index, data as any);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
 
                 if (numColumns > 1) {
-                    const prevMaxSizeInRow = getRowHeight(row);
                     sizes.set(itemKey, size);
 
                     const column = columns.get(itemKey);
@@ -1016,7 +1013,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
                     }
 
-                    diff = nextMaxSizeInRow - prevMaxSizeInRow;
+                    diff = nextMaxSizeInRow - prevSize;
                 } else {
                     sizes.set(itemKey, size);
                     diff = size - prevSize;
