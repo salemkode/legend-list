@@ -101,7 +101,9 @@ export const ListComponent = React.memo(function ListComponent({
         <ScrollComponent
             {...rest}
             style={style}
-            maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
+            maintainVisibleContentPosition={
+                maintainVisibleContentPosition && !ListEmptyComponent ? { minIndexForVisible: 0 } : undefined
+            }
             contentContainerStyle={[
                 contentContainerStyle,
                 horizontal
