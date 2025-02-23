@@ -216,10 +216,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const addTotalSize = useCallback((key: string | null, add: number, totalSizeBelowAnchor: number) => {
             const state = refState.current!;
-            const index = key === null ? 0 : state.indexByKey.get(key)!;
+            const { scrollLength, indexByKey, anchorElement } = state;
+            const index = key === null ? 0 : indexByKey.get(key)!;
             let isAboveAnchor = false;
             if (maintainVisibleContentPosition) {
-                if (state.anchorElement && index < getAnchorElementIndex()!) {
+                if (anchorElement && index < getAnchorElementIndex()!) {
                     isAboveAnchor = true;
                 }
             }
@@ -235,24 +236,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             let applyAdjustValue = undefined;
 
-            if (maintainVisibleContentPosition) {
-                const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
+            const totalSize = state.totalSize;
+            let resultSize = totalSize;
+
+            if (maintainVisibleContentPosition && totalSize > scrollLength) {
+                const newAdjust = anchorElement!.coordinate - state.totalSizeBelowAnchor;
                 applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
                 state.rowHeights.clear();
+
+                if (applyAdjustValue !== undefined) {
+                    resultSize -= applyAdjustValue;
+                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
+                        // event state.scroll will contain invalid value, until next handleScroll
+                        // apply adjustment
+                        state.scroll -= diff;
+                    });
+                }
             }
 
-            const totalSize = state.totalSize;
-
-            let resultSize = totalSize;
-            if (applyAdjustValue !== undefined) {
-                resultSize -= applyAdjustValue;
-                refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
-                    // event state.scroll will contain invalid value, until next handleScroll
-                    // apply adjustment
-                    state.scroll -= diff;
-                });
-            }
             set$(ctx, "totalSize", resultSize);
 
             if (alignItemsAtEnd) {
