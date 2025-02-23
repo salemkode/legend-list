@@ -39,7 +39,7 @@ export function setupViewability(props: LegendListProps<any>): ViewabilityConfig
 
     if (viewabilityConfigCallbackPairs) {
         for (const pair of viewabilityConfigCallbackPairs) {
-            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id, {
+            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id!, {
                 viewableItems: [],
                 start: -1,
                 end: -1,
@@ -63,7 +63,7 @@ export function updateViewableItems(
 ) {
     for (const viewabilityConfigCallbackPair of viewabilityConfigCallbackPairs) {
         const viewabilityState = mapViewabilityConfigCallbackPairs.get(
-            viewabilityConfigCallbackPair.viewabilityConfig.id
+            viewabilityConfigCallbackPair.viewabilityConfig.id!
         )!;
         viewabilityState.start = start;
         viewabilityState.end = end;
@@ -80,7 +80,7 @@ export function updateViewableItems(
 }
 
 function updateViewableItemsWithConfig(
-    data: any[],
+    data: readonly any[],
     viewabilityConfigCallbackPair: ViewabilityConfigCallbackPair,
     getId: (index: number) => string,
     state: InternalState,
@@ -88,7 +88,7 @@ function updateViewableItemsWithConfig(
     scrollSize: number
 ) {
     const { viewabilityConfig, onViewableItemsChanged } = viewabilityConfigCallbackPair;
-    const configId = viewabilityConfig.id;
+    const configId = viewabilityConfig.id!;
     const viewabilityState = mapViewabilityConfigCallbackPairs.get(configId)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
 
