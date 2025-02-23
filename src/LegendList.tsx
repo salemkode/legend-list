@@ -1084,12 +1084,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
             const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+            const didChange = scrollLength !== refState.current!.scrollLength;
             refState.current!.scrollLength = scrollLength;
 
             doMaintainScrollAtEnd(false);
             doUpdatePaddingTop();
             checkAtBottom();
             checkAtTop();
+
+            if (didChange) {
+                calculateItemsInView(0);
+            }
 
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;
