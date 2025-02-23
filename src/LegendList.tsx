@@ -831,44 +831,46 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.indexByKey = indexByKey;
             refState.current.positions = newPositions;
 
-            // check if anchorElement is still in the list
-            if (maintainVisibleContentPosition) {
-                if (
-                    refState.current.anchorElement == null ||
-                    indexByKey.get(refState.current.anchorElement.id) == null
-                ) {
-                    if (data.length) {
-                        const newAnchorElement = {
-                            coordinate: 0,
-                            id: getId(0),
-                        };
-                        refState.current.anchorElement = newAnchorElement;
-                        refState.current.belowAnchorElementPositions?.clear();
+            if (!isFirst) {
+                // check if anchorElement is still in the list
+                if (maintainVisibleContentPosition) {
+                    if (
+                        refState.current.anchorElement == null ||
+                        indexByKey.get(refState.current.anchorElement.id) == null
+                    ) {
+                        if (data.length) {
+                            const newAnchorElement = {
+                                coordinate: 0,
+                                id: getId(0),
+                            };
+                            refState.current.anchorElement = newAnchorElement;
+                            refState.current.belowAnchorElementPositions?.clear();
+                            // reset scroll to 0 and schedule rerender
+                            refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                            setTimeout(() => {
+                                calculateItemsInView(0);
+                            }, 0);
+                        } else {
+                            refState.current.startBufferedId = undefined;
+                        }
+                    }
+                } else {
+                    // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
+                    if (
+                        refState.current.startBufferedId != null &&
+                        newPositions.get(refState.current.startBufferedId) == null
+                    ) {
+                        if (data.length) {
+                            refState.current.startBufferedId = getId(0);
+                        } else {
+                            refState.current.startBufferedId = undefined;
+                        }
                         // reset scroll to 0 and schedule rerender
-                        refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
+                        refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                         setTimeout(() => {
                             calculateItemsInView(0);
                         }, 0);
-                    } else {
-                        refState.current.startBufferedId = undefined;
                     }
-                }
-            } else {
-                // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
-                if (
-                    refState.current.startBufferedId != null &&
-                    newPositions.get(refState.current.startBufferedId) == null
-                ) {
-                    if (data.length) {
-                        refState.current.startBufferedId = getId(0);
-                    } else {
-                        refState.current.startBufferedId = undefined;
-                    }
-                    // reset scroll to 0 and schedule rerender
-                    refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
-                    setTimeout(() => {
-                        calculateItemsInView(0);
-                    }, 0);
                 }
             }
 
