@@ -241,7 +241,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const totalSize = state.totalSize;
             let resultSize = totalSize;
 
-            if (maintainVisibleContentPosition && totalSize > scrollLength) {
+            if (maintainVisibleContentPosition) {
                 const newAdjust = anchorElement!.coordinate - state.totalSizeBelowAnchor;
                 applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
