@@ -37,6 +37,7 @@ import type {
     ViewabilityCallback,
 } from "./types";
 import type { InternalState, LegendListProps } from "./types";
+import { useCombinedRef } from "./useCombinedRef";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
@@ -96,6 +97,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const ctx = useStateContext();
 
         const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
+        const combinedRef = useCombinedRef(refScroller, refScrollView);
         const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
         const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
@@ -1209,20 +1211,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             <ListComponent
                 {...rest}
                 horizontal={horizontal!}
-                refScrollView={(r) => {
-                    // Update both the internal ref and the ref passed in
-                    // TODO: It feels like we shouldn't have to do this, but the Reanimated
-                    // AnimatedLegendList was not working without it. Maybe it can be fixed a
-                    // different way in the future?
-                    refScroller.current = r!;
-                    if (refScrollView) {
-                        if (typeof refScrollView === "function") {
-                            refScrollView(r);
-                        } else {
-                            (refScrollView as any).current = r;
-                        }
-                    }
-                }}
+                refScrollView={combinedRef}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}

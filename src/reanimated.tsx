@@ -1,6 +1,7 @@
 import { LegendList, type LegendListProps, type LegendListPropsBase, type LegendListRef } from "@legendapp/list";
 import React, { type ComponentProps } from "react";
 import Animated from "react-native-reanimated";
+import { useCombinedRef } from "./useCombinedRef";
 
 type KeysToOmit = "getEstimatedItemSize" | "keyExtractor" | "animatedProps" | "renderItem" | "onItemSizeChanged";
 
@@ -44,22 +45,11 @@ const AnimatedLegendList = React.forwardRef(function AnimatedLegendList<ItemT>(
 ) {
     const { refScrollView, ...rest } = props as AnimatedLegendListProps<ItemT>;
 
-    return (
-        <AnimatedLegendListComponent
-            refLegendList={(r) => {
-                // TODO: This feels like overkill? Is there a better way to do this?
-                if (ref) {
-                    if (typeof ref === "function") {
-                        ref(r);
-                    } else {
-                        (ref as any).current = r;
-                    }
-                }
-            }}
-            ref={refScrollView}
-            {...rest}
-        />
-    );
+    const refLegendList = React.useRef<LegendListRef | null>(null);
+
+    const combinedRef = useCombinedRef(refLegendList, ref);
+
+    return <AnimatedLegendListComponent refLegendList={combinedRef} ref={refScrollView} {...rest} />;
 }) as AnimatedLegendListDefinition;
 
 export { AnimatedLegendList };
