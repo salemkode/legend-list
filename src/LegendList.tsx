@@ -1,15 +1,6 @@
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
-import {
-    type ForwardedRef,
-    type ReactElement,
-    forwardRef,
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-} from "react";
+import { type ForwardedRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import {
     Dimensions,
     type LayoutChangeEvent,
@@ -57,8 +48,10 @@ export const LegendList = typedForwardRef(function LegendList<T>(
     );
 });
 
-const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
-    forwardRef(function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
+const LegendListInner = typedForwardRef(function LegendListInner<T>(
+    props: LegendListProps<T>,
+    forwardedRef: ForwardedRef<LegendListRef>,
+) {
         const {
             data,
             initialScrollIndex,
@@ -1239,4 +1232,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 style={style}
             />
         );
-    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
+});
