@@ -38,6 +38,7 @@ import type {
     ViewabilityAmountCallback,
     ViewabilityCallback,
 } from "./types";
+import { typedForwardRef } from "./types";
 import { useCombinedRef } from "./useCombinedRef";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
@@ -45,14 +46,16 @@ import { setupViewability, updateViewableItems } from "./viewability";
 const DEFAULT_DRAW_DISTANCE = 250;
 const DEFAULT_ITEM_SIZE = 100;
 
-export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
-    forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
-        return (
-            <StateProvider>
-                <LegendListInner {...props} ref={forwardedRef} />
-            </StateProvider>
-        );
-    }) as never;
+export const LegendList = typedForwardRef(function LegendList<T>(
+    props: LegendListProps<T>,
+    forwardedRef: ForwardedRef<LegendListRef>,
+) {
+    return (
+        <StateProvider>
+            <LegendListInner {...props} ref={forwardedRef} />
+        </StateProvider>
+    );
+});
 
 const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
