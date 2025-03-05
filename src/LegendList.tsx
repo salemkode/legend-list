@@ -218,7 +218,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const addTotalSize = useCallback((key: string | null, add: number, totalSizeBelowAnchor: number) => {
             const state = refState.current!;
-            const { scrollLength, indexByKey, anchorElement } = state;
+            const { indexByKey, anchorElement } = state;
             const index = key === null ? 0 : indexByKey.get(key)!;
             let isAboveAnchor = false;
             if (maintainVisibleContentPosition) {
@@ -236,20 +236,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            let applyAdjustValue = undefined;
-
-            const totalSize = state.totalSize;
-            let resultSize = totalSize;
+            let applyAdjustValue;
+            let resultSize = state.totalSize;
 
             if (maintainVisibleContentPosition && anchorElement !== undefined) {
-                const newAdjust = anchorElement!.coordinate - state.totalSizeBelowAnchor;
+                const newAdjust = anchorElement.coordinate - state.totalSizeBelowAnchor;
                 applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
                 state.rowHeights.clear();
 
                 if (applyAdjustValue !== undefined) {
                     resultSize -= applyAdjustValue;
-                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
+                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff: number) => {
                         // event state.scroll will contain invalid value, until next handleScroll
                         // apply adjustment
                         state.scroll -= diff;
