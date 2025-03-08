@@ -31,7 +31,8 @@ import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants
 import { StateProvider, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
-    InternalState, LegendListProps,
+    InternalState,
+    LegendListProps,
     LegendListRecyclingState,
     LegendListRef,
     ViewabilityAmountCallback,
@@ -236,7 +237,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            let applyAdjustValue;
+            let applyAdjustValue = 0;
             let resultSize = state.totalSize;
 
             if (maintainVisibleContentPosition && anchorElement !== undefined) {
@@ -682,7 +683,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // });
 
                 // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
-                state.scroll = state.totalSize - state.scrollLength + peek$<number>(ctx, "paddingTop");
+                const paddingTop = peek$<number>(ctx, "paddingTop") || 0;
+                if (paddingTop > 0) {
+                    // if paddingTop exists, list is shorter then a screen, so scroll should be 0 anyways
+                    state.scroll = 0;
+                }
 
                 // TODO: This kinda works too, but with more of a flash
                 requestAnimationFrame(() => {
@@ -702,7 +707,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { scrollLength, scroll, totalSize } = refState.current;
             if (totalSize > 0) {
                 // Check if at end
-                const distanceFromEnd = totalSize - scroll - scrollLength;
+                const distanceFromEnd = totalSize - scroll - scrollLength + (peek$<number>(ctx, "paddingTop") || 0);
                 if (refState.current) {
                     refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
                 }
@@ -985,7 +990,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * 2);
 
-            calculateItemsInView(state.scrollVelocity);
+            if (initialScrollIndex) {
+                requestAnimationFrame(() => {
+                    // immediate render causes issues with initial index position
+                    calculateItemsInView(state.scrollVelocity);
+                });
+            } else {
+                calculateItemsInView(state.scrollVelocity);
+            }
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
