@@ -995,7 +995,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
         const state = refState.current!;
-        const { sizes, indexByKey, columns, sizesLaidOut, data } = state;
+        const { sizes, indexByKey, columns, sizesLaidOut, data, rowHeights } = state;
         if (!data) {
             return;
         }
@@ -1011,18 +1011,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let diff: number;
 
             if (numColumns > 1) {
-                sizes.set(itemKey, size);
-
                 const column = columns.get(itemKey);
                 const loopStart = index - (column! - 1);
-                let nextMaxSizeInRow = 0;
-                for (let i = loopStart; i < loopStart + numColumns && i < data.length; i++) {
-                    const id = getId(i)!;
-                    const size = getItemSize(id, i, data[i]);
-                    nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
-                }
+                const rowNumber = Math.floor(index / numColumnsProp);
+                const prevSizeInRow = getRowHeight(rowNumber);
+                sizes.set(itemKey, size);
+                rowHeights.delete(rowNumber);
 
-                diff = nextMaxSizeInRow - prevSize;
+                const sizeInRow = getRowHeight(rowNumber);
+                diff = sizeInRow - prevSizeInRow;
             } else {
                 sizes.set(itemKey, size);
                 diff = size - prevSize;
