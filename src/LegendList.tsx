@@ -1,15 +1,6 @@
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
-import {
-    type ForwardedRef,
-    type ReactElement,
-    forwardRef,
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-} from "react";
+import { type ForwardedRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import {
     Dimensions,
     type LayoutChangeEvent,
@@ -38,6 +29,7 @@ import type {
     ViewabilityAmountCallback,
     ViewabilityCallback,
 } from "./types";
+import { typedForwardRef } from "./types";
 import { useCombinedRef } from "./useCombinedRef";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
@@ -45,17 +37,21 @@ import { setupViewability, updateViewableItems } from "./viewability";
 const DEFAULT_DRAW_DISTANCE = 250;
 const DEFAULT_ITEM_SIZE = 100;
 
-export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
-    forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
-        return (
-            <StateProvider>
-                <LegendListInner {...props} ref={forwardedRef} />
-            </StateProvider>
-        );
-    }) as never;
+export const LegendList = typedForwardRef(function LegendList<T>(
+    props: LegendListProps<T>,
+    forwardedRef: ForwardedRef<LegendListRef>,
+) {
+    return (
+        <StateProvider>
+            <LegendListInner {...props} ref={forwardedRef} />
+        </StateProvider>
+    );
+});
 
-const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
-    forwardRef(function LegendListInner<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
+const LegendListInner = typedForwardRef(function LegendListInner<T>(
+    props: LegendListProps<T>,
+    forwardedRef: ForwardedRef<LegendListRef>,
+) {
         const {
             data,
             initialScrollIndex,
@@ -1236,4 +1232,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 style={style}
             />
         );
-    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
+});
