@@ -123,14 +123,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         refState.current!.sizes.set(key, size);
         return size;
     };
-    const calculateInitialOffset = (index = initialScrollIndex) => {
+    const calculateOffsetForIndex = (index = initialScrollIndex) => {
         // This function is called before refState is initialized, so we need to use dataProp
         const data = dataProp;
         if (index) {
             let offset = 0;
-            if (getEstimatedItemSize) {
+            const canGetSize = !!refState.current;
+            if (canGetSize || getEstimatedItemSize) {
+                const sizeFn = (index: number) => {
+                    if (canGetSize) {
+                        return getItemSize(getId(index), index, data[index]);
+                    }
+                    return getEstimatedItemSize!(index, data[index]);
+                };
                 for (let i = 0; i < index; i++) {
-                    offset += getEstimatedItemSize(i, data[i]);
+                    offset += sizeFn(i);
                 }
             } else if (estimatedItemSize) {
                 offset = index * estimatedItemSize;
@@ -141,7 +148,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return 0;
     };
 
-    const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
+    const initialContentOffset = initialScrollOffset ?? useMemo(calculateOffsetForIndex, []);
 
     if (!refState.current) {
         const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
@@ -1201,7 +1208,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         () => {
             const scrollToIndex = ({ index, animated = true }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                 const state = refState.current!;
-                const firstIndexOffset = calculateInitialOffset(index);
+                const firstIndexOffset = calculateOffsetForIndex(index);
                 let firstIndexScrollPostion = firstIndexOffset;
 
                 if (maintainVisibleContentPosition) {
