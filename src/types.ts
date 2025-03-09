@@ -20,6 +20,7 @@ export type LegendListPropsBase<
     alignItemsAtEnd?: boolean;
     maintainVisibleContentPosition?: boolean;
     numColumns?: number;
+    columnWrapperStyle?: ColumnWrapperStyle;
     refScrollView?: React.Ref<ScrollView>;
     waitForInitialLayout?: boolean;
     // in most cases providing a constant value for item size enough
@@ -55,6 +56,12 @@ export type LegendListPropsBase<
     renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
     extraData?: any;
 };
+
+export interface ColumnWrapperStyle {
+    rowGap?: number;
+    gap?: number;
+    columnGap?: number;
+}
 
 export type AnchoredPosition = {
     type: "top" | "bottom";

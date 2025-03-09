@@ -23,7 +23,10 @@ export default function Columns() {
                 renderItem={Item}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
-                // ListEmptyComponent2={() => <Text style={{ color: "white" }}>Empty</Text>}
+                columnWrapperStyle={{
+                    columnGap: 8,
+                    rowGap: 16,
+                }}
             />
         </View>
     );
@@ -47,7 +50,7 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         // height: 100,
         // width: "100%",
-        padding: 10,
+        paddingHorizontal: 4,
     },
     redRectangleInner: {
         height: "100%",

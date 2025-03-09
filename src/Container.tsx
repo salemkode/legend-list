@@ -10,7 +10,7 @@ import {
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE } from "./constants";
-import { use$ } from "./state";
+import { use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
 
 // @ts-expect-error nativeFabricUIManager is not defined in the global object types
@@ -31,6 +31,8 @@ export const Container = ({
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
+    const ctx = useStateContext();
+    const columnWrapperStyle = ctx.columnWrapperStyle;
     const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
     const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;
@@ -38,6 +40,20 @@ export const Container = ({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+
+    let verticalPaddingStyles: ViewStyle | undefined;
+    if (columnWrapperStyle && !horizontal && numColumns > 1) {
+        // Extract gap properties from columnWrapperStyle if available
+        const { columnGap, rowGap, gap } = columnWrapperStyle;
+
+        // Create padding styles for vertical layouts with multiple columns
+        verticalPaddingStyles = {
+            paddingVertical: rowGap || gap || undefined,
+            // Apply horizontal padding based on column position (first, middle, or last)
+            paddingLeft: column > 1 ? (columnGap || gap || 0) / 2 : undefined,
+            paddingRight: column < numColumns ? (columnGap || gap || 0) / 2 : undefined,
+        };
+    }
 
     const style: StyleProp<ViewStyle> = horizontal
         ? {
@@ -54,6 +70,7 @@ export const Container = ({
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
               top: position.relativeCoordinate,
+              ...(verticalPaddingStyles || {}),
           };
 
     const lastItemKey = use$<string>("lastItemKey");

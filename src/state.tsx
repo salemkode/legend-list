@@ -1,6 +1,12 @@
 import * as React from "react";
 import { useSyncExternalStore } from "react";
-import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
+import type {
+    ColumnWrapperStyle,
+    ViewAmountToken,
+    ViewToken,
+    ViewabilityAmountCallback,
+    ViewabilityCallback,
+} from "./types";
 
 // This is an implementation of a simple state management system, inspired by Legend State.
 // It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
@@ -37,6 +43,7 @@ export interface StateContext {
     mapViewabilityValues: Map<string, ViewToken>;
     mapViewabilityAmountCallbacks: Map<number, ViewabilityAmountCallback>;
     mapViewabilityAmountValues: Map<number, ViewAmountToken>;
+    columnWrapperStyle: ColumnWrapperStyle | undefined;
 }
 
 const ContextState = React.createContext<StateContext | null>(null);
@@ -49,6 +56,7 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
         mapViewabilityValues: new Map<string, ViewToken>(),
         mapViewabilityAmountCallbacks: new Map<number, ViewabilityAmountCallback>(),
         mapViewabilityAmountValues: new Map<number, ViewAmountToken>(),
+        columnWrapperStyle: undefined,
     }));
     return <ContextState.Provider value={value}>{children}</ContextState.Provider>;
 }

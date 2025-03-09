@@ -69,6 +69,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         onScroll: onScrollProp,
         onMomentumScrollEnd,
         numColumns: numColumnsProp = 1,
+        columnWrapperStyle,
         keyExtractor: keyExtractorProp,
         renderItem,
         estimatedItemSize,
@@ -94,6 +95,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     callbacks.current.onEndReached = rest.onEndReached;
 
     const ctx = useStateContext();
+    ctx.columnWrapperStyle = columnWrapperStyle;
 
     const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
     const combinedRef = useCombinedRef(refScroller, refScrollView);
