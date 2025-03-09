@@ -261,7 +261,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }, []);
 
     const getRowHeight = (n: number): number => {
-        const { rowHeights } = refState.current!;
+        const { rowHeights, data } = refState.current!;
         if (numColumnsProp === 1) {
             const id = getId(n);
             return getItemSize(id, n, data[n]);
@@ -1011,8 +1011,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let diff: number;
 
             if (numColumns > 1) {
-                const column = columns.get(itemKey);
-                const loopStart = index - (column! - 1);
                 const rowNumber = Math.floor(index / numColumnsProp);
                 const prevSizeInRow = getRowHeight(rowNumber);
                 sizes.set(itemKey, size);

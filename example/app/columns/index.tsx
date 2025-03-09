@@ -1,11 +1,21 @@
 import { LegendList } from "@legendapp/list";
+import { useState } from "react";
+import { useEffect } from "react";
 import { LogBox, StyleSheet, Text, View } from "react-native";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
-const data = Array.from({ length: 10 }, (_, index) => ({ id: index.toString() }));
+const initialData = Array.from({ length: 8 }, (_, index) => ({ id: index.toString() }));
 
 export default function Columns() {
+    const [data, setData] = useState(initialData);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setData(Array.from({ length: 20 }, (_, index) => ({ id: index.toString() })));
+        }, 1000);
+    });
+
     return (
         <View style={styles.container}>
             <LegendList
