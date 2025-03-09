@@ -70,6 +70,10 @@ const data: ListElement[] = [
         url: "/filter-elements",
     },
     {
+        title: "Accurate scrollToIndex",
+        url: "/accurate-scrollto",
+    },
+    {
         title: "Columns",
         url: "/columns",
     },
