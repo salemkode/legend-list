@@ -1,19 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { useRef, useState } from "react";
-import {
-    Animated,
-    Image,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    UIManager,
-    View,
-    useAnimatedValue,
-} from "react-native";
+import { Animated, Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import Swipeable, { type SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { useAnimatedValue } from "../../src/useAnimatedValue";
 
 export interface Item {
     id: string;
