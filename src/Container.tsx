@@ -135,6 +135,7 @@ export const Container = ({
             </LeanView>
         );
     }
+
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
