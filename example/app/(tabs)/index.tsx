@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { LegendList } from "@legendapp/list";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Link, type LinkProps } from "expo-router";
@@ -87,10 +88,10 @@ const RightIcon = () => <ThemedText type="subtitle">›</ThemedText>;
 const ListItem = ({ title, url }: ListElement) => (
     <Link href={url} asChild>
         <Pressable>
-            <View style={styles.item}>
+            <ThemedView style={styles.item}>
                 <ThemedText>{title}</ThemedText>
                 <RightIcon />
-            </View>
+            </ThemedView>
         </Pressable>
     </Link>
 );
