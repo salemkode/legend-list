@@ -54,7 +54,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     forwardedRef: ForwardedRef<LegendListRef>,
 ) {
     const {
-        data,
+        data: dataProp,
         initialScrollIndex,
         initialScrollOffset,
         horizontal,
@@ -123,6 +123,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return size;
     };
     const calculateInitialOffset = (index = initialScrollIndex) => {
+        // This function is called before refState is initialized, so we need to use dataProp
+        const data = dataProp;
         if (index) {
             let offset = 0;
             if (getEstimatedItemSize) {
@@ -152,7 +154,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             isEndReached: false,
             isAtBottom: false,
             isAtTop: false,
-            data,
+            data: dataProp,
             idsInFirstRender: undefined as never,
             hasScrolled: false,
             scrollLength: initialScrollLength,
@@ -184,14 +186,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
         };
-        refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
+        refState.current!.idsInFirstRender = new Set(dataProp.map((_: unknown, i: number) => getId(i)));
         if (maintainVisibleContentPosition) {
             if (initialScrollIndex) {
                 refState.current!.anchorElement = {
                     coordinate: initialContentOffset,
                     id: getId(initialScrollIndex),
                 };
-            } else if (data.length) {
+            } else if (dataProp.length) {
                 refState.current!.anchorElement = {
                     coordinate: initialContentOffset,
                     id: getId(0),
@@ -754,7 +756,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const checkResetContainers = (isFirst: boolean) => {
         const state = refState.current;
         if (state) {
-            state.data = data;
+            state.data = dataProp;
 
             if (!isFirst) {
                 refState.current!.scrollForNextCalculateItemsInView = undefined;
@@ -781,7 +783,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                 // Reset the endReached flag if new data has been added and we didn't
                 // just maintain the scroll at end
-                if (!didMaintainScrollAtEnd && data.length > state.data.length) {
+                if (!didMaintainScrollAtEnd && dataProp.length > state.data.length) {
                     state.isEndReached = false;
                 }
                 checkAtTop();
@@ -792,15 +794,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const isFirst = !refState.current.renderItem;
     // Run first time and whenever data changes
-    if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-        if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
+    if (isFirst || dataProp !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+        if (!keyExtractorProp && !isFirst && dataProp !== refState.current.data) {
             // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset.
             // Note: don't want to clear sizes because if sizes don't change they won't update from onLayout
             // so it's safer to fallback to previous sizes than to the estimate.
             refState.current.positions.clear();
         }
 
-        refState.current.data = data;
+        refState.current.data = dataProp;
 
         let totalSize = 0;
         let totalSizeBelowIndex = 0;
@@ -809,7 +811,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let column = 1;
         let maxSizeInRow = 0;
 
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < dataProp.length; i++) {
             const key = getId(i);
             if (__DEV__) {
                 if (indexByKey.has(key)) {
@@ -836,7 +838,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     refState.current.anchorElement == null ||
                     indexByKey.get(refState.current.anchorElement.id) == null
                 ) {
-                    if (data.length) {
+                    if (dataProp.length) {
                         const newAnchorElement = {
                             coordinate: 0,
                             id: getId(0),
@@ -858,7 +860,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     refState.current.startBufferedId != null &&
                     newPositions.get(refState.current.startBufferedId) == null
                 ) {
-                    if (data.length) {
+                    if (dataProp.length) {
                         refState.current.startBufferedId = getId(0);
                     } else {
                         refState.current.startBufferedId = undefined;
@@ -873,10 +875,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         const anchorElementIndex = getAnchorElementIndex();
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < dataProp.length; i++) {
             const key = getId(i);
 
-            const size = getItemSize(key, i, data[i]);
+            const size = getItemSize(key, i, dataProp[i]);
             maxSizeInRow = Math.max(maxSizeInRow, size);
 
             column++;
@@ -901,14 +903,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     useEffect(() => {
         checkResetContainers(/*isFirst*/ isFirst);
-    }, [isFirst, data, numColumnsProp]);
+    }, [isFirst, dataProp, numColumnsProp]);
 
     useEffect(() => {
         set$(ctx, "extraData", extraData);
     }, [extraData]);
 
     refState.current.renderItem = renderItem!;
-    const lastItemKey = data.length > 0 ? getId(data.length - 1) : undefined;
+    const lastItemKey = dataProp.length > 0 ? getId(dataProp.length - 1) : undefined;
     // TODO: This needs to support horizontal and other ways of defining padding
     const stylePaddingTop =
         StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
@@ -972,7 +974,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Allocate containers
         const scrollLength = state.scrollLength;
-        const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
+        const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
         const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
         for (let i = 0; i < numContainers; i++) {
@@ -1194,6 +1196,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     refScroller.current!.scrollTo({ ...offsetObj, animated });
                 },
                 scrollToItem: ({ item, animated }) => {
+                    const { data } = refState.current!;
                     const index = data.indexOf(item);
                     if (index !== -1) {
                         scrollToIndex({ index, animated });
@@ -1218,7 +1221,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
-                ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
+                ListEmptyComponent={dataProp.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 waitForInitialLayout={waitForInitialLayout}
