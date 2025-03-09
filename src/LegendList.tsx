@@ -16,9 +16,10 @@ import {
     useViewabilityAmount as useViewabilityAmountHook,
     useViewability as useViewabilityHook,
 } from "./ContextContainer";
+import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
-import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
+import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
 import { StateProvider, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -1214,6 +1215,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         );
 
         return (
+        <>
             <ListComponent
                 {...rest}
                 horizontal={horizontal!}
@@ -1231,5 +1233,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 waitForInitialLayout={waitForInitialLayout}
                 style={style}
             />
+            {__DEV__ && ENABLE_DEBUG_VIEW && <DebugView state={refState.current!} />}
+        </>
         );
 });
