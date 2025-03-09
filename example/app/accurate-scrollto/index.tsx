@@ -19,7 +19,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
             })) as any[],
     );
 
-    const buttonText = useRef<string>(null);
+    const buttonText = useRef<string>();
 
     return (
         <View style={styles.container}>
