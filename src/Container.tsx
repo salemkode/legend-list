@@ -10,7 +10,7 @@ import {
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE } from "./constants";
-import { use$, useStateContext } from "./state";
+import { use$ } from "./state";
 import type { AnchoredPosition } from "./types";
 
 // @ts-expect-error nativeFabricUIManager is not defined in the global object types
@@ -31,7 +31,6 @@ export const Container = ({
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
-    const ctx = useStateContext();
     const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
     const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;

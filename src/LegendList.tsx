@@ -937,6 +937,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return null;
         }
 
+        // TODO1.0: Remove these before 1.0, make sure docs have them as separate imports
+
         const useViewability = (configId: string, callback: ViewabilityCallback) => {
             useViewabilityHook(configId, callback);
         };
