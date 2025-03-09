@@ -59,11 +59,10 @@ const ChatExample = () => {
                     data={messages}
                     contentContainerStyle={styles.contentContainer}
                     keyExtractor={(item) => item.id}
-                    estimatedItemSize={200}
+                    estimatedItemSize={10} // A size that's way too small to check the behavior is correct
                     initialScrollIndex={messages.length - 1}
                     maintainVisibleContentPosition
                     maintainScrollAtEnd
-                    maintainScrollAtEndThreshold={1} // to mitigate the issue of the last item not being visible
                     alignItemsAtEnd
                     renderItem={({ item }) => (
                         <>
