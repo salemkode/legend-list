@@ -794,7 +794,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
-    const calcTotalSizesAndPositions = (forgetPositions = false) => {
+    const calcTotalSizesAndPositions = ({ forgetPositions = false }) => {
         let totalSize = 0;
         let totalSizeBelowIndex = 0;
         const indexByKey = new Map();
@@ -919,7 +919,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
         // getAnchorElementIndex needs indexByKey, build it first
         refState.current.indexByKey = indexByKey;
-        calcTotalSizesAndPositions();
+        calcTotalSizesAndPositions({ forgetPositions: false });
     }
 
     useEffect(() => {
@@ -1211,7 +1211,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.anchorElement = { id, coordinate: firstIndexOffset };
                     state.belowAnchorElementPositions?.clear();
                     state.positions.clear();
-                    calcTotalSizesAndPositions(true); // since wa are choosing new anchor, we need to recalulate positions
+                    calcTotalSizesAndPositions({ forgetPositions: true }); // since we are choosing new anchor, we need to recalulate positions
                     state.scrollForNextCalculateItemsInView = undefined;
                     state.startBufferedId = id;
                     state.minIndexSizeChanged = index;
