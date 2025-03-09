@@ -794,7 +794,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
-    const calcTotalSizes = (forgetPositions = false) => {
+    const calcTotalSizesAndPositions = (forgetPositions = false) => {
         let totalSize = 0;
         let totalSizeBelowIndex = 0;
         const indexByKey = new Map();
@@ -919,7 +919,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
         // getAnchorElementIndex needs indexByKey, build it first
         refState.current.indexByKey = indexByKey;
-        calcTotalSizes();
+        calcTotalSizesAndPositions();
     }
 
     useEffect(() => {
@@ -1200,18 +1200,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         forwardedRef,
         () => {
             const scrollToIndex = ({ index, animated = true }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
-                // naive implementation to search element by index
-                // TODO: create some accurate search algorithm
                 const state = refState.current!;
                 const firstIndexOffset = calculateInitialOffset(index);
                 let firstIndexScrollPostion = firstIndexOffset;
 
                 if (maintainVisibleContentPosition) {
+                    // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
+                    // now let's cleanup old positions and set new anchor element
                     const id = getId(index);
                     state.anchorElement = { id, coordinate: firstIndexOffset };
                     state.belowAnchorElementPositions?.clear();
                     state.positions.clear();
-                    calcTotalSizes(true);
+                    calcTotalSizesAndPositions(true); // since wa are choosing new anchor, we need to recalulate positions
                     state.scrollForNextCalculateItemsInView = undefined;
                     state.startBufferedId = id;
                     state.minIndexSizeChanged = index;
@@ -1238,7 +1238,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
                 if (maintainVisibleContentPosition) {
-                    // we really have no idea when animated will apply scrolloffset, let's wait a bit
+                    // we really have no idea when <ListComponent> will apply scrollAdjust animated prop, let's wait a bit
                     setTimeout(() => {
                         refScroller.current!.scrollTo({ ...offset, animated });
                     }, 50);
