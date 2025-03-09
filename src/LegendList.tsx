@@ -1226,7 +1226,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         () => {
                             const wasAdjusted = state.scrollAdjustHandler.unPauseAdjust();
                             if (wasAdjusted) {
-                                console.warn("Safety net: scrollAdjustHandler was unpaused");
                                 refState.current!.scrollVelocity = 0;
                                 refState.current!.scrollHistory = [];
                                 calculateItemsInView(0);
@@ -1238,9 +1237,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
-                requestAnimationFrame(() => {
+                if (maintainVisibleContentPosition) {
+                    // we really have no idea when animated will apply scrolloffset, let's wait a bit
+                    setTimeout(() => {
+                        refScroller.current!.scrollTo({ ...offset, animated });
+                    }, 50);
+                } else {
                     refScroller.current!.scrollTo({ ...offset, animated });
-                });
+                }
             };
             return {
                 getNativeScrollRef: () => refScroller.current!,
