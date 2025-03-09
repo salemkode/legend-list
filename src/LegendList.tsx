@@ -316,7 +316,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const res = state.belowAnchorElementPositions!.get(id);
 
         if (res === undefined) {
-            console.warn(`Undefined position below achor ${id} ${state.anchorElement!.id}`);
+            console.warn(`Undefined position below achor ${id} ${state.anchorElement?.id}`);
             return 0;
         }
         return res;
