@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
-import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE } from "./constants";
+import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, POSITION_OUT_OF_VIEW } from "./constants";
 import { use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
 
@@ -86,10 +86,17 @@ export const Container = ({
 
     const onLayout = (event: LayoutChangeEvent) => {
         if (itemKey !== undefined) {
-            // Round to nearest quater pixel to avoid accumulating rounding errors
-            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+            const layout = event.nativeEvent.layout;
+            const size = Math.floor(layout[horizontal ? "width" : "height"] * 8) / 8; // Round to nearest quater pixel to avoid accumulating rounding errors
             if (size === 0) {
-                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, itemKey);
+                if (layout.y !== POSITION_OUT_OF_VIEW && layout.y !== POSITION_OUT_OF_VIEW) {
+                    console.log(
+                        "[WARN] Container 0 height reported, possible bug in LegendList",
+                        id,
+                        itemKey,
+                        event.nativeEvent,
+                    );
+                }
                 return;
             }
             updateItemSize(id, itemKey, size);
