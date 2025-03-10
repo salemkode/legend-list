@@ -1,3 +1,5 @@
+// biome-ignore lint/correctness/noUnusedImports: Some uses crash if importing React is missing
+import * as React from "react";
 import { memo, useEffect, useReducer } from "react";
 import { Text, View } from "react-native";
 import { use$ } from "./state";
