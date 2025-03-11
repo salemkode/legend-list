@@ -939,11 +939,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     refState.current.renderItem = renderItem!;
     const memoizedLastItemKeys = useMemo(() => {
-        if (!dataProp.length) return undefined;
+        if (!dataProp.length) return [];
         return new Set(
             Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) => getId(dataProp.length - 1 - i)),
         );
-    }, [dataProp.length, numColumnsProp, ...dataProp.slice(-numColumnsProp)]);
+    }, [dataProp.length, numColumnsProp, dataProp.slice(-numColumnsProp).toString()]);
 
     // TODO: This needs to support horizontal and other ways of defining padding
     const stylePaddingTop =
