@@ -922,14 +922,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         refState.current.data = dataProp;
 
-        const indexByKey = new Map();
-
-        for (let i = 0; i < dataProp.length; i++) {
-            const key = getId(i);
-            indexByKey.set(key, i);
-        }
-        // getAnchorElementIndex needs indexByKey, build it first
-        refState.current.indexByKey = indexByKey;
         calcTotalSizesAndPositions({ forgetPositions: false });
     }
 
