@@ -934,20 +934,26 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }, [extraData]);
 
     refState.current.renderItem = renderItem!;
-    const lastItemKey = dataProp.length > 0 ? getId(dataProp.length - 1) : undefined;
+    const memoizedLastItemKeys = useMemo(() => {
+        if (!dataProp.length) return undefined;
+        return new Set(
+            Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) => getId(dataProp.length - 1 - i)),
+        );
+    }, [dataProp.length, numColumnsProp, ...dataProp.slice(-numColumnsProp)]);
+
     // TODO: This needs to support horizontal and other ways of defining padding
     const stylePaddingTop =
         StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
     const initalizeStateVars = () => {
-        set$(ctx, "lastItemKey", lastItemKey);
+        set$(ctx, "lastItemKeys", memoizedLastItemKeys);
         set$(ctx, "numColumns", numColumnsProp);
         set$(ctx, "stylePaddingTop", stylePaddingTop);
     };
     if (isFirst) {
         initalizeStateVars();
     }
-    useEffect(initalizeStateVars, [lastItemKey, numColumnsProp, stylePaddingTop]);
+    useEffect(initalizeStateVars, [memoizedLastItemKeys, numColumnsProp, stylePaddingTop]);
 
     const getRenderedItem = useCallback((key: string) => {
         const state = refState.current;
