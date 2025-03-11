@@ -7,6 +7,7 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     Platform,
+    RefreshControl,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -81,6 +82,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         waitForInitialLayout = true,
         extraData,
         onLayout: onLayoutProp,
+        onRefresh,
+        refreshing,
+        progressViewOffset,
         ...rest
     } = props;
     const { style, contentContainerStyle } = props;
@@ -1306,6 +1310,17 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 waitForInitialLayout={waitForInitialLayout}
+                refreshControl={
+                    props.refreshControl == null ? (
+                        <RefreshControl
+                            refreshing={!!refreshing}
+                            onRefresh={onRefresh}
+                            progressViewOffset={progressViewOffset}
+                        />
+                    ) : (
+                        props.refreshControl
+                    )
+                }
                 style={style}
             />
             {__DEV__ && ENABLE_DEBUG_VIEW && <DebugView state={refState.current!} />}

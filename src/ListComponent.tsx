@@ -121,6 +121,9 @@ export const ListComponent = React.memo(function ListComponent({
     refScrollView,
     maintainVisibleContentPosition,
     renderScrollComponent,
+    onRefresh,
+    refreshing,
+    progressViewOffset,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
