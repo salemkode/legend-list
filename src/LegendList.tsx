@@ -220,6 +220,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         set$(ctx, "extraData", extraData);
     }
 
+    refState.current.data = dataProp;
+
     const getAnchorElementIndex = () => {
         const state = refState.current!;
         if (state.anchorElement) {
@@ -651,7 +653,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         if (state.numPendingInitialLayout === 0) {
-            state.numPendingInitialLayout = state.endBuffered - state.startBuffered;
+            state.numPendingInitialLayout = state.endBuffered - state.startBuffered + 1;
         }
 
         if (state.viewabilityConfigCallbackPairs) {
@@ -1049,8 +1051,23 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         const prevSize = getItemSize(itemKey, index, data as any);
 
+        let needsCalculate = false;
+
+        if (state.numPendingInitialLayout > 0) {
+            state.numPendingInitialLayout--;
+            if (state.numPendingInitialLayout === 0) {
+                needsCalculate = true;
+                state.numPendingInitialLayout = -1;
+                // Needs to be in a microtask because we can't set animated values from onLayout
+                queueMicrotask(() => {
+                    set$(ctx, "containersDidLayout", true);
+                });
+            }
+        }
+
         if (!prevSize || Math.abs(prevSize - size) > 0.5) {
             let diff: number;
+            needsCalculate = true;
 
             if (numColumns > 1) {
                 const rowNumber = Math.floor(index / numColumnsProp);
@@ -1095,17 +1112,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             doMaintainScrollAtEnd(true);
 
-            if (!peek$(ctx, "containersDidLayout")) {
-                state.numPendingInitialLayout--;
-                if (state.numPendingInitialLayout === 0) {
-                    state.numPendingInitialLayout = -1;
-                    // Needs to be in a microtask because we can't set animated values from onLayout
-                    queueMicrotask(() => {
-                        set$(ctx, "containersDidLayout", true);
+            if (onItemSizeChanged) {
+                onItemSizeChanged({
+                    size,
+                    previous: prevSize,
+                    index,
+                    itemKey,
+                    itemData: data[index],
                     });
                 }
             }
 
+        if (needsCalculate) {
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
             // Calculate positions if not currently scrolling and not waiting on other items to layout
@@ -1114,16 +1132,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
                 calculateItemsInView(state.scrollVelocity);
-            }
-
-            if (onItemSizeChanged) {
-                onItemSizeChanged({
-                    size,
-                    previous: prevSize,
-                    index,
-                    itemKey,
-                    itemData: data[index],
-                });
             }
         }
     }, []);
@@ -1138,6 +1146,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         const didChange = scrollLength !== refState.current!.scrollLength;
+        const prev = refState.current!.scrollLength;
         refState.current!.scrollLength = scrollLength;
 
         doInitialAllocateContainers();
