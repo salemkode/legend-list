@@ -349,7 +349,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (state.waitingForMicrotask) {
             state.waitingForMicrotask = false;
         }
-        if (!data) {
+        if (!data || scrollLength === 0) {
             return;
         }
 
@@ -1000,33 +1000,41 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return { index, item: data[index], renderedItem };
     }, []);
 
+    const doInitialAllocateContainers = () => {
+        const state = refState.current!;
+
+        // Allocate containers
+        const scrollLength = state.scrollLength;
+        if (scrollLength > 0 && !peek$(ctx, "numContainers")) {
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
+            const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
+
+            for (let i = 0; i < numContainers; i++) {
+                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerColumn${i}`, -1);
+            }
+
+            set$(ctx, "numContainers", numContainers);
+            set$(ctx, "numContainersPooled", numContainers * 2);
+
+            if (initialScrollIndex) {
+                requestAnimationFrame(() => {
+                    // immediate render causes issues with initial index position
+                    calculateItemsInView(state.scrollVelocity);
+                });
+            } else {
+                calculateItemsInView(state.scrollVelocity);
+            }
+        }
+    };
+
     useInit(() => {
         const state = refState.current!;
         const viewability = setupViewability(props);
         state.viewabilityConfigCallbackPairs = viewability;
         state.enableScrollForNextCalculateItemsInView = !viewability;
 
-        // Allocate containers
-        const scrollLength = state.scrollLength;
-        const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
-        const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
-
-        for (let i = 0; i < numContainers; i++) {
-            set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
-            set$(ctx, `containerColumn${i}`, -1);
-        }
-
-        set$(ctx, "numContainers", numContainers);
-        set$(ctx, "numContainersPooled", numContainers * 2);
-
-        if (initialScrollIndex) {
-            requestAnimationFrame(() => {
-                // immediate render causes issues with initial index position
-                calculateItemsInView(state.scrollVelocity);
-            });
-        } else {
-            calculateItemsInView(state.scrollVelocity);
-        }
+        doInitialAllocateContainers();
     });
 
     const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
@@ -1124,6 +1132,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         const didChange = scrollLength !== refState.current!.scrollLength;
         refState.current!.scrollLength = scrollLength;
+
+        doInitialAllocateContainers();
 
         doMaintainScrollAtEnd(false);
         doUpdatePaddingTop();

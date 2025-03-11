@@ -77,7 +77,6 @@ export const Container = <ItemT,>({
               ...(verticalPaddingStyles || {}),
           };
 
-
     const renderedItemInfo = useMemo(
         () => (itemKey !== undefined ? getRenderedItem(itemKey) : null),
         [itemKey, data, extraData],
