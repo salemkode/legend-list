@@ -714,10 +714,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!refState.current) {
             return;
         }
-        const { scrollLength, scroll, totalSize } = refState.current;
-        if (totalSize > 0) {
+        const { scrollLength, scroll, totalSize, hasScrolled } = refState.current;
+        if (totalSize > 0 && hasScrolled) {
             // Check if at end
-            const distanceFromEnd = totalSize - scroll - scrollLength + (peek$<number>(ctx, "paddingTop") || 0);
+            const distanceFromEnd = Math.abs(
+                totalSize - scroll - scrollLength + (peek$<number>(ctx, "paddingTop") || 0),
+            );
             if (refState.current) {
                 refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
             }
