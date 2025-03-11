@@ -731,7 +731,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     onEndReached?.({ distanceFromEnd });
                 }
             } else {
-                // reset flag when user scrolls back up
+                // reset flag when user scrolls back up out of the threshold
                 if (distanceFromEnd >= onEndReachedThreshold! * scrollLength) {
                     refState.current.isEndReached = false;
                 }
