@@ -163,13 +163,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             positions: new Map(),
             columns: new Map(),
             pendingAdjust: 0,
-            waitingForMicrotask: false,
             isStartReached: initialContentOffset < initialScrollLength * onStartReachedThreshold!,
             isEndReached: false,
             isAtBottom: false,
             isAtTop: false,
             data: dataProp,
-            idsInFirstRender: undefined as never,
             hasScrolled: false,
             scrollLength: initialScrollLength,
             startBuffered: 0,
@@ -199,8 +197,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollForNextCalculateItemsInView: undefined,
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
+            numPendingInitialLayout: 0,
         };
-        refState.current!.idsInFirstRender = new Set(dataProp.map((_: unknown, i: number) => getId(i)));
+
         if (maintainVisibleContentPosition) {
             if (initialScrollIndex) {
                 refState.current!.anchorElement = {
@@ -346,9 +345,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             columns,
             scrollAdjustHandler,
         } = state!;
-        if (state.waitingForMicrotask) {
-            state.waitingForMicrotask = false;
-        }
         if (!data || scrollLength === 0) {
             return;
         }
@@ -654,7 +650,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        set$(ctx, "containersDidLayout", true);
+        if (state.numPendingInitialLayout === 0) {
+            state.numPendingInitialLayout = state.endBuffered - state.startBuffered;
+        }
 
         if (state.viewabilityConfigCallbackPairs) {
             updateViewableItems(
@@ -1039,7 +1037,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
         const state = refState.current!;
-        const { sizes, indexByKey, columns, sizesLaidOut, data, rowHeights } = state;
+        const { sizes, indexByKey, sizesLaidOut, data, rowHeights } = state;
         if (!data) {
             return;
         }
@@ -1097,26 +1095,35 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             doMaintainScrollAtEnd(true);
 
-            // TODO: Could this be optimized to only calculate items in view that have changed?
-            const scrollVelocity = state.scrollVelocity;
-            // Calculate positions if not currently scrolling and have a calculate already pending
-            if (!state.waitingForMicrotask && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                if (!peek$(ctx, "containersDidLayout")) {
-                    // Queue into a microtask if initial layout is still pending so we don't do a calculate for every item
-                    state.waitingForMicrotask = true;
+            if (!peek$(ctx, "containersDidLayout")) {
+                state.numPendingInitialLayout--;
+                if (state.numPendingInitialLayout === 0) {
+                    state.numPendingInitialLayout = -1;
+                    // Needs to be in a microtask because we can't set animated values from onLayout
                     queueMicrotask(() => {
-                        if (state.waitingForMicrotask) {
-                            state.waitingForMicrotask = false;
-                            calculateItemsInView(state.scrollVelocity);
-                        }
+                        set$(ctx, "containersDidLayout", true);
                     });
-                } else {
-                    calculateItemsInView(state.scrollVelocity);
                 }
             }
 
+            // TODO: Could this be optimized to only calculate items in view that have changed?
+            const scrollVelocity = state.scrollVelocity;
+            // Calculate positions if not currently scrolling and not waiting on other items to layout
+            if (
+                (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
+                (!waitForInitialLayout || state.numPendingInitialLayout < 0)
+            ) {
+                calculateItemsInView(state.scrollVelocity);
+            }
+
             if (onItemSizeChanged) {
-                onItemSizeChanged({ size, previous: prevSize, index, itemKey, itemData: data[index] });
+                onItemSizeChanged({
+                    size,
+                    previous: prevSize,
+                    index,
+                    itemKey,
+                    itemData: data[index],
+                });
             }
         }
     }, []);
@@ -1149,7 +1156,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const isHeightZero = event.nativeEvent.layout.height === 0;
             if (isWidthZero || isHeightZero) {
                 console.warn(
-                    `[legend-list] List ${isWidthZero ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
+                    `[legend-list] List ${
+                        isWidthZero ? "width" : "height"
+                    } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
                 );
             }
         }
