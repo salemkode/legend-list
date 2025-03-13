@@ -220,6 +220,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         set$(ctx, "extraData", extraData);
     }
 
+    const didDataChange = refState.current.data !== dataProp;
     refState.current.data = dataProp;
 
     const getAnchorElementIndex = () => {
@@ -917,14 +918,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const isFirst = !refState.current.renderItem;
     // Run first time and whenever data changes
-    if (isFirst || dataProp !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-        if (!keyExtractorProp && !isFirst && dataProp !== refState.current.data) {
+    if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+        if (!keyExtractorProp && !isFirst && didDataChange) {
             // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
             refState.current.sizes.clear();
             refState.current.positions.clear();
         }
-
-        refState.current.data = dataProp;
 
         calcTotalSizesAndPositions({ forgetPositions: false });
     }
@@ -1119,9 +1118,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     index,
                     itemKey,
                     itemData: data[index],
-                    });
-                }
+                });
             }
+        }
 
         if (needsCalculate) {
             // TODO: Could this be optimized to only calculate items in view that have changed?
