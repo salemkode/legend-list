@@ -163,13 +163,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             positions: new Map(),
             columns: new Map(),
             pendingAdjust: 0,
-            waitingForMicrotask: false,
             isStartReached: initialContentOffset < initialScrollLength * onStartReachedThreshold!,
             isEndReached: false,
             isAtBottom: false,
             isAtTop: false,
             data: dataProp,
-            idsInFirstRender: undefined as never,
             hasScrolled: false,
             scrollLength: initialScrollLength,
             startBuffered: 0,
@@ -199,8 +197,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollForNextCalculateItemsInView: undefined,
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
+            numPendingInitialLayout: 0,
         };
-        refState.current!.idsInFirstRender = new Set(dataProp.map((_: unknown, i: number) => getId(i)));
+
         if (maintainVisibleContentPosition) {
             if (initialScrollIndex) {
                 refState.current!.anchorElement = {
@@ -220,6 +219,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         set$(ctx, "maintainVisibleContentPosition", maintainVisibleContentPosition);
         set$(ctx, "extraData", extraData);
     }
+
+    const didDataChange = refState.current.data !== dataProp;
+    refState.current.data = dataProp;
 
     const getAnchorElementIndex = () => {
         const state = refState.current!;
@@ -346,10 +348,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             columns,
             scrollAdjustHandler,
         } = state!;
-        if (state.waitingForMicrotask) {
-            state.waitingForMicrotask = false;
-        }
-        if (!data) {
+        if (!data || scrollLength === 0) {
             return;
         }
 
@@ -654,7 +653,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        set$(ctx, "containersDidLayout", true);
+        // If it's 0 then we're waiting for the initial layout to complete
+        if (state.numPendingInitialLayout === 0) {
+            state.numPendingInitialLayout = state.endBuffered - state.startBuffered + 1;
+        }
 
         if (state.viewabilityConfigCallbackPairs) {
             updateViewableItems(
@@ -917,14 +919,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const isFirst = !refState.current.renderItem;
     // Run first time and whenever data changes
-    if (isFirst || dataProp !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-        if (!keyExtractorProp && !isFirst && dataProp !== refState.current.data) {
+    if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+        if (!keyExtractorProp && !isFirst && didDataChange) {
             // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
             refState.current.sizes.clear();
             refState.current.positions.clear();
         }
-
-        refState.current.data = dataProp;
 
         calcTotalSizesAndPositions({ forgetPositions: false });
     }
@@ -1000,38 +1000,46 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return { index, item: data[index], renderedItem };
     }, []);
 
+    const doInitialAllocateContainers = () => {
+        const state = refState.current!;
+
+        // Allocate containers
+        const scrollLength = state.scrollLength;
+        if (scrollLength > 0 && !peek$(ctx, "numContainers")) {
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
+            const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
+
+            for (let i = 0; i < numContainers; i++) {
+                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerColumn${i}`, -1);
+            }
+
+            set$(ctx, "numContainers", numContainers);
+            set$(ctx, "numContainersPooled", numContainers * 2);
+
+            if (initialScrollIndex) {
+                requestAnimationFrame(() => {
+                    // immediate render causes issues with initial index position
+                    calculateItemsInView(state.scrollVelocity);
+                });
+            } else {
+                calculateItemsInView(state.scrollVelocity);
+            }
+        }
+    };
+
     useInit(() => {
         const state = refState.current!;
         const viewability = setupViewability(props);
         state.viewabilityConfigCallbackPairs = viewability;
         state.enableScrollForNextCalculateItemsInView = !viewability;
 
-        // Allocate containers
-        const scrollLength = state.scrollLength;
-        const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
-        const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
-
-        for (let i = 0; i < numContainers; i++) {
-            set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
-            set$(ctx, `containerColumn${i}`, -1);
-        }
-
-        set$(ctx, "numContainers", numContainers);
-        set$(ctx, "numContainersPooled", numContainers * 2);
-
-        if (initialScrollIndex) {
-            requestAnimationFrame(() => {
-                // immediate render causes issues with initial index position
-                calculateItemsInView(state.scrollVelocity);
-            });
-        } else {
-            calculateItemsInView(state.scrollVelocity);
-        }
+        doInitialAllocateContainers();
     });
 
     const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
         const state = refState.current!;
-        const { sizes, indexByKey, columns, sizesLaidOut, data, rowHeights } = state;
+        const { sizes, indexByKey, sizesLaidOut, data, rowHeights } = state;
         if (!data) {
             return;
         }
@@ -1043,8 +1051,24 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         const prevSize = getItemSize(itemKey, index, data as any);
 
+        let needsCalculate = false;
+
+        if (state.numPendingInitialLayout > 0) {
+            state.numPendingInitialLayout--;
+            if (state.numPendingInitialLayout === 0) {
+                needsCalculate = true;
+                // Set to -1 to indicate that the initial layout has been completed
+                state.numPendingInitialLayout = -1;
+                // Needs to be in a microtask because we can't set animated values from onLayout
+                queueMicrotask(() => {
+                    set$(ctx, "containersDidLayout", true);
+                });
+            }
+        }
+
         if (!prevSize || Math.abs(prevSize - size) > 0.5) {
             let diff: number;
+            needsCalculate = true;
 
             if (numColumns > 1) {
                 const rowNumber = Math.floor(index / numColumnsProp);
@@ -1089,26 +1113,26 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             doMaintainScrollAtEnd(true);
 
+            if (onItemSizeChanged) {
+                onItemSizeChanged({
+                    size,
+                    previous: prevSize,
+                    index,
+                    itemKey,
+                    itemData: data[index],
+                });
+            }
+        }
+
+        if (needsCalculate) {
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
-            // Calculate positions if not currently scrolling and have a calculate already pending
-            if (!state.waitingForMicrotask && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                if (!peek$(ctx, "containersDidLayout")) {
-                    // Queue into a microtask if initial layout is still pending so we don't do a calculate for every item
-                    state.waitingForMicrotask = true;
-                    queueMicrotask(() => {
-                        if (state.waitingForMicrotask) {
-                            state.waitingForMicrotask = false;
-                            calculateItemsInView(state.scrollVelocity);
-                        }
-                    });
-                } else {
-                    calculateItemsInView(state.scrollVelocity);
-                }
-            }
-
-            if (onItemSizeChanged) {
-                onItemSizeChanged({ size, previous: prevSize, index, itemKey, itemData: data[index] });
+            // Calculate positions if not currently scrolling and not waiting on other items to layout
+            if (
+                (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
+                (!waitForInitialLayout || state.numPendingInitialLayout < 0)
+            ) {
+                calculateItemsInView(state.scrollVelocity);
             }
         }
     }, []);
@@ -1123,7 +1147,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         const didChange = scrollLength !== refState.current!.scrollLength;
+        const prev = refState.current!.scrollLength;
         refState.current!.scrollLength = scrollLength;
+
+        doInitialAllocateContainers();
 
         doMaintainScrollAtEnd(false);
         doUpdatePaddingTop();
@@ -1139,7 +1166,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const isHeightZero = event.nativeEvent.layout.height === 0;
             if (isWidthZero || isHeightZero) {
                 console.warn(
-                    `[legend-list] List ${isWidthZero ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
+                    `[legend-list] List ${
+                        isWidthZero ? "width" : "height"
+                    } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
                 );
             }
         }

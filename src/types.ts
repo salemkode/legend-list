@@ -86,13 +86,11 @@ export interface InternalState {
     sizes: Map<string, number>;
     sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
-    waitingForMicrotask: any;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;
     isAtTop: boolean;
     data: readonly any[];
-    idsInFirstRender: Set<string>;
     hasScrolled: boolean;
     scrollLength: number;
     startBuffered: number;
@@ -120,6 +118,7 @@ export interface InternalState {
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
     minIndexSizeChanged: number | undefined;
+    numPendingInitialLayout: number; // 0 if first load, -1 if done
 }
 
 export interface ViewableRange<T> {

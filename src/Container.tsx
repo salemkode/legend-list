@@ -77,7 +77,6 @@ export const Container = <ItemT,>({
               ...(verticalPaddingStyles || {}),
           };
 
-
     const renderedItemInfo = useMemo(
         () => (itemKey !== undefined ? getRenderedItem(itemKey) : null),
         [itemKey, data, extraData],
@@ -89,7 +88,7 @@ export const Container = <ItemT,>({
             const layout = event.nativeEvent.layout;
             const size = Math.floor(layout[horizontal ? "width" : "height"] * 8) / 8; // Round to nearest quater pixel to avoid accumulating rounding errors
             if (size === 0) {
-                if (layout.y !== POSITION_OUT_OF_VIEW && layout.y !== POSITION_OUT_OF_VIEW) {
+                if (layout.x !== POSITION_OUT_OF_VIEW && layout.y !== POSITION_OUT_OF_VIEW) {
                     console.log(
                         "[WARN] Container 0 height reported, possible bug in LegendList",
                         id,
