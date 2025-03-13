@@ -653,6 +653,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
+        // If it's 0 then we're waiting for the initial layout to complete
         if (state.numPendingInitialLayout === 0) {
             state.numPendingInitialLayout = state.endBuffered - state.startBuffered + 1;
         }
@@ -1056,6 +1057,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.numPendingInitialLayout--;
             if (state.numPendingInitialLayout === 0) {
                 needsCalculate = true;
+                // Set to -1 to indicate that the initial layout has been completed
                 state.numPendingInitialLayout = -1;
                 // Needs to be in a microtask because we can't set animated values from onLayout
                 queueMicrotask(() => {
