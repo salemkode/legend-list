@@ -23,7 +23,7 @@ export const Containers = typedMemo(function Containers<ItemT>({
     getRenderedItem,
 }: ContainersProps<ItemT>) {
     const numContainers = use$<number>("numContainersPooled");
-    const animSize = useValue$("totalSize", undefined, /*useMicrotask*/ true);
+    const animSize = useValue$("totalSizeWithScrollAdjust", undefined, /*useMicrotask*/ true);
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
     const containers = [];

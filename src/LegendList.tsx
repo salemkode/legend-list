@@ -21,7 +21,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
-import { StateProvider, peek$, set$, useStateContext } from "./state";
+import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
     InternalState,
@@ -194,6 +194,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             belowAnchorElementPositions: undefined,
             rowHeights: new Map(),
             startReachedBlockedByTimer: false,
+            endReachedBlockedByTimer: false,
             scrollForNextCalculateItemsInView: undefined,
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
@@ -271,7 +272,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        set$(ctx, "totalSize", resultSize);
+        set$(ctx, "totalSize", state.totalSize);
+        set$(ctx, "totalSizeWithScrollAdjust", resultSize);
 
         if (alignItemsAtEnd) {
             doUpdatePaddingTop();
@@ -673,9 +675,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const doUpdatePaddingTop = () => {
         if (alignItemsAtEnd) {
-            const { scrollLength, totalSize } = refState.current!;
-            const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
-            const paddingTop = Math.max(0, Math.floor(scrollLength - totalSize - listPaddingTop));
+            const { scrollLength } = refState.current!;
+            const contentSize = getContentSize(ctx);
+            const paddingTop = Math.max(0, Math.floor(scrollLength - contentSize));
             set$(ctx, "paddingTop", paddingTop);
         }
     };
@@ -716,32 +718,58 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
+    const checkThreshold = (
+        distance: number,
+        threshold: number,
+        isReached: boolean,
+        isBlockedByTimer: boolean,
+        onReached?: (distance: number) => void,
+        blockTimer?: (block: boolean) => void,
+    ) => {
+        const distanceAbs = Math.abs(distance);
+        const isAtThreshold = distanceAbs < threshold;
+
+        if (!isReached && !isBlockedByTimer) {
+            if (isAtThreshold) {
+                onReached?.(distance);
+                blockTimer?.(true);
+                setTimeout(() => {
+                    blockTimer?.(false);
+                }, 700);
+                return true;
+            }
+        } else {
+            // reset flag when user scrolls back out of the threshold
+            // add hysteresis to avoid multiple events triggered
+            if (distance >= 1.3 * threshold) {
+                return false;
+            }
+        }
+        return isReached;
+    };
+
     const checkAtBottom = () => {
         if (!refState.current) {
             return;
         }
-        const { scrollLength, scroll, totalSize, hasScrolled } = refState.current;
-        if (totalSize > 0 && hasScrolled) {
+        const { scrollLength, scroll, hasScrolled } = refState.current;
+        const contentSize = getContentSize(ctx);
+        if (contentSize > 0 && hasScrolled) {
             // Check if at end
-            const distanceFromEnd = Math.abs(
-                totalSize - scroll - scrollLength + (peek$<number>(ctx, "paddingTop") || 0),
-            );
-            if (refState.current) {
-                refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
-            }
+            const distanceFromEnd = contentSize - scroll - scrollLength;
+            const distanceFromEndAbs = Math.abs(distanceFromEnd);
+            refState.current.isAtBottom = distanceFromEndAbs < scrollLength * maintainScrollAtEndThreshold;
 
-            if (!refState.current.isEndReached) {
-                if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
-                    refState.current.isEndReached = true;
-                    const { onEndReached } = callbacks.current;
-                    onEndReached?.({ distanceFromEnd });
-                }
-            } else {
-                // reset flag when user scrolls back up out of the threshold
-                if (distanceFromEnd >= onEndReachedThreshold! * scrollLength) {
-                    refState.current.isEndReached = false;
-                }
-            }
+            refState.current.isEndReached = checkThreshold(
+                distanceFromEnd,
+                onEndReachedThreshold! * scrollLength,
+                refState.current.isEndReached,
+                refState.current.endReachedBlockedByTimer,
+                (distance) => callbacks.current.onEndReached?.({ distanceFromEnd: distance }),
+                (block) => {
+                    refState.current!.endReachedBlockedByTimer = block;
+                },
+            );
         }
     };
 
@@ -751,25 +779,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
         const { scrollLength, scroll } = refState.current;
         const distanceFromTop = scroll;
-        refState.current.isAtTop = distanceFromTop < 0;
+        const distanceFromTopAbs = Math.abs(distanceFromTop);
+        refState.current.isAtTop = distanceFromTopAbs < 0;
 
-        if (!refState.current.isStartReached && !refState.current!.startReachedBlockedByTimer) {
-            if (distanceFromTop < onStartReachedThreshold! * scrollLength) {
-                refState.current.isStartReached = true;
-                const { onStartReached } = callbacks.current;
-                onStartReached?.({ distanceFromStart: scroll });
-                refState.current!.startReachedBlockedByTimer = true;
-                setTimeout(() => {
-                    refState.current!.startReachedBlockedByTimer = false;
-                }, 700);
-            }
-        } else {
-            // reset flag when user scrolls back down
-            // add hysteresis to avoid multiple onStartReached events triggered
-            if (distanceFromTop >= 1.3 * onStartReachedThreshold! * scrollLength) {
-                refState.current.isStartReached = false;
-            }
-        }
+        refState.current.isStartReached = checkThreshold(
+            distanceFromTop,
+            onStartReachedThreshold! * scrollLength,
+            refState.current.isStartReached,
+            refState.current.startReachedBlockedByTimer,
+            (distance) => callbacks.current.onStartReached?.({ distanceFromStart: distance }),
+            (block) => {
+                refState.current!.startReachedBlockedByTimer = block;
+            },
+        );
     };
 
     const checkResetContainers = (isFirst: boolean) => {

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Containers } from "./Containers";
 import { ENABLE_DEVMODE } from "./constants";
-import { peek$, set$, useStateContext } from "./state";
+import { set$, useStateContext } from "./state";
 import { type LegendListProps, typedMemo } from "./types";
 import { useValue$ } from "./useValue$";
 
@@ -180,18 +180,15 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
         >
             {ENABLE_DEVMODE ? <PaddingAndAdjustDevMode /> : <PaddingAndAdjust />}
             {ListHeaderComponent && (
-                <Animated.View
+                <View
                     style={ListHeaderComponentStyle}
                     onLayout={(event) => {
                         const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
-                        const prevSize = peek$<number>(ctx, "headerSize") || 0;
-                        if (size !== prevSize) {
-                            set$(ctx, "headerSize", size);
-                        }
+                        set$(ctx, "headerSize", size);
                     }}
                 >
                     {getComponent(ListHeaderComponent)}
-                </Animated.View>
+                </View>
             )}
             {ListEmptyComponent && getComponent(ListEmptyComponent)}
 
@@ -203,7 +200,17 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
                 ItemSeparatorComponent={ItemSeparatorComponent}
                 updateItemSize={updateItemSize}
             />
-            {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
+            {ListFooterComponent && (
+                <View
+                    style={ListFooterComponentStyle}
+                    onLayout={(event) => {
+                        const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
+                        set$(ctx, "footerSize", size);
+                    }}
+                >
+                    {getComponent(ListFooterComponent)}
+                </View>
+            )}
         </ScrollComponent>
     );
 });

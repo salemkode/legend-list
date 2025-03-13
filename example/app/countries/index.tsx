@@ -85,11 +85,24 @@ const App = () => {
                     extraData={selectedId}
                     estimatedItemSize={70}
                     recycleItems
+                    onStartReachedThreshold={0.1}
+                    onStartReached={({ distanceFromStart }) => {
+                        console.log("onStartReached", distanceFromStart);
+                    }}
+                    onEndReachedThreshold={0.1}
+                    onEndReached={({ distanceFromEnd }) => {
+                        console.log("onEndReached", distanceFromEnd);
+                    }}
+                    // ListHeaderComponent={<View style={{ height: 200, backgroundColor: "red" }} />}
+                    // ListFooterComponent={<View style={{ height: 200, backgroundColor: "blue" }} />}
+                    // ItemSeparatorComponent={Separator}
                 />
             </SafeAreaView>
         </SafeAreaProvider>
     );
 };
+
+const Separator = () => <View style={{ height: 40, backgroundColor: "green" }} />;
 
 export default App;
 
