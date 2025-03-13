@@ -1,4 +1,5 @@
-import type * as React from "react";
+// biome-ignore lint/style/useImportType: <explanation>
+import * as React from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { Container } from "./Container";
 import { use$ } from "./state";
