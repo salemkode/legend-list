@@ -15,6 +15,10 @@ type ListElement = {
 
 const data: ListElement[] = [
     {
+        title: "Video feed",
+        url: "/video-feed",
+    },
+    {
         title: "Initial scroll index precise navigation",
         url: "/initial-scroll-index",
     },
