@@ -997,7 +997,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             useRecyclingState,
         });
 
-        return { index, renderedItem };
+        return { index, item: data[index], renderedItem };
     }, []);
 
     useInit(() => {
