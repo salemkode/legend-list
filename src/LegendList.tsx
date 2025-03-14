@@ -85,6 +85,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         onRefresh,
         refreshing,
         progressViewOffset,
+        refreshControl,
         ...rest
     } = props;
     const { style, contentContainerStyle } = props;
@@ -1362,15 +1363,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 waitForInitialLayout={waitForInitialLayout}
                 refreshControl={
-                    props.refreshControl == null ? (
+                    refreshControl ??
+                    (onRefresh && (
                         <RefreshControl
                             refreshing={!!refreshing}
                             onRefresh={onRefresh}
                             progressViewOffset={progressViewOffset}
                         />
-                    ) : (
-                        props.refreshControl
-                    )
+                    ))
                 }
                 style={style}
             />
