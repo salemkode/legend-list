@@ -34,7 +34,7 @@ To build version for old architecture:
 1. delete your ios and anrdoid folders
 2. build new versions 
 ```
-OLD_ARCH=TRUE pnpm android
-OLD_ARCH=TRUE pnpm ios
+OLD_ARCH=TRUE bun android
+OLD_ARCH=TRUE bun ios
 ```
 Those applications will have separate app name list-test-oldarch and different app id, so both old and new architectures can be tested on same device.
