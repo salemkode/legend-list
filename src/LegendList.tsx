@@ -1272,8 +1272,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 const state = refState.current!;
                 const firstIndexOffset = calculateOffsetForIndex(index);
                 let firstIndexScrollPostion = firstIndexOffset - viewOffset;
+                const diff = Math.abs(state.scroll - firstIndexScrollPostion);
 
-                if (maintainVisibleContentPosition) {
+                // TODO: include checking if destination element position is already known, to avoid unneeded anchor element switches
+                const needsReanchoring = maintainVisibleContentPosition && diff > 100;
+
+                if (needsReanchoring) {
                     // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
                     // now let's cleanup old positions and set new anchor element
                     const id = getId(index);
