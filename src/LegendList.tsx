@@ -1264,10 +1264,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     useImperativeHandle(
         forwardedRef,
         () => {
-            const scrollToIndex = ({ index, animated = true }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
+            const scrollToIndex = ({
+                index,
+                viewOffset = 0,
+                animated = true,
+            }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                 const state = refState.current!;
                 const firstIndexOffset = calculateOffsetForIndex(index);
-                let firstIndexScrollPostion = firstIndexOffset;
+                let firstIndexScrollPostion = firstIndexOffset - viewOffset;
 
                 if (maintainVisibleContentPosition) {
                     // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
@@ -1282,7 +1286,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.minIndexSizeChanged = index;
 
                     // when doing scrollTo, it's important to use latest adjust value
-                    firstIndexScrollPostion = firstIndexOffset + state.scrollAdjustHandler.getAppliedAdjust();
+                    firstIndexScrollPostion =
+                        firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
+                    // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scrol
                 }
 
                 // sometimes after scroll containers are randomly positioned
