@@ -1284,21 +1284,25 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // when doing scrollTo, it's important to use latest adjust value
                     firstIndexScrollPostion = firstIndexOffset + state.scrollAdjustHandler.getAppliedAdjust();
                     // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scrol
-                    state.scrollAdjustHandler.pauseAdjust();
-                    // safety net, in case onMomentScrollEnd is not called
-                    // TODO: do we really need this? for issues like https://github.com/facebook/react-native/pull/43654 ?
-                    setTimeout(
-                        () => {
-                            const wasAdjusted = state.scrollAdjustHandler.unPauseAdjust();
-                            if (wasAdjusted) {
-                                refState.current!.scrollVelocity = 0;
-                                refState.current!.scrollHistory = [];
-                                calculateItemsInView(0);
-                            }
-                        },
-                        animated ? 1000 : 50,
-                    );
                 }
+
+                // sometimes after scroll containers are randomply positioned
+                // make sure we are calling calculateItemsInView after scroll
+                // in both maintainVisibleContentPosition and normal mode
+                state.scrollAdjustHandler.pauseAdjust();
+                // safety net, in case onMomentScrollEnd is not called
+                // TODO: do we really need this? for issues like https://github.com/facebook/react-native/pull/43654 ?
+                setTimeout(
+                    () => {
+                        const wasAdjusted = state.scrollAdjustHandler.unPauseAdjust();
+                        if (wasAdjusted) {
+                            refState.current!.scrollVelocity = 0;
+                            refState.current!.scrollHistory = [];
+                            calculateItemsInView(0);
+                        }
+                    },
+                    animated ? 1000 : 50,
+                );
 
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
