@@ -1288,7 +1288,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // when doing scrollTo, it's important to use latest adjust value
                     firstIndexScrollPostion =
                         firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
-                    // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scrol
                 }
 
                 // sometimes after scroll containers are randomly positioned
