@@ -1286,8 +1286,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scrol
                 }
 
-                // sometimes after scroll containers are randomply positioned
-                // make sure we are calling calculateItemsInView after scroll
+                // sometimes after scroll containers are randomly positioned
+                // make sure we are calling calculateItemsInView after scroll is done
                 // in both maintainVisibleContentPosition and normal mode
                 state.scrollAdjustHandler.pauseAdjust();
                 // safety net, in case onMomentScrollEnd is not called
