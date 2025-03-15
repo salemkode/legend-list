@@ -1283,12 +1283,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                     // when doing scrollTo, it's important to use latest adjust value
                     firstIndexScrollPostion = firstIndexOffset + state.scrollAdjustHandler.getAppliedAdjust();
-                    // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scrol
                 }
 
                 // sometimes after scroll containers are randomly positioned
                 // make sure we are calling calculateItemsInView after scroll is done
                 // in both maintainVisibleContentPosition and normal mode
+
+                // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scroll
                 state.scrollAdjustHandler.pauseAdjust();
                 // safety net, in case onMomentScrollEnd is not called
                 // TODO: do we really need this? for issues like https://github.com/facebook/react-native/pull/43654 ?
