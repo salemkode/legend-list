@@ -1,6 +1,7 @@
-# Welcome to your Expo app 👋
+# Welcome to LegendList test application 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This app is main development playground for testing LegendList features
 
 ## Get started
 
@@ -25,26 +26,15 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Testing on old arhitecture
 
-When you're ready, run:
+LegendList is by default ran on the react native new architecture. It's important to check compatibility with old architecture.
 
-```bash
-npm run reset-project
+To build version for old architecture:
+1. delete your ios and anrdoid folders
+2. build new versions 
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+OLD_ARCH=TRUE pnpm android
+OLD_ARCH=TRUE pnpm ios
+```
+Those applications will have separate app name list-test-oldarch and different app id, so both old and new architectures can be tested on same device.
