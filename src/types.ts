@@ -120,7 +120,7 @@ export interface InternalState {
     enableScrollForNextCalculateItemsInView: boolean;
     minIndexSizeChanged: number | undefined;
     numPendingInitialLayout: number; // 0 if first load, -1 if done
-    queuedCalculateItemsInView: number;
+    queuedCalculateItemsInView: number | undefined;
 }
 
 export interface ViewableRange<T> {
