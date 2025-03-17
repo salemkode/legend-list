@@ -122,6 +122,7 @@ export interface InternalState {
     numPendingInitialLayout: number; // 0 if first load, -1 if done
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;
+    ignoreScrollFromCalcTotal?: boolean;
 }
 
 export interface ViewableRange<T> {

@@ -939,6 +939,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (maxSizeInRow > 0) {
             totalSize += maxSizeInRow;
         }
+        const state = refState.current;
+        state.ignoreScrollFromCalcTotal = true;
+        requestAnimationFrame(() => {
+            state.ignoreScrollFromCalcTotal = false;
+        });
         addTotalSize(null, totalSize, totalSizeBelowIndex);
     };
 
@@ -1224,6 +1229,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             const state = refState.current!;
+            if (state.ignoreScrollFromCalcTotal) {
+                return;
+            }
+
             state.hasScrolled = true;
             state.lastBatchingAction = Date.now();
             const currentTime = performance.now();
