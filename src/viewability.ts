@@ -154,11 +154,14 @@ function isViewable(
     item: any,
     index: number,
 ) {
-    const { sizes, positions, scroll } = state;
+    const { sizes, positions, scroll: scrollState, scrollAdjustHandler } = state;
     const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
+    const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
+    const scroll = scrollState - previousScrollAdjust - topPad;
+
     const top = positions.get(key)! - scroll + topPad;
     const size = sizes.get(key)! || 0;
     const bottom = top + size;
