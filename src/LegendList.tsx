@@ -200,6 +200,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
             numPendingInitialLayout: 0,
+            queuedCalculateItemsInView: 0,
         };
 
         if (maintainVisibleContentPosition) {
@@ -1155,7 +1156,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
-                calculateItemsInView(state.scrollVelocity);
+                if (!state.queuedCalculateItemsInView) {
+                    state.queuedCalculateItemsInView = requestAnimationFrame(() => {
+                        state.queuedCalculateItemsInView = undefined;
+                        calculateItemsInView(state.scrollVelocity);
+                    });
+                }
             }
         }
     }, []);
