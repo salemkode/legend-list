@@ -1060,7 +1060,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         doInitialAllocateContainers();
     });
 
-    const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
+    const updateItemSize = useCallback((itemKey: string, size: number) => {
         const state = refState.current!;
         const { sizes, indexByKey, sizesLaidOut, data, rowHeights } = state;
         if (!data) {

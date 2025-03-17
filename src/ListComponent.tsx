@@ -29,7 +29,7 @@ interface ListComponentProps<ItemT>
     initialContentOffset: number | undefined;
     refScrollView: React.Ref<ScrollView>;
     getRenderedItem: (key: string) => { index: number; item: ItemT; renderedItem: ReactNode } | null;
-    updateItemSize: (containerId: number, itemKey: string, size: number) => void;
+    updateItemSize: (itemKey: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
