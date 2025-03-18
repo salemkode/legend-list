@@ -341,7 +341,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return res;
     };
 
-    const calculateItemsInView = useCallback((speed: number) => {
+    const calculateItemsInView = useCallback(() => {
         const state = refState.current!;
         const {
             data,
@@ -351,6 +351,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             positions,
             columns,
             scrollAdjustHandler,
+            scrollVelocity: speed,
         } = state!;
         if (!data || scrollLength === 0) {
             return;
@@ -820,7 +821,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.positions.clear();
                 }
 
-                calculateItemsInView(state!.scrollVelocity);
+                calculateItemsInView();
 
                 const didMaintainScrollAtEnd = doMaintainScrollAtEnd(false);
 
@@ -888,7 +889,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         // reset scroll to 0 and schedule rerender
                         refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                         setTimeout(() => {
-                            calculateItemsInView(0);
+                            calculateItemsInView();
                         }, 0);
                     } else {
                         refState.current.startBufferedId = undefined;
@@ -908,7 +909,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // reset scroll to 0 and schedule rerender
                     refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                     setTimeout(() => {
-                        calculateItemsInView(0);
+                        calculateItemsInView();
                     }, 0);
                 }
             }
@@ -1044,10 +1045,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (initialScrollIndex) {
                 requestAnimationFrame(() => {
                     // immediate render causes issues with initial index position
-                    calculateItemsInView(state.scrollVelocity);
+                    calculateItemsInView();
                 });
             } else {
-                calculateItemsInView(state.scrollVelocity);
+                calculateItemsInView();
             }
         }
     };
@@ -1159,24 +1160,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (!state.queuedCalculateItemsInView) {
                     state.queuedCalculateItemsInView = requestAnimationFrame(() => {
                         state.queuedCalculateItemsInView = undefined;
-                        calculateItemsInView(state.scrollVelocity);
+                        calculateItemsInView();
                     });
                 }
             }
         }
     }, []);
 
-    const handleScrollDebounced = useCallback((velocity: number) => {
-        // Use velocity to predict scroll position
-        calculateItemsInView(velocity);
-        checkAtBottom();
-        checkAtTop();
-    }, []);
-
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         const didChange = scrollLength !== refState.current!.scrollLength;
-        const prev = refState.current!.scrollLength;
         refState.current!.scrollLength = scrollLength;
 
         doInitialAllocateContainers();
@@ -1187,7 +1180,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         checkAtTop();
 
         if (didChange) {
-            calculateItemsInView(0);
+            calculateItemsInView();
         }
 
         if (__DEV__) {
@@ -1257,8 +1250,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.scroll = newScroll;
             state.scrollTime = currentTime;
             state.scrollVelocity = velocity;
-            // Pass velocity to calculateItemsInView
-            handleScrollDebounced(velocity);
+            // Use velocity to predict scroll position
+            calculateItemsInView();
+            checkAtBottom();
+            checkAtTop();
 
             if (!fromSelf) {
                 onScrollProp?.(event as NativeSyntheticEvent<NativeScrollEvent>);
@@ -1314,7 +1309,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         if (wasAdjusted) {
                             refState.current!.scrollVelocity = 0;
                             refState.current!.scrollHistory = [];
-                            calculateItemsInView(0);
+                            calculateItemsInView();
                         }
                     },
                     animated ? 1000 : 50,
@@ -1369,7 +1364,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (wasPaused) {
                         refState.current!.scrollVelocity = 0;
                         refState.current!.scrollHistory = [];
-                        calculateItemsInView(0);
+                        calculateItemsInView();
                     }
                     if (onMomentumScrollEnd) {
                         onMomentumScrollEnd(event);
