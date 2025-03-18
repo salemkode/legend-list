@@ -22,7 +22,7 @@ export default function Columns() {
                 data={data}
                 renderItem={Item}
                 keyExtractor={(item) => item.id}
-                numColumns={2}
+                numColumns={3}
                 columnWrapperStyle={{
                     columnGap: 16,
                     rowGap: 16,

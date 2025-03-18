@@ -48,9 +48,7 @@ export const Container = <ItemT,>({
         // Create padding styles for vertical layouts with multiple columns
         verticalPaddingStyles = {
             paddingBottom: !lastItemKeys.has(itemKey) ? rowGap || gap || undefined : undefined,
-            // Apply horizontal padding based on column position (first, middle, or last)
-            paddingLeft: column > 1 ? (columnGap || gap || 0) / 2 : undefined,
-            paddingRight: column < numColumns ? (columnGap || gap || 0) / 2 : undefined,
+            paddingHorizontal: (columnGap || gap || 0) / 2,
         };
     }
 

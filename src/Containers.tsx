@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { Container } from "./Container";
-import { use$ } from "./state";
+import { use$, useStateContext } from "./state";
 import { typedMemo } from "./types";
 import { useValue$ } from "./useValue$";
 
@@ -23,6 +23,9 @@ export const Containers = typedMemo(function Containers<ItemT>({
     updateItemSize,
     getRenderedItem,
 }: ContainersProps<ItemT>) {
+    const ctx = useStateContext();
+    const columnWrapperStyle = ctx.columnWrapperStyle;
+    const numColumns = use$<number>("numColumns");
     const numContainers = use$<number>("numContainersPooled");
     const animSize = useValue$("totalSizeWithScrollAdjust", undefined, /*useMicrotask*/ true);
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
@@ -47,6 +50,15 @@ export const Containers = typedMemo(function Containers<ItemT>({
     const style: StyleProp<ViewStyle> = horizontal
         ? { width: animSize, opacity: animOpacity }
         : { height: animSize, opacity: animOpacity };
+
+    if (columnWrapperStyle && !horizontal && numColumns > 1) {
+        // Extract gap properties from columnWrapperStyle if available
+        const { columnGap, rowGap, gap } = columnWrapperStyle;
+        const mx = (columnGap || gap || 0) / 2;
+        if (mx) {
+            style.marginHorizontal = -mx;
+        }
+    }
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });
