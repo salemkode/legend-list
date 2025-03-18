@@ -91,7 +91,7 @@ export interface InternalState {
     isAtBottom: boolean;
     isAtTop: boolean;
     data: readonly any[];
-    hasScrolled: boolean;
+    hasScrolled?: boolean;
     scrollLength: number;
     startBuffered: number;
     startBufferedId?: string;
@@ -121,6 +121,7 @@ export interface InternalState {
     minIndexSizeChanged: number | undefined;
     numPendingInitialLayout: number; // 0 if first load, -1 if done
     queuedCalculateItemsInView: number | undefined;
+    lastBatchingAction: number;
 }
 
 export interface ViewableRange<T> {

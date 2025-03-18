@@ -169,7 +169,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             isAtBottom: false,
             isAtTop: false,
             data: dataProp,
-            hasScrolled: false,
             scrollLength: initialScrollLength,
             startBuffered: 0,
             startNoBuffer: 0,
@@ -201,6 +200,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             minIndexSizeChanged: 0,
             numPendingInitialLayout: 0,
             queuedCalculateItemsInView: 0,
+            lastBatchingAction: Date.now(),
         };
 
         if (maintainVisibleContentPosition) {
@@ -944,7 +944,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const isFirst = !refState.current.renderItem;
     // Run first time and whenever data changes
+
     if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+        refState.current.lastBatchingAction = Date.now();
         if (!keyExtractorProp && !isFirst && didDataChange) {
             // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
             refState.current.sizes.clear();
@@ -1157,20 +1159,31 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
-                if (!state.queuedCalculateItemsInView) {
+                if (Date.now() - state.lastBatchingAction < 500) {
+                    // If this item layout is within 500ms of the most recent list layout, scroll, or column change,
+                    // batch calculations from layout to reduce the number of computations and renders.
+                    // This heuristic is basically to determine whether this comes from an internal List action or an external component action.
+                    // Batching adds a slight delay so this ensures that calculation is batched only if
+                    // it's likely that multiple items will have changed size and a one frame delay is acceptable,
+                    // such as when items are changed, the list changed size, or during scrolling.
                     state.queuedCalculateItemsInView = requestAnimationFrame(() => {
                         state.queuedCalculateItemsInView = undefined;
                         calculateItemsInView();
                     });
+                } else {
+                    // Otherwise this action is likely from a single item changing so it should run immediately
+                    calculateItemsInView();
                 }
             }
         }
     }, []);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => {
+        const state = refState.current!;
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
-        const didChange = scrollLength !== refState.current!.scrollLength;
-        refState.current!.scrollLength = scrollLength;
+        const didChange = scrollLength !== state.scrollLength;
+        state.scrollLength = scrollLength;
+        state.lastBatchingAction = Date.now();
 
         doInitialAllocateContainers();
 
@@ -1212,6 +1225,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             const state = refState.current!;
             state.hasScrolled = true;
+            state.lastBatchingAction = Date.now();
             const currentTime = performance.now();
             const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
 
