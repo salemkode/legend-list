@@ -91,7 +91,7 @@ export interface InternalState {
     isAtBottom: boolean;
     isAtTop: boolean;
     data: readonly any[];
-    hasScrolled: boolean;
+    hasScrolled?: boolean;
     scrollLength: number;
     startBuffered: number;
     startBufferedId?: string;
@@ -120,6 +120,8 @@ export interface InternalState {
     enableScrollForNextCalculateItemsInView: boolean;
     minIndexSizeChanged: number | undefined;
     numPendingInitialLayout: number; // 0 if first load, -1 if done
+    queuedCalculateItemsInView: number | undefined;
+    lastBatchingAction: number;
 }
 
 export interface ViewableRange<T> {
@@ -161,7 +163,12 @@ export type LegendListRef = {
      */
     scrollToEnd(options?: { animated?: boolean | undefined }): void;
 
-    scrollToIndex: (params: { index: number; animated?: boolean; viewOffset?: number; viewPosition?: number }) => void;
+    scrollToIndex: (params: {
+        index: number;
+        animated?: boolean;
+        viewOffset?: number;
+        viewPosition?: number;
+    }) => void;
 
     scrollToItem(params: { animated?: boolean; item: any; viewPosition?: number }): void;
 

@@ -22,7 +22,7 @@ export const Container = <ItemT,>({
     recycleItems?: boolean;
     horizontal: boolean;
     getRenderedItem: (key: string) => { index: number; item: ItemT; renderedItem: React.ReactNode } | null;
-    updateItemSize: (containerId: number, itemKey: string, size: number) => void;
+    updateItemSize: (itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ComponentType<{ leadingItem: ItemT }>;
 }) => {
     const ctx = useStateContext();
@@ -94,7 +94,7 @@ export const Container = <ItemT,>({
                 return;
             }
             refLastSize.current = size;
-            updateItemSize(id, itemKey, size);
+            updateItemSize(itemKey, size);
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
@@ -112,7 +112,7 @@ export const Container = <ItemT,>({
                     const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
 
                     if (size) {
-                        updateItemSize(id, itemKey, size);
+                        updateItemSize(itemKey, size);
                     }
                 }
             }
@@ -127,7 +127,7 @@ export const Container = <ItemT,>({
             if (itemKey) {
                 const timeout = setTimeout(() => {
                     if (!didLayout && refLastSize.current) {
-                        updateItemSize(id, itemKey, refLastSize.current);
+                        updateItemSize(itemKey, refLastSize.current);
                     }
                 }, 16);
                 return () => {
