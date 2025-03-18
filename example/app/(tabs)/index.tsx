@@ -4,7 +4,7 @@ import { LegendList } from "@legendapp/list";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Link, type LinkProps } from "expo-router";
 import { useCallback } from "react";
-import { type LayoutChangeEvent, Platform, Pressable, StyleSheet, View } from "react-native";
+import { type LayoutChangeEvent, Platform, Pressable, StyleSheet, View, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListElement = {
@@ -93,16 +93,20 @@ const data: ListElement[] = [
 
 const RightIcon = () => <ThemedText type="subtitle">›</ThemedText>;
 
-const ListItem = ({ title, url }: ListElement) => (
-    <Link href={url} asChild>
-        <Pressable>
-            <ThemedView style={styles.item}>
-                <ThemedText>{title}</ThemedText>
-                <RightIcon />
-            </ThemedView>
-        </Pressable>
-    </Link>
-);
+const ListItem = ({ title, url }: ListElement) => {
+    const theme = useColorScheme() ?? "light";
+
+    return (
+        <Link href={url} asChild>
+            <Pressable>
+                <ThemedView style={[styles.item, { borderBottomColor: theme === "light" ? "#ccc" : "#666" }]}>
+                    <ThemedText>{title}</ThemedText>
+                    <RightIcon />
+                </ThemedView>
+            </Pressable>
+        </Link>
+    );
+};
 
 const ListElements = () => {
     const height = useBottomTabBarHeight();
@@ -134,7 +138,6 @@ const styles = StyleSheet.create({
     item: {
         padding: 16,
         height: 60,
-        borderBottomColor: "#ccc",
         borderBottomWidth: 1,
         width: "100%",
         flexDirection: "row",
