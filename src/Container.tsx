@@ -80,22 +80,6 @@ export const Container = <ItemT,>({
 
     const didLayout = false;
 
-    useEffect(() => {
-        // Catch a bug where a container is reused and is the exact same size as the previous item
-        // so it does not fire an onLayout, so we need to trigger it manually.
-        // TODO: There must be a better way to do this?
-        if (itemKey) {
-            const timeout = setTimeout(() => {
-                if (!didLayout && refLastSize.current) {
-                    updateItemSize(id, itemKey, refLastSize.current);
-                }
-            }, 16);
-            return () => {
-                clearTimeout(timeout);
-            };
-        }
-    }, [itemKey]);
-
     const onLayout = (event: LayoutChangeEvent) => {
         if (itemKey !== undefined) {
             const layout = event.nativeEvent.layout;
@@ -121,6 +105,7 @@ export const Container = <ItemT,>({
 
     const ref = useRef<View>(null);
     if (isNewArchitecture) {
+        // New architecture supports unstable_getBoundingClientRect for getting layout synchronously
         useLayoutEffect(() => {
             if (itemKey !== undefined) {
                 // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
@@ -132,6 +117,24 @@ export const Container = <ItemT,>({
                         updateItemSize(id, itemKey, size);
                     }
                 }
+            }
+        }, [itemKey]);
+    } else {
+        // Since old architecture cannot use unstable_getBoundingClientRect it needs to ensure that
+        // all containers updateItemSize even if the container did not resize.
+        useEffect(() => {
+            // Catch a bug where a container is reused and is the exact same size as the previous item
+            // so it does not fire an onLayout, so we need to trigger it manually.
+            // TODO: There must be a better way to do this?
+            if (itemKey) {
+                const timeout = setTimeout(() => {
+                    if (!didLayout && refLastSize.current) {
+                        updateItemSize(id, itemKey, refLastSize.current);
+                    }
+                }, 16);
+                return () => {
+                    clearTimeout(timeout);
+                };
             }
         }, [itemKey]);
     }
