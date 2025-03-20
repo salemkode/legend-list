@@ -606,7 +606,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                 const itemIndex = state.indexByKey.get(itemKey)!;
                 const item = data[itemIndex];
-                if (item) {
+                if (item !== undefined) {
                     const id = getId(itemIndex);
                     if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                         // This is fairly complex because we want to avoid setting container position if it's not even in view
