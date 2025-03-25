@@ -362,6 +362,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         const scroll = scrollState - previousScrollAdjust - topPad;
 
+        console.log("scroll", scroll, "scrollState", scrollState, "previousScrollAdjust", previousScrollAdjust);
+
         let scrollBufferTop = scrollBuffer;
         let scrollBufferBottom = scrollBuffer;
 
@@ -940,10 +942,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             totalSize += maxSizeInRow;
         }
         const state = refState.current;
-        state.ignoreScrollFromCalcTotal = true;
-        requestAnimationFrame(() => {
-            state.ignoreScrollFromCalcTotal = false;
-        });
+        // state.ignoreScrollFromCalcTotal = true;
+        // requestAnimationFrame(() => {
+        //     state.ignoreScrollFromCalcTotal = false;
+        // });
         addTotalSize(null, totalSize, totalSizeBelowIndex);
     };
 
