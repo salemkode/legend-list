@@ -171,7 +171,12 @@ export type LegendListRef = {
         viewPosition?: number;
     }) => void;
 
-    scrollToItem(params: { animated?: boolean; item: any; viewPosition?: number }): void;
+    scrollToItem(params: {
+        animated?: boolean;
+        item: any;
+        viewPosition?: number;
+        viewOffset?: number | undefined;
+    }): void;
 
     scrollToOffset(params: { offset: number; animated?: boolean }): void;
 };

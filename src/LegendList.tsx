@@ -1364,11 +1364,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
                     refScroller.current!.scrollTo({ ...offsetObj, animated });
                 },
-                scrollToItem: ({ item, animated }) => {
+                scrollToItem: ({ item, ...props }) => {
                     const { data } = refState.current!;
                     const index = data.indexOf(item);
                     if (index !== -1) {
-                        scrollToIndex({ index, animated });
+                        scrollToIndex({ index, ...props });
                     }
                 },
                 scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
