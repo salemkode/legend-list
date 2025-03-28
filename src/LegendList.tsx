@@ -86,6 +86,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         refreshing,
         progressViewOffset,
         refreshControl,
+        initialContainerPoolRatio = 2,
         ...rest
     } = props;
     const { style, contentContainerStyle } = props;
@@ -1070,7 +1071,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             set$(ctx, "numContainers", numContainers);
-            set$(ctx, "numContainersPooled", numContainers * 2);
+            set$(ctx, "numContainersPooled", numContainers * initialContainerPoolRatio);
 
             if (initialScrollIndex) {
                 requestAnimationFrame(() => {

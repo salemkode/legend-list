@@ -23,6 +23,7 @@ export type LegendListPropsBase<
     columnWrapperStyle?: ColumnWrapperStyle;
     refScrollView?: React.Ref<ScrollView>;
     waitForInitialLayout?: boolean;
+    initialContainerPoolRatio?: number | undefined;
     // in most cases providing a constant value for item size enough
     estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
