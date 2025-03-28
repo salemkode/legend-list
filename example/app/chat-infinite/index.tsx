@@ -26,56 +26,15 @@ const defaultChatMessages: Message[] = [
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we thsafsf asdfsdf ere yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we theasfdasdf sre yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we thersadf sdfsafe yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we theasfsfsda re yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we thasfsaf asere yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
     { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    {
-        id: String(idCounter++),
-        text: "Are we thasfsafsadf sadfere yet?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 4,
-    },
-    {
-        id: String(idCounter++),
-        text: "How can I help  sdfasfsafsd ffyou?",
-        sender: "bot",
-        timeStamp: Date.now() - MS_PER_SECOND * 3,
-    },
+    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
+    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
+    { id: String(idCounter++), text: "How can I help you?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 3 },
 ];
 
 // TODO: under construction
@@ -156,7 +115,7 @@ const ChatExample = () => {
                     data={messages}
                     contentContainerStyle={styles.contentContainer}
                     keyExtractor={(item) => item.id}
-                    estimatedItemSize={200}
+                    estimatedItemSize={80}
                     maintainScrollAtEnd
                     maintainVisibleContentPosition
                     initialScrollIndex={messages.length - 1}
