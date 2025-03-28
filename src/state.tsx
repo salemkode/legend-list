@@ -34,7 +34,9 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
-    | "maintainVisibleContentPosition";
+    | "maintainVisibleContentPosition"
+    | "debugRawScroll"
+    | "debugComputedScroll";
 // | "otherAxisSize";
 
 export interface StateContext {

@@ -11,5 +11,5 @@ export const ANCHORED_POSITION_OUT_OF_VIEW: AnchoredPosition = {
 // green means paddingTop (used for aligning elements at the bottom)
 // lightblue means scrollAdjust (used for maintainVisibleContentPosition) positive values
 // blue arrow at the rights means negative scrollAdjust (used for maintainVisibleContentPosition) negative values
-export const ENABLE_DEVMODE = __DEV__ && false;
-export const ENABLE_DEBUG_VIEW = __DEV__ && false;
+export const ENABLE_DEVMODE = __DEV__ && true;
+export const ENABLE_DEBUG_VIEW = __DEV__ && true;
