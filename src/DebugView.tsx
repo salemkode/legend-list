@@ -20,6 +20,8 @@ export const DebugView = memo(function DebugView({ state }: { state: InternalSta
     const scroll = use$<number>("debugComputedScroll") || 0;
     const contentSize = getContentSize(ctx);
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
+    const numContainers = use$<number>("numContainers");
+    const numContainersPooled = use$<number>("numContainersPooled");
 
     useInterval(() => {
         forceUpdate();
@@ -35,6 +37,8 @@ export const DebugView = memo(function DebugView({ state }: { state: InternalSta
                 paddingBottom: 4,
                 // height: 100,
                 backgroundColor: "#FFFFFFCC",
+                padding: 4,
+                borderRadius: 4,
             }}
             pointerEvents="none"
         >

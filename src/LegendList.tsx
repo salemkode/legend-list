@@ -544,6 +544,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (startBuffered !== null && endBuffered !== null) {
             const prevNumContainers = ctx.values.get("numContainers") as number;
             let numContainers = prevNumContainers;
+            let didWarnMoreContainers = false;
             for (let i = startBuffered; i <= endBuffered; i++) {
                 let isContained = false;
                 const id = getId(i)!;
@@ -599,9 +600,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${containerId}`, -1);
 
-                        if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
+                        if (
+                            __DEV__ &&
+                            !didWarnMoreContainers &&
+                            numContainers > peek$<number>(ctx, "numContainersPooled")
+                        ) {
+                            didWarnMoreContainers = true;
                             console.warn(
-                                "[legend-list] No container to recycle, so creating one on demand. This can be a performance issue and is likely caused by the estimatedItemSize being too small. Consider increasing estimatedItemSize. numContainers:",
+                                "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize. numContainers:",
                                 numContainers,
                             );
                         }
@@ -612,7 +618,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (numContainers !== prevNumContainers) {
                 set$(ctx, "numContainers", numContainers);
                 if (numContainers > peek$<number>(ctx, "numContainersPooled")) {
-                    set$(ctx, "numContainersPooled", numContainers);
+                    set$(ctx, "numContainersPooled", Math.ceil(numContainers * 1.5));
                 }
             }
 
