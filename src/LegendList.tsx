@@ -157,6 +157,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const initialContentOffset = initialScrollOffset ?? useMemo(calculateOffsetForIndex, []);
 
+    if (Platform.OS === "web") {
+        useEffect(() => {
+            if (initialContentOffset) {
+                refScroller.current?.scrollTo({
+                    x: horizontal ? initialContentOffset : 0,
+                    y: horizontal ? 0 : initialContentOffset,
+                    animated: false,
+                });
+            }
+        }, []);
+    }
+
     if (!refState.current) {
         const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
         refState.current = {
