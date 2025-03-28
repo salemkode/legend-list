@@ -1297,6 +1297,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 index,
                 viewOffset = 0,
                 animated = true,
+                viewPosition = 0,
             }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                 const state = refState.current!;
                 const firstIndexOffset = calculateOffsetForIndex(index);
@@ -1342,6 +1343,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     },
                     animated ? 1000 : 50,
                 );
+
+                if (viewPosition) {
+                    firstIndexScrollPostion -=
+                        viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
+                }
 
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
