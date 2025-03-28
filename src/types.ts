@@ -164,21 +164,21 @@ export type LegendListRef = {
      */
     scrollToEnd(options?: { animated?: boolean | undefined }): void;
 
-    scrollToIndex: (params: {
+    scrollToIndex(params: {
+        animated?: boolean | undefined;
         index: number;
-        animated?: boolean;
-        viewOffset?: number;
-        viewPosition?: number;
-    }) => void;
-
-    scrollToItem(params: {
-        animated?: boolean;
-        item: any;
-        viewPosition?: number;
         viewOffset?: number | undefined;
+        viewPosition?: number | undefined;
     }): void;
 
-    scrollToOffset(params: { offset: number; animated?: boolean }): void;
+    scrollToItem(params: {
+        animated?: boolean | undefined;
+        item: any;
+        viewOffset?: number | undefined;
+        viewPosition?: number | undefined;
+    }): void;
+
+    scrollToOffset(params: { offset: number; animated?: boolean | undefined }): void;
 };
 
 export interface ViewToken<ItemT = any> {
