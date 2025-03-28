@@ -362,6 +362,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         const scroll = scrollState - previousScrollAdjust - topPad;
 
+        if (ENABLE_DEBUG_VIEW) {
+            set$(ctx, "debugRawScroll", scrollState);
+            set$(ctx, "debugComputedScroll", scroll);
+        }
+
         let scrollBufferTop = scrollBuffer;
         let scrollBufferBottom = scrollBuffer;
 
