@@ -1,5 +1,11 @@
 import { type ComponentProps, type ReactNode, forwardRef, memo } from "react";
-import type { ScrollResponderMixin, ScrollViewComponent, ScrollViewProps } from "react-native";
+import type {
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollResponderMixin,
+    ScrollViewComponent,
+    ScrollViewProps,
+} from "react-native";
 import type { ScrollView, StyleProp, ViewStyle } from "react-native";
 import type Animated from "react-native-reanimated";
 import type { ScrollAdjustHandler } from "./ScrollAdjustHandler";
@@ -124,6 +130,7 @@ export interface InternalState {
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
+    onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 }
 
 export interface ViewableRange<T> {

@@ -214,6 +214,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             numPendingInitialLayout: 0,
             queuedCalculateItemsInView: 0,
             lastBatchingAction: Date.now(),
+            onScroll: onScrollProp,
         };
 
         if (maintainVisibleContentPosition) {
@@ -238,6 +239,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const didDataChange = refState.current.data !== dataProp;
     refState.current.data = dataProp;
+    refState.current.onScroll = onScrollProp;
 
     const getAnchorElementIndex = () => {
         const state = refState.current!;
@@ -1315,7 +1317,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             checkAtTop();
 
             if (!fromSelf) {
-                onScrollProp?.(event as NativeSyntheticEvent<NativeScrollEvent>);
+                state.onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
             }
         },
         [],
