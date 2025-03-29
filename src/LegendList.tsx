@@ -1108,6 +1108,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const prevSize = getItemSize(itemKey, index, data as any);
 
         let needsCalculate = false;
+        let needsUpdateContainersDidLayout = false;
 
         if (state.numPendingInitialLayout > 0) {
             state.numPendingInitialLayout--;
@@ -1115,10 +1116,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 needsCalculate = true;
                 // Set to -1 to indicate that the initial layout has been completed
                 state.numPendingInitialLayout = -1;
-                // Needs to be in a microtask because we can't set animated values from onLayout
-                queueMicrotask(() => {
-                    set$(ctx, "containersDidLayout", true);
-                });
+                needsUpdateContainersDidLayout = true;
             }
         }
 
@@ -1198,10 +1196,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.queuedCalculateItemsInView = requestAnimationFrame(() => {
                         state.queuedCalculateItemsInView = undefined;
                         calculateItemsInView();
+                        if (needsUpdateContainersDidLayout) {
+                            set$(ctx, "containersDidLayout", true);
+                        }
                     });
                 } else {
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
+                    if (needsUpdateContainersDidLayout) {
+                        // Needs to be in a microtask because we can't set animated values from onLayout
+                        queueMicrotask(() => {
+                            set$(ctx, "containersDidLayout", true);
+                        });
+                    }
                 }
             }
         }
