@@ -1364,6 +1364,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 );
 
                 if (viewPosition) {
+                    // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
+                    // In the future we can improve this by listening for the item size change and then updating the scroll position
                     firstIndexScrollPostion -=
                         viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
                 }
