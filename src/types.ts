@@ -23,6 +23,7 @@ export type LegendListPropsBase<
     columnWrapperStyle?: ColumnWrapperStyle;
     refScrollView?: React.Ref<ScrollView>;
     waitForInitialLayout?: boolean;
+    initialContainerPoolRatio?: number | undefined;
     // in most cases providing a constant value for item size enough
     estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
@@ -164,16 +165,21 @@ export type LegendListRef = {
      */
     scrollToEnd(options?: { animated?: boolean | undefined }): void;
 
-    scrollToIndex: (params: {
+    scrollToIndex(params: {
+        animated?: boolean | undefined;
         index: number;
-        animated?: boolean;
-        viewOffset?: number;
-        viewPosition?: number;
-    }) => void;
+        viewOffset?: number | undefined;
+        viewPosition?: number | undefined;
+    }): void;
 
-    scrollToItem(params: { animated?: boolean; item: any; viewPosition?: number }): void;
+    scrollToItem(params: {
+        animated?: boolean | undefined;
+        item: any;
+        viewOffset?: number | undefined;
+        viewPosition?: number | undefined;
+    }): void;
 
-    scrollToOffset(params: { offset: number; animated?: boolean }): void;
+    scrollToOffset(params: { offset: number; animated?: boolean | undefined }): void;
 };
 
 export interface ViewToken<ItemT = any> {

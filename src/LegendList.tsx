@@ -86,6 +86,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         refreshing,
         progressViewOffset,
         refreshControl,
+        initialContainerPoolRatio = 2,
         ...rest
     } = props;
     const { style, contentContainerStyle } = props;
@@ -156,6 +157,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     };
 
     const initialContentOffset = initialScrollOffset ?? useMemo(calculateOffsetForIndex, []);
+
+    if (Platform.OS === "web") {
+        useEffect(() => {
+            if (initialContentOffset) {
+                refScroller.current?.scrollTo({
+                    x: horizontal ? initialContentOffset : 0,
+                    y: horizontal ? 0 : initialContentOffset,
+                    animated: false,
+                });
+            }
+        }, []);
+    }
 
     if (!refState.current) {
         const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
@@ -532,6 +545,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (startBuffered !== null && endBuffered !== null) {
             const prevNumContainers = ctx.values.get("numContainers") as number;
             let numContainers = prevNumContainers;
+            let didWarnMoreContainers = false;
             for (let i = startBuffered; i <= endBuffered; i++) {
                 let isContained = false;
                 const id = getId(i)!;
@@ -587,9 +601,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${containerId}`, -1);
 
-                        if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
+                        if (
+                            __DEV__ &&
+                            !didWarnMoreContainers &&
+                            numContainers > peek$<number>(ctx, "numContainersPooled")
+                        ) {
+                            didWarnMoreContainers = true;
                             console.warn(
-                                "[legend-list] No container to recycle, so creating one on demand. This can be a performance issue and is likely caused by the estimatedItemSize being too small. Consider increasing estimatedItemSize. numContainers:",
+                                "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize. numContainers:",
                                 numContainers,
                             );
                         }
@@ -600,7 +619,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (numContainers !== prevNumContainers) {
                 set$(ctx, "numContainers", numContainers);
                 if (numContainers > peek$<number>(ctx, "numContainersPooled")) {
-                    set$(ctx, "numContainersPooled", numContainers);
+                    set$(ctx, "numContainersPooled", Math.ceil(numContainers * 1.5));
                 }
             }
 
@@ -1052,7 +1071,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             set$(ctx, "numContainers", numContainers);
-            set$(ctx, "numContainersPooled", numContainers * 2);
+            set$(ctx, "numContainersPooled", numContainers * initialContainerPoolRatio);
 
             if (initialScrollIndex) {
                 requestAnimationFrame(() => {
@@ -1297,6 +1316,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 index,
                 viewOffset = 0,
                 animated = true,
+                viewPosition = 0,
             }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                 const state = refState.current!;
                 const firstIndexOffset = calculateOffsetForIndex(index);
@@ -1343,6 +1363,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     animated ? 1000 : 50,
                 );
 
+                if (viewPosition) {
+                    firstIndexScrollPostion -=
+                        viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
+                }
+
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
                 if (maintainVisibleContentPosition) {
@@ -1364,11 +1389,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
                     refScroller.current!.scrollTo({ ...offsetObj, animated });
                 },
-                scrollToItem: ({ item, animated }) => {
+                scrollToItem: ({ item, ...props }) => {
                     const { data } = refState.current!;
                     const index = data.indexOf(item);
                     if (index !== -1) {
-                        scrollToIndex({ index, animated });
+                        scrollToIndex({ index, ...props });
                     }
                 },
                 scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
