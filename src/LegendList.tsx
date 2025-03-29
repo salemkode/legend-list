@@ -1260,14 +1260,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             const state = refState.current!;
-            if (state.ignoreScrollFromCalcTotal) {
+            const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
+            // Ignore scroll from calcTotal unless it's scrolling to 0
+            if (state.ignoreScrollFromCalcTotal && newScroll !== 0) {
                 return;
             }
 
             state.hasScrolled = true;
             state.lastBatchingAction = Date.now();
             const currentTime = performance.now();
-            const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
 
             // don't add to the history, if it's initial scroll event
             // otherwise invalid velocity will be calculated
