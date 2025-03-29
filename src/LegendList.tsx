@@ -297,7 +297,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const getRowHeight = (n: number): number => {
         const { rowHeights, data } = refState.current!;
-        if (numColumnsProp === 1) {
+        const numColumns = peek$<number>(ctx, "numColumns");
+        if (numColumns === 1) {
             const id = getId(n);
             return getItemSize(id, n, data[n]);
         }
@@ -305,8 +306,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return rowHeights.get(n) || 0;
         }
         let rowHeight = 0;
-        const startEl = n * numColumnsProp;
-        for (let i = startEl; i < startEl + numColumnsProp && i < data.length; i++) {
+        const startEl = n * numColumns;
+        for (let i = startEl; i < startEl + numColumns && i < data.length; i++) {
             const id = getId(i);
             const size = getItemSize(id, i, data[i]);
             rowHeight = Math.max(rowHeight, size);
@@ -329,10 +330,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return new Map();
         }
         const map = state.belowAnchorElementPositions || new Map();
+        const numColumns = peek$<number>(ctx, "numColumns");
+
         for (let i = anchorIndex - 1; i >= 0; i--) {
             const id = getId(i);
-            const rowNumber = Math.floor(i / numColumnsProp);
-            if (i % numColumnsProp === 0) {
+            const rowNumber = Math.floor(i / numColumns);
+            if (i % numColumns === 0) {
                 top -= getRowHeight(rowNumber);
             }
             map.set(id, top);
@@ -371,6 +374,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
+        const numColumns = peek$<number>(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         const scroll = scrollState - previousScrollAdjust - topPad;
@@ -448,7 +452,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        const numColumns = peek$<number>(ctx, "numColumns");
         const loopStartMod = loopStart % numColumns;
         if (loopStartMod > 0) {
             loopStart -= loopStartMod;
@@ -655,7 +658,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                         // anchor elements to the bottom if element is below anchor
                         if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
-                            const currentRow = Math.floor(itemIndex / numColumnsProp);
+                            const currentRow = Math.floor(itemIndex / numColumns);
                             const rowHeight = getRowHeight(currentRow);
                             const elementHeight = getItemSize(id, itemIndex, data[i]);
                             const diff = rowHeight - elementHeight; // difference between row height and element height
@@ -867,6 +870,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const newPositions = new Map();
         let column = 1;
         let maxSizeInRow = 0;
+        const numColumns = peek$<number>(ctx, "numColumns") ?? numColumnsProp;
 
         if (!refState.current) {
             return;
@@ -947,7 +951,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             maxSizeInRow = Math.max(maxSizeInRow, size);
 
             column++;
-            if (column > numColumnsProp) {
+            if (column > numColumns) {
                 if (maintainVisibleContentPosition && anchorElementIndex !== undefined && i < anchorElementIndex) {
                     totalSizeBelowIndex += maxSizeInRow;
                 }
@@ -1163,7 +1167,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // precomputed scroll range invalid
             refState.current!.scrollForNextCalculateItemsInView = undefined;
 
-            addTotalSize(itemKey, diff, 0);
+                addTotalSize(itemKey, diff, 0);
 
             doMaintainScrollAtEnd(true);
 
