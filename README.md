@@ -75,7 +75,6 @@ const LegendListExample = () => {
     const listRef = useRef<LegendListRef | null>(null);
 
     const renderItem = ({ item }: LegendListRenderItemProps<UserData>) => {
-
         return (
             <View style={styles.itemContainer}>
                 <Image style={styles.profilePic} source={{ uri: item.photoUri }} />
