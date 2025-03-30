@@ -27,8 +27,8 @@ Beyond standard `FlatList` capabilities:
 
 *   `maintainScrollAtEnd`: (boolean) If `true` and the user is scrolled near the bottom (within `maintainScrollAtEndThreshold * screen height`), the list automatically scrolls to the end when items are added or heights change. Ideal for chat interfaces.
 *   `recycleItems`: (boolean) Toggles item component recycling.
-    *   `true` (default): Reuses item components for optimal performance. Be cautious if your item components contain local state, as it might be reused unexpectedly.
-    *   `false`: Creates new item components every time. Less performant but safer if items have complex internal state.
+    *   `true`: Reuses item components for optimal performance. Be cautious if your item components contain local state, as it might be reused unexpectedly.
+    *   `false` (default): Creates new item components every time. Less performant but safer if items have complex internal state.
 
 ---
 
