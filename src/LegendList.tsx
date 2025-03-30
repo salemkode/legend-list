@@ -1036,7 +1036,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         // TODO1.0: Remove these before 1.0, make sure docs have them as separate imports
-
         const useViewability = (configId: string, callback: ViewabilityCallback) => {
             useViewabilityHook(configId, callback);
         };
@@ -1053,6 +1052,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const renderedItem = refState.current!.renderItem?.({
             item: data[index],
             index,
+            extraData: peek$(ctx, "extraData"),
             useViewability,
             useViewabilityAmount,
             useRecyclingEffect,
@@ -1169,7 +1169,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // precomputed scroll range invalid
             refState.current!.scrollForNextCalculateItemsInView = undefined;
 
-                addTotalSize(itemKey, diff, 0);
+            addTotalSize(itemKey, diff, 0);
 
             doMaintainScrollAtEnd(true);
 
