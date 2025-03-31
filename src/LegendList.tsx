@@ -158,18 +158,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const initialContentOffset = initialScrollOffset ?? useMemo(calculateOffsetForIndex, []);
 
-    if (Platform.OS === "web") {
-        useEffect(() => {
-            if (initialContentOffset) {
-                refScroller.current?.scrollTo({
-                    x: horizontal ? initialContentOffset : 0,
-                    y: horizontal ? 0 : initialContentOffset,
-                    animated: false,
-                });
-            }
-        }, []);
-    }
-
     if (!refState.current) {
         const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
         refState.current = {
@@ -1197,6 +1185,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
+                const setDidLayout = () => {
+                    set$(ctx, "containersDidLayout", true);
+                    if (Platform.OS === "web") {
+                        // On web we need to wait until after the hack where containers have a useEffect
+                        // to catch not resizing which updates size in a timeout of 16ms
+                        setTimeout(() => {
+                            state.scrollAdjustHandler.setDisableAdjust(false);
+                        }, 32);
+                    }
+                };
                 if (Date.now() - state.lastBatchingAction < 500) {
                     // If this item layout is within 500ms of the most recent list layout, scroll, or column change,
                     // batch calculations from layout to reduce the number of computations and renders.
@@ -1208,7 +1206,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         state.queuedCalculateItemsInView = undefined;
                         calculateItemsInView();
                         if (needsUpdateContainersDidLayout) {
-                            set$(ctx, "containersDidLayout", true);
+                            setDidLayout();
                         }
                     });
                 } else {
@@ -1216,9 +1214,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     calculateItemsInView();
                     if (needsUpdateContainersDidLayout) {
                         // Needs to be in a microtask because we can't set animated values from onLayout
-                        queueMicrotask(() => {
-                            set$(ctx, "containersDidLayout", true);
-                        });
+                        queueMicrotask(setDidLayout);
                     }
                 }
             }
@@ -1423,6 +1419,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         [],
     );
 
+    if (Platform.OS === "web") {
+        useEffect(() => {
+            if (initialContentOffset) {
+                refState.current?.scrollAdjustHandler.setDisableAdjust(true);
+                refScroller.current?.scrollTo({
+                    x: horizontal ? initialContentOffset : 0,
+                    y: horizontal ? 0 : initialContentOffset,
+                    animated: false,
+                });
+            }
+        }, []);
+    }
+
     return (
         <>
             <ListComponent
@@ -1434,6 +1443,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 updateItemSize={updateItemSize}
                 handleScroll={handleScroll}
                 onMomentumScrollEnd={(event) => {
+                    console.log("onMomentumScrollEnd");
                     const wasPaused = refState.current!.scrollAdjustHandler.unPauseAdjust();
                     if (wasPaused) {
                         refState.current!.scrollVelocity = 0;
