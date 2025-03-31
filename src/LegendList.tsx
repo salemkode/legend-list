@@ -992,7 +992,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }
 
     useEffect(() => {
-        checkResetContainers(/*isFirst*/ isFirst);
+        const didAllocateContainers = doInitialAllocateContainers();
+        if (!didAllocateContainers) {
+            checkResetContainers(/*isFirst*/ isFirst);
+        }
     }, [isFirst, dataProp, numColumnsProp]);
 
     useEffect(() => {
@@ -1066,9 +1069,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const state = refState.current!;
 
         // Allocate containers
-        const scrollLength = state.scrollLength;
-        if (scrollLength > 0 && !peek$(ctx, "numContainers")) {
-            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, dataProp[0]) ?? DEFAULT_ITEM_SIZE;
+        const { scrollLength, data } = state;
+        if (scrollLength > 0 && data.length > 0 && !peek$(ctx, "numContainers")) {
+            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
@@ -1087,6 +1090,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             } else {
                 calculateItemsInView();
             }
+
+            return true;
         }
     };
 
