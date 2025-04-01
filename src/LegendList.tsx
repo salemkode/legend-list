@@ -1227,6 +1227,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const didChange = scrollLength !== state.scrollLength;
         state.scrollLength = scrollLength;
         state.lastBatchingAction = Date.now();
+        state.scrollForNextCalculateItemsInView = undefined;
 
         doInitialAllocateContainers();
 
@@ -1340,6 +1341,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                 // TODO: include checking if destination element position is already known, to avoid unneeded anchor element switches
                 const needsReanchoring = maintainVisibleContentPosition && diff > 100;
+                state.scrollForNextCalculateItemsInView = undefined;
 
                 if (needsReanchoring) {
                     // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
@@ -1349,7 +1351,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.belowAnchorElementPositions?.clear();
                     state.positions.clear();
                     calcTotalSizesAndPositions({ forgetPositions: true }); // since we are choosing new anchor, we need to recalulate positions
-                    state.scrollForNextCalculateItemsInView = undefined;
                     state.startBufferedId = id;
                     state.minIndexSizeChanged = index;
 
