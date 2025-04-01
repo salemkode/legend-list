@@ -968,6 +968,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const isFirst = !refState.current.renderItem;
     // Run first time and whenever data changes
 
+    const initalizeStateVars = () => {
+        set$(ctx, "lastItemKeys", memoizedLastItemKeys);
+        set$(ctx, "numColumns", numColumnsProp);
+        set$(ctx, "stylePaddingTop", stylePaddingTop);
+    };
+    if (isFirst) {
+        initalizeStateVars();
+    }
     if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
         refState.current.lastBatchingAction = Date.now();
         if (!keyExtractorProp && !isFirst && didDataChange) {
@@ -1002,14 +1010,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const stylePaddingTop =
         StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
-    const initalizeStateVars = () => {
-        set$(ctx, "lastItemKeys", memoizedLastItemKeys);
-        set$(ctx, "numColumns", numColumnsProp);
-        set$(ctx, "stylePaddingTop", stylePaddingTop);
-    };
-    if (isFirst) {
-        initalizeStateVars();
-    }
     useEffect(initalizeStateVars, [memoizedLastItemKeys, numColumnsProp, stylePaddingTop]);
 
     const getRenderedItem = useCallback((key: string) => {
