@@ -1446,8 +1446,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         refState.current.scrollAdjustHandler.setDisableAdjust(true);
     }
     useEffect(() => {
-        // Then re-enable adjusting after the initial mount
-        refState.current!.scrollAdjustHandler.setDisableAdjust(false);
+        setTimeout(
+            () => refState.current?.scrollAdjustHandler.setDisableAdjust(false),
+            initialContentOffset ? 1000 : 0,
+        );
         if (initialContentOffset) {
             const doScrollTo = () => {
                 refScroller.current?.scrollTo({
