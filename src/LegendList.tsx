@@ -966,8 +966,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     };
 
     const isFirst = !refState.current.renderItem;
-    // Run first time and whenever data changes
 
+    const memoizedLastItemKeys = useMemo(() => {
+        if (!dataProp.length) return new Set();
+        return new Set(
+            Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) => getId(dataProp.length - 1 - i)),
+        );
+    }, [dataProp.length, numColumnsProp, dataProp.slice(-numColumnsProp).toString()]);
+
+    // Run first time and whenever data changes
     const initalizeStateVars = () => {
         set$(ctx, "lastItemKeys", memoizedLastItemKeys);
         set$(ctx, "numColumns", numColumnsProp);
@@ -999,12 +1006,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }, [extraData]);
 
     refState.current.renderItem = renderItem!;
-    const memoizedLastItemKeys = useMemo(() => {
-        if (!dataProp.length) return [];
-        return new Set(
-            Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) => getId(dataProp.length - 1 - i)),
-        );
-    }, [dataProp.length, numColumnsProp, dataProp.slice(-numColumnsProp).toString()]);
 
     // TODO: This needs to support horizontal and other ways of defining padding
     const stylePaddingTop =
@@ -1359,24 +1360,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
                 }
 
-                // sometimes after scroll containers are randomly positioned
-                // make sure we are calling calculateItemsInView after scroll is done
-                // in both maintainVisibleContentPosition and normal mode
-
-                // we need to pause adjust while we are scrolling, otherwise target position will move which will result in incorrect scroll
-                state.scrollAdjustHandler.pauseAdjust();
-                // safety net, in case onMomentScrollEnd is not called
-                // TODO: do we really need this? for issues like https://github.com/facebook/react-native/pull/43654 ?
+                // Sometimes after scroll containers are randomly positioned so make sure we are calling calculateItemsInView
+                // after scroll is done in both maintainVisibleContentPosition and normal mode
+                // And disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
+                state.scrollAdjustHandler.setDisableAdjust(true);
                 setTimeout(
                     () => {
-                        const wasAdjusted = state.scrollAdjustHandler.unPauseAdjust();
-                        if (wasAdjusted) {
-                            refState.current!.scrollVelocity = 0;
-                            refState.current!.scrollHistory = [];
-                            calculateItemsInView();
-                        }
+                        state.scrollAdjustHandler.setDisableAdjust(false);
+                        calculateItemsInView();
                     },
-                    animated ? 1000 : 50,
+                    animated ? 150 : 50,
                 );
 
                 if (viewPosition) {
@@ -1388,13 +1381,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                 const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
 
-                if (maintainVisibleContentPosition) {
-                    // we really have no idea when <ListComponent> will apply scrollAdjust animated prop, let's wait a bit
-                    setTimeout(() => {
-                        refScroller.current!.scrollTo({ ...offset, animated });
-                    }, 50);
-                } else {
-                    refScroller.current!.scrollTo({ ...offset, animated });
+                // Do the scroll
+                refScroller.current!.scrollTo({ ...offset, animated });
+
+                const totalSizeWithScrollAdjust = peek$<number>(ctx, "totalSizeWithScrollAdjust");
+                if (
+                    maintainVisibleContentPosition &&
+                    totalSizeWithScrollAdjust - firstIndexScrollPostion < state.scrollLength
+                ) {
+                    // This fixes scrollToIndex being inaccurate when the estimatedItemSize is smaller than the actual item size
+                    setTimeout(
+                        () => {
+                            refScroller.current!.scrollTo({ ...offset, animated });
+                        },
+                        animated ? 150 : 50,
+                    );
                 }
             };
             return {
@@ -1433,6 +1434,27 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }, []);
     }
 
+    // TODO: This is a hack to ensure that the initial scroll is applied after the initial layout is complete
+    // but there may be a better way to do this
+    // First disable scroll adjust so that it doesn't do extra work affecting the target offset while scrolling
+    refState.current.scrollAdjustHandler.setDisableAdjust(true);
+    useEffect(() => {
+        // Then re-enable adjusting after the initial mount
+        refState.current!.scrollAdjustHandler.setDisableAdjust(false);
+        if (initialContentOffset) {
+            // If scrolling to the end it may have not made it all the way, so
+            // do another animate to make sure
+            setTimeout(() => {
+                refScroller.current?.scrollTo({
+                    x: horizontal ? initialContentOffset : 0,
+                    y: horizontal ? 0 : initialContentOffset,
+                    animated: false,
+                });
+                calculateItemsInView();
+            }, 32);
+        }
+    }, []);
+
     return (
         <>
             <ListComponent
@@ -1444,7 +1466,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 updateItemSize={updateItemSize}
                 handleScroll={handleScroll}
                 onMomentumScrollEnd={(event) => {
-                    console.log("onMomentumScrollEnd");
                     const wasPaused = refState.current!.scrollAdjustHandler.unPauseAdjust();
                     if (wasPaused) {
                         refState.current!.scrollVelocity = 0;
