@@ -1430,14 +1430,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     y: horizontal ? 0 : initialContentOffset,
                     animated: false,
                 });
+                setTimeout(() => {
+                    refState.current?.scrollAdjustHandler.setDisableAdjust(false);
+                }, 0);
             }
         }, []);
     }
 
     // TODO: This is a hack to ensure that the initial scroll is applied after the initial layout is complete
     // but there may be a better way to do this
-    // First disable scroll adjust so that it doesn't do extra work affecting the target offset while scrolling
-    refState.current.scrollAdjustHandler.setDisableAdjust(true);
+    if (isFirst) {
+        // First disable scroll adjust so that it doesn't do extra work affecting the target offset while scrolling
+        refState.current.scrollAdjustHandler.setDisableAdjust(true);
+    }
     useEffect(() => {
         // Then re-enable adjusting after the initial mount
         refState.current!.scrollAdjustHandler.setDisableAdjust(false);
