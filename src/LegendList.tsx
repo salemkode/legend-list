@@ -1390,12 +1390,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     totalSizeWithScrollAdjust - firstIndexScrollPostion < state.scrollLength
                 ) {
                     // This fixes scrollToIndex being inaccurate when the estimatedItemSize is smaller than the actual item size
-                    setTimeout(
-                        () => {
-                            refScroller.current!.scrollTo({ ...offset, animated });
-                        },
-                        animated ? 150 : 50,
-                    );
+                    const doScrollTo = () => {
+                        refScroller.current!.scrollTo({ ...offset, animated });
+                    };
+                    setTimeout(doScrollTo, animated ? 150 : 50);
+                    if (animated) {
+                        // The longer timeout is for slower devices
+                        setTimeout(doScrollTo, 350);
+                    }
                 }
             };
             return {
@@ -1447,16 +1449,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Then re-enable adjusting after the initial mount
         refState.current!.scrollAdjustHandler.setDisableAdjust(false);
         if (initialContentOffset) {
-            // If scrolling to the end it may have not made it all the way, so
-            // do another animate to make sure
-            setTimeout(() => {
+            const doScrollTo = () => {
                 refScroller.current?.scrollTo({
                     x: horizontal ? initialContentOffset : 0,
                     y: horizontal ? 0 : initialContentOffset,
                     animated: false,
                 });
                 calculateItemsInView();
-            }, 32);
+            };
+            // If scrolling to the end it may have not made it all the way, so
+            // do another animate to make sure
+            setTimeout(doScrollTo, 32);
+            // The longer timeout is for slower devices
+            setTimeout(doScrollTo, 300);
         }
     }, []);
 
