@@ -14,219 +14,219 @@ export type LegendListPropsBase<
     ItemT,
     TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>,
 > = Omit<TScrollView, "contentOffset" | "contentInset" | "maintainVisibleContentPosition" | "stickyHeaderIndices"> & {
-   /**
+    /**
      * If true, aligns items at the end of the list.
      * @default false
      */
-   alignItemsAtEnd?: boolean;
+    alignItemsAtEnd?: boolean;
 
-   /**
-    * Style applied to each column's wrapper view.
-    */
-   columnWrapperStyle?: ColumnWrapperStyle;
+    /**
+     * Style applied to each column's wrapper view.
+     */
+    columnWrapperStyle?: ColumnWrapperStyle;
 
-   /**
-    * Array of items to render in the list.
-    * @required
-    */
-   data: ReadonlyArray<ItemT>;
+    /**
+     * Array of items to render in the list.
+     * @required
+     */
+    data: ReadonlyArray<ItemT>;
 
-   /**
-    * Distance in pixels to pre-render items ahead of the visible area.
-    * @default 250
-    */
-   drawDistance?: number;
+    /**
+     * Distance in pixels to pre-render items ahead of the visible area.
+     * @default 250
+     */
+    drawDistance?: number;
 
-   /**
-    * Estimated size of each item in pixels; sufficient for most cases. If
-    * you leave this blank, a warning should appear and you will get
-    * a suggested size.
-    * @required
-    * @default undefined
-    */
-   estimatedItemSize?: number;
+    /**
+     * Estimated size of each item in pixels; sufficient for most cases. If
+     * you leave this blank, a warning should appear and you will get
+     * a suggested size.
+     * @required
+     * @default undefined
+     */
+    estimatedItemSize?: number;
 
-   /**
-    * Extra data to trigger re-rendering when changed.
-    */
-   extraData?: any;
+    /**
+     * Extra data to trigger re-rendering when changed.
+     */
+    extraData?: any;
 
-   /**
-    * In case you have distinct item sizes, you can provide a function to get the size of an item.
-    * Use instead of FlatList's getItemLayout or FlashList overrideItemLayout if you want to have accurate initialScrollOffset, you should provide this function
-    */
-   getEstimatedItemSize?: (index: number, item: ItemT) => number;
+    /**
+     * In case you have distinct item sizes, you can provide a function to get the size of an item.
+     * Use instead of FlatList's getItemLayout or FlashList overrideItemLayout if you want to have accurate initialScrollOffset, you should provide this function
+     */
+    getEstimatedItemSize?: (index: number, item: ItemT) => number;
 
-   /**
-    * Ratio of initial container pool size to data length (e.g., 0.5 for half).
-    * @default 1
-    */
-   initialContainerPoolRatio?: number | undefined;
+    /**
+     * Ratio of initial container pool size to data length (e.g., 0.5 for half).
+     * @default 1
+     */
+    initialContainerPoolRatio?: number | undefined;
 
-   /**
-    * Initial scroll position in pixels.
-    * @default 0
-    */
-   initialScrollOffset?: number;
+    /**
+     * Initial scroll position in pixels.
+     * @default 0
+     */
+    initialScrollOffset?: number;
 
-   /**
-    * Index to scroll to initially.
-    * @default 0
-    */
-   initialScrollIndex?: number;
+    /**
+     * Index to scroll to initially.
+     * @default 0
+     */
+    initialScrollIndex?: number;
 
-   /**
-    * Component to render between items, receiving the leading item as prop.
-    */
-   ItemSeparatorComponent?: React.ComponentType<{ leadingItem: ItemT }>;
+    /**
+     * Component to render between items, receiving the leading item as prop.
+     */
+    ItemSeparatorComponent?: React.ComponentType<{ leadingItem: ItemT }>;
 
-   /**
-    * Function to extract a unique key for each item.
-    */
-   keyExtractor?: (item: ItemT, index: number) => string;
+    /**
+     * Function to extract a unique key for each item.
+     */
+    keyExtractor?: (item: ItemT, index: number) => string;
 
-   /**
-    * Component or element to render when the list is empty.
-    */
-   ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    /**
+     * Component or element to render when the list is empty.
+     */
+    ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 
-   /**
-    * Component or element to render below the list.
-    */
-   ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    /**
+     * Component or element to render below the list.
+     */
+    ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 
-   /**
-    * Style for the footer component.
-    */
-   ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
+    /**
+     * Style for the footer component.
+     */
+    ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
 
-   /**
-    * Component or element to render above the list.
-    */
-   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    /**
+     * Component or element to render above the list.
+     */
+    ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 
-   /**
-    * Style for the header component.
-    */
-   ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
+    /**
+     * Style for the header component.
+     */
+    ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
 
-   /**
-    * If true, auto-scrolls to end when new items are added.
-    * @default false
-    */
-   maintainScrollAtEnd?: boolean;
+    /**
+     * If true, auto-scrolls to end when new items are added.
+     * @default false
+     */
+    maintainScrollAtEnd?: boolean;
 
-   /**
-    * Distance threshold in pixels to trigger maintainScrollAtEnd.
-    * @default 100
-    */
-   maintainScrollAtEndThreshold?: number;
+    /**
+     * Distance threshold in pixels to trigger maintainScrollAtEnd.
+     * @default 100
+     */
+    maintainScrollAtEndThreshold?: number;
 
-   /**
-    * If true, maintains visibility of content during scroll (e.g., after insertions).
-    * @default false
-    */
-   maintainVisibleContentPosition?: boolean;
+    /**
+     * If true, maintains visibility of content during scroll (e.g., after insertions).
+     * @default false
+     */
+    maintainVisibleContentPosition?: boolean;
 
-   /**
-    * Number of columns to render items in.
-    * @default 1
-    */
-   numColumns?: number;
+    /**
+     * Number of columns to render items in.
+     * @default 1
+     */
+    numColumns?: number;
 
-   /**
-    * Called when scrolling reaches the end within onEndReachedThreshold.
-    */
-   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
+    /**
+     * Called when scrolling reaches the end within onEndReachedThreshold.
+     */
+    onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
 
-   /**
-    * How close to the end (in fractional units of visible length) to trigger onEndReached.
-    * @default 0.5
-    */
-   onEndReachedThreshold?: number | null | undefined;
+    /**
+     * How close to the end (in fractional units of visible length) to trigger onEndReached.
+     * @default 0.5
+     */
+    onEndReachedThreshold?: number | null | undefined;
 
-   /**
-    * Called when an item's size changes.
-    */
-   onItemSizeChanged?: (info: {
-       size: number;
-       previous: number;
-       index: number;
-       itemKey: string;
-       itemData: ItemT;
-   }) => void;
+    /**
+     * Called when an item's size changes.
+     */
+    onItemSizeChanged?: (info: {
+        size: number;
+        previous: number;
+        index: number;
+        itemKey: string;
+        itemData: ItemT;
+    }) => void;
 
-   /**
-    * Function to call when the user pulls to refresh.
-    */
-   onRefresh?: () => void;
+    /**
+     * Function to call when the user pulls to refresh.
+     */
+    onRefresh?: () => void;
 
-   /**
-    * Called when scrolling reaches the start within onStartReachedThreshold.
-    */
-   onStartReached?: ((info: { distanceFromStart: number }) => void) | null | undefined;
+    /**
+     * Called when scrolling reaches the start within onStartReachedThreshold.
+     */
+    onStartReached?: ((info: { distanceFromStart: number }) => void) | null | undefined;
 
-   /**
-    * How close to the start (in fractional units of visible length) to trigger onStartReached.
-    * @default 0.5
-    */
-   onStartReachedThreshold?: number | null | undefined;
+    /**
+     * How close to the start (in fractional units of visible length) to trigger onStartReached.
+     * @default 0.5
+     */
+    onStartReachedThreshold?: number | null | undefined;
 
-   /**
-    * Called when the viewability of items changes.
-    */
-   onViewableItemsChanged?: OnViewableItemsChanged | undefined;
+    /**
+     * Called when the viewability of items changes.
+     */
+    onViewableItemsChanged?: OnViewableItemsChanged | undefined;
 
-   /**
-    * Offset in pixels for the refresh indicator.
-    * @default 0
-    */
-   progressViewOffset?: number;
+    /**
+     * Offset in pixels for the refresh indicator.
+     * @default 0
+     */
+    progressViewOffset?: number;
 
-   /**
-    * If true, recycles item views for better performance.
-    * @default false
-    */
-   recycleItems?: boolean;
+    /**
+     * If true, recycles item views for better performance.
+     * @default false
+     */
+    recycleItems?: boolean;
 
-   /**
-    * Ref to the underlying ScrollView component.
-    */
-   refScrollView?: React.Ref<ScrollView>;
+    /**
+     * Ref to the underlying ScrollView component.
+     */
+    refScrollView?: React.Ref<ScrollView>;
 
-   /**
-    * If true, shows a refresh indicator.
-    * @default false
-    */
-   refreshing?: boolean;
+    /**
+     * If true, shows a refresh indicator.
+     * @default false
+     */
+    refreshing?: boolean;
 
-   /**
-    * Function to render each item in the list.
-    * @required
-    */
-   renderItem?: (props: LegendListRenderItemProps<ItemT>) => ReactNode;
+    /**
+     * Function to render each item in the list.
+     * @required
+     */
+    renderItem?: (props: LegendListRenderItemProps<ItemT>) => ReactNode;
 
-   /**
-    * Render custom ScrollView component.
-    * @default (props) => <ScrollView {...props} />
-    */
-   renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
+    /**
+     * Render custom ScrollView component.
+     * @default (props) => <ScrollView {...props} />
+     */
+    renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
 
-   /**
-    * Configuration for determining item viewability.
-    */
-   viewabilityConfig?: ViewabilityConfig;
+    /**
+     * Configuration for determining item viewability.
+     */
+    viewabilityConfig?: ViewabilityConfig;
 
-   /**
-    * Pairs of viewability configs and their callbacks for tracking visibility.
-    */
-   viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
+    /**
+     * Pairs of viewability configs and their callbacks for tracking visibility.
+     */
+    viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
 
-   /**
-    * If true, delays rendering until initial layout is complete.
-    * @default false
-    */
-   waitForInitialLayout?: boolean;
+    /**
+     * If true, delays rendering until initial layout is complete.
+     * @default false
+     */
+    waitForInitialLayout?: boolean;
 };
 
 export interface ColumnWrapperStyle {
@@ -314,10 +314,22 @@ export interface LegendListRenderItemProps<ItemT> {
     useRecyclingState: <T>(updateState: ((info: LegendListRecyclingState<ItemT>) => T) | T) => [T, React.Dispatch<T>];
 }
 
+export type ScrollState = {
+    contentLength: number;
+    end: number;
+    endBuffered: number;
+    isAtEnd: boolean;
+    isAtStart: boolean;
+    scroll: number;
+    scrollLength: number;
+    start: number;
+    startBuffered: number;
+};
+
 export type LegendListRef = {
     /**
-         * Displays the scroll indicators momentarily.
-         */
+     * Displays the scroll indicators momentarily.
+     */
     flashScrollIndicators(): void;
 
     /**
@@ -334,6 +346,33 @@ export type LegendListRef = {
      * Returns the ScrollResponderMixin for advanced scroll handling.
      */
     getScrollResponder(): ScrollResponderMixin;
+
+    /**
+     * Returns the internal state of the scroll virtualization.
+     */
+    getState(): ScrollState;
+
+    /**
+     * Scrolls a specific index into view.
+     * @param params - Parameters for scrolling.
+     * @param params.animated - If true, animates the scroll. Default: true.
+     * @param params.index - The index to scroll to.
+     */
+    scrollIndexIntoView(params: {
+        animated?: boolean | undefined;
+        index: number;
+    }): void;
+
+    /**
+     * Scrolls a specific index into view.
+     * @param params - Parameters for scrolling.
+     * @param params.animated - If true, animates the scroll. Default: true.
+     * @param params.item - The item to scroll to.
+     */
+    scrollItemIntoView(params: {
+        animated?: boolean | undefined;
+        item: any;
+    }): void;
 
     /**
      * Scrolls to the end of the list.

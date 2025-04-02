@@ -28,6 +28,7 @@ import type {
     LegendListProps,
     LegendListRecyclingState,
     LegendListRef,
+    ScrollState,
     ViewabilityAmountCallback,
     ViewabilityCallback,
 } from "./types";
@@ -1400,22 +1401,61 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     }
                 }
             };
+
+            const scrollIndexIntoView = (options: Parameters<LegendListRef["scrollIndexIntoView"]>[0]) => {
+                if (refState.current) {
+                    const { index, ...rest } = options;
+                    const { startNoBuffer, endNoBuffer } = refState.current;
+                    if (index < startNoBuffer || index > endNoBuffer) {
+                        const viewPosition = index < startNoBuffer ? 0 : 1;
+                        scrollToIndex({
+                            ...rest,
+                            viewPosition,
+                            index,
+                        });
+                    }
+                }
+            };
             return {
+                flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
                 getNativeScrollRef: () => refScroller.current!,
                 getScrollableNode: () => refScroller.current!.getScrollableNode(),
                 getScrollResponder: () => refScroller.current!.getScrollResponder(),
-                flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
-                scrollToIndex,
-                scrollToOffset: ({ offset, animated }) => {
-                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
-                    refScroller.current!.scrollTo({ ...offsetObj, animated });
+                getState: () => {
+                    const state = refState.current;
+                    return state
+                        ? {
+                              contentLength: state.totalSize,
+                              end: state.endNoBuffer,
+                              endBuffered: state.endBuffered,
+                              isAtEnd: state.isAtBottom,
+                              isAtStart: state.isAtTop,
+                              scroll: state.scroll,
+                              scrollLength: state.scrollLength,
+                              start: state.startNoBuffer,
+                              startBuffered: state.startBuffered,
+                          }
+                        : ({} as ScrollState);
                 },
+                scrollIndexIntoView,
+                scrollItemIntoView: ({ item, ...props }) => {
+                    const { data } = refState.current!;
+                    const index = data.indexOf(item);
+                    if (index !== -1) {
+                        scrollIndexIntoView({ index, ...props });
+                    }
+                },
+                scrollToIndex,
                 scrollToItem: ({ item, ...props }) => {
                     const { data } = refState.current!;
                     const index = data.indexOf(item);
                     if (index !== -1) {
                         scrollToIndex({ index, ...props });
                     }
+                },
+                scrollToOffset: ({ offset, animated }) => {
+                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
+                    refScroller.current!.scrollTo({ ...offsetObj, animated });
                 },
                 scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
             };
