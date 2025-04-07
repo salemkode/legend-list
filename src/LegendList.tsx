@@ -106,7 +106,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
     const combinedRef = useCombinedRef(refScroller, refScrollView);
-    const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
+    const scrollBuffer = (drawDistance ?? DEFAULT_DRAW_DISTANCE) || 1;
     const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
     const refState = useRef<InternalState>();
@@ -703,6 +703,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
+    const scrollTo = (offset: number, animated: boolean | undefined) => {
+        refScroller.current?.scrollTo({
+            x: horizontal ? offset : 0,
+            y: horizontal ? 0 : offset,
+            animated: !!animated,
+        });
+    };
+
     const doMaintainScrollAtEnd = (animated: boolean) => {
         const state = refState.current;
         if (state?.isAtBottom && maintainScrollAtEnd) {
@@ -906,7 +914,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         refState.current.anchorElement = newAnchorElement;
                         refState.current.belowAnchorElementPositions?.clear();
                         // reset scroll to 0 and schedule rerender
-                        refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                        scrollTo(0, false);
                         setTimeout(() => {
                             calculateItemsInView();
                         }, 0);
@@ -926,7 +934,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         refState.current.startBufferedId = undefined;
                     }
                     // reset scroll to 0 and schedule rerender
-                    refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                    scrollTo(0, false);
                     setTimeout(() => {
                         calculateItemsInView();
                     }, 0);
@@ -1180,13 +1188,30 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         if (needsCalculate) {
+            let fixingScroll = false;
+            if (needsUpdateContainersDidLayout && initialScrollIndex && !state.didInitialScroll) {
+                const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+                state.didInitialScroll = true;
+                if (updatedOffset !== initialContentOffset) {
+                    fixingScroll = true;
+                    // If offset of initialScrollIndex is different than it was before,
+                    // scroll to the updated offset
+                    scrollTo(updatedOffset, false);
+                    // If estimated size is way off it may require a second scroll to get it right
+                    requestAnimationFrame(() => {
+                        const updatedOffset2 = calculateOffsetForIndex(initialScrollIndex);
+                        scrollTo(updatedOffset2, false);
+                    });
+                }
+            }
+
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
-            // Calculate positions if not currently scrolling and not waiting on other items to layout
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
+                // Calculate positions if not currently scrolling and not waiting on other items to layout
                 const setDidLayout = () => {
                     set$(ctx, "containersDidLayout", true);
                     if (Platform.OS === "web") {
@@ -1215,10 +1240,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
                     if (needsUpdateContainersDidLayout) {
-                        // Needs to be in a microtask because we can't set animated values from onLayout
+                        // If we are fixing scroll, we need to delay for a frame until after the scroll is done
+                        if (fixingScroll) {
+                            requestAnimationFrame(setDidLayout);
+                        } else {
+                            // Otherwise it needs to be in a microtask because we can't set animated values from onLayout
                         queueMicrotask(setDidLayout);
                     }
                 }
+            }
             }
         }
     }, []);
@@ -1268,7 +1298,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (event.nativeEvent?.contentSize?.height === 0 && event.nativeEvent.contentSize?.width === 0) {
                 return;
             }
-
             const state = refState.current!;
             const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
             // Ignore scroll from calcTotal unless it's scrolling to 0
@@ -1380,10 +1409,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
                 }
 
-                const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
-
                 // Do the scroll
-                refScroller.current!.scrollTo({ ...offset, animated });
+                scrollTo(firstIndexScrollPostion, animated);
 
                 const totalSizeWithScrollAdjust = peek$<number>(ctx, "totalSizeWithScrollAdjust");
                 if (
@@ -1392,7 +1419,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 ) {
                     // This fixes scrollToIndex being inaccurate when the estimatedItemSize is smaller than the actual item size
                     const doScrollTo = () => {
-                        refScroller.current!.scrollTo({ ...offset, animated });
+                        scrollTo(firstIndexScrollPostion, animated);
                     };
                     setTimeout(doScrollTo, animated ? 150 : 50);
                     if (animated) {
@@ -1454,8 +1481,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     }
                 },
                 scrollToOffset: ({ offset, animated }) => {
-                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
-                    refScroller.current!.scrollTo({ ...offsetObj, animated });
+                    scrollTo(offset, animated);
                 },
                 scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
             };
@@ -1467,45 +1493,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         useEffect(() => {
             if (initialContentOffset) {
                 refState.current?.scrollAdjustHandler.setDisableAdjust(true);
-                refScroller.current?.scrollTo({
-                    x: horizontal ? initialContentOffset : 0,
-                    y: horizontal ? 0 : initialContentOffset,
-                    animated: false,
-                });
+                scrollTo(initialContentOffset, false);
+
                 setTimeout(() => {
                     refState.current?.scrollAdjustHandler.setDisableAdjust(false);
                 }, 0);
             }
         }, []);
     }
-
-    // TODO: This is a hack to ensure that the initial scroll is applied after the initial layout is complete
-    // but there may be a better way to do this
-    if (isFirst) {
-        // First disable scroll adjust so that it doesn't do extra work affecting the target offset while scrolling
-        refState.current.scrollAdjustHandler.setDisableAdjust(true);
-    }
-    useEffect(() => {
-        setTimeout(
-            () => refState.current?.scrollAdjustHandler.setDisableAdjust(false),
-            initialContentOffset ? 1000 : 0,
-        );
-        if (initialContentOffset) {
-            const doScrollTo = () => {
-                refScroller.current?.scrollTo({
-                    x: horizontal ? initialContentOffset : 0,
-                    y: horizontal ? 0 : initialContentOffset,
-                    animated: false,
-                });
-                calculateItemsInView();
-            };
-            // If scrolling to the end it may have not made it all the way, so
-            // do another animate to make sure
-            setTimeout(doScrollTo, 32);
-            // The longer timeout is for slower devices
-            setTimeout(doScrollTo, 300);
-        }
-    }, []);
 
     return (
         <>
