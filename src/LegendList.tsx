@@ -1183,7 +1183,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             addTotalSize(itemKey, diff, 0);
 
-            doMaintainScrollAtEnd(true);
+            doMaintainScrollAtEnd(false); // *animated*/ index === data.length - 1);
 
             if (onItemSizeChanged) {
                 onItemSizeChanged({
