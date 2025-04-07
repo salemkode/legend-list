@@ -1190,11 +1190,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (needsCalculate) {
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
-            // Calculate positions if not currently scrolling and not waiting on other items to layout
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
+                // Calculate positions if not currently scrolling and not waiting on other items to layout
                 const setDidLayout = () => {
                     set$(ctx, "containersDidLayout", true);
                     if (Platform.OS === "web") {
@@ -1226,6 +1226,20 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         // Needs to be in a microtask because we can't set animated values from onLayout
                         queueMicrotask(setDidLayout);
                     }
+                }
+            }
+            if (needsUpdateContainersDidLayout && initialScrollIndex && !state.didInitialScroll) {
+                const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+                state.didInitialScroll = true;
+                if (updatedOffset !== initialContentOffset) {
+                    // If offset of initialScrollIndex is different than it was before,
+                    // scroll to the updated offset
+                    scrollTo(updatedOffset, false);
+                    // If estimated size is way off it may require a second scroll to get it right
+                    requestAnimationFrame(() => {
+                        const updatedOffset2 = calculateOffsetForIndex(initialScrollIndex);
+                        scrollTo(updatedOffset2, false);
+                    });
                 }
             }
         }
@@ -1276,7 +1290,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (event.nativeEvent?.contentSize?.height === 0 && event.nativeEvent.contentSize?.width === 0) {
                 return;
             }
-
             const state = refState.current!;
             const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
             // Ignore scroll from calcTotal unless it's scrolling to 0
@@ -1480,30 +1493,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }, []);
     }
-
-    // TODO: This is a hack to ensure that the initial scroll is applied after the initial layout is complete
-    // but there may be a better way to do this
-    if (isFirst) {
-        // First disable scroll adjust so that it doesn't do extra work affecting the target offset while scrolling
-        refState.current.scrollAdjustHandler.setDisableAdjust(true);
-    }
-    useEffect(() => {
-        setTimeout(
-            () => refState.current?.scrollAdjustHandler.setDisableAdjust(false),
-            initialContentOffset ? 1000 : 0,
-        );
-        if (initialContentOffset) {
-            const doScrollTo = () => {
-                scrollTo(initialContentOffset, false);
-                calculateItemsInView();
-            };
-            // If scrolling to the end it may have not made it all the way, so
-            // do another animate to make sure
-            setTimeout(doScrollTo, 32);
-            // The longer timeout is for slower devices
-            setTimeout(doScrollTo, 300);
-        }
-    }, []);
 
     return (
         <>
