@@ -88,6 +88,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         progressViewOffset,
         refreshControl,
         initialContainerPoolRatio = 2,
+        viewabilityConfig,
+        viewabilityConfigCallbackPairs,
+        onViewableItemsChanged,
         ...rest
     } = props;
     const { style, contentContainerStyle } = props;
@@ -1093,12 +1096,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
-    useInit(() => {
+    useEffect(() => {
         const state = refState.current!;
-        const viewability = setupViewability(props);
+        const viewability = setupViewability({
+            viewabilityConfig,
+            viewabilityConfigCallbackPairs,
+            onViewableItemsChanged,
+        });
         state.viewabilityConfigCallbackPairs = viewability;
         state.enableScrollForNextCalculateItemsInView = !viewability;
+    }, [viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged]);
 
+    useInit(() => {
         doInitialAllocateContainers();
     });
 
@@ -1245,10 +1254,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                             requestAnimationFrame(setDidLayout);
                         } else {
                             // Otherwise it needs to be in a microtask because we can't set animated values from onLayout
-                        queueMicrotask(setDidLayout);
+                            queueMicrotask(setDidLayout);
+                        }
                     }
                 }
-            }
             }
         }
     }, []);

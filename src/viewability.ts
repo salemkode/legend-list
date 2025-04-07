@@ -20,7 +20,12 @@ const mapViewabilityConfigCallbackPairs = new Map<
     }
 >();
 
-export function setupViewability(props: LegendListProps<any>): ViewabilityConfigCallbackPairs | undefined {
+export function setupViewability(
+    props: Pick<
+        LegendListProps<any>,
+        "viewabilityConfig" | "viewabilityConfigCallbackPairs" | "onViewableItemsChanged"
+    >,
+): ViewabilityConfigCallbackPairs | undefined {
     let { viewabilityConfig, viewabilityConfigCallbackPairs, onViewableItemsChanged } = props;
 
     if (viewabilityConfig || onViewableItemsChanged) {
