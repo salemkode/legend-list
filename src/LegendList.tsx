@@ -703,6 +703,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
+    const scrollTo = (offset: number, animated: boolean | undefined) => {
+        refScroller.current?.scrollTo({
+            x: horizontal ? offset : 0,
+            y: horizontal ? 0 : offset,
+            animated: !!animated,
+        });
+    };
+
     const doMaintainScrollAtEnd = (animated: boolean) => {
         const state = refState.current;
         if (state?.isAtBottom && maintainScrollAtEnd) {
@@ -906,7 +914,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         refState.current.anchorElement = newAnchorElement;
                         refState.current.belowAnchorElementPositions?.clear();
                         // reset scroll to 0 and schedule rerender
-                        refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                        scrollTo(0, false);
                         setTimeout(() => {
                             calculateItemsInView();
                         }, 0);
@@ -926,7 +934,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         refState.current.startBufferedId = undefined;
                     }
                     // reset scroll to 0 and schedule rerender
-                    refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                    scrollTo(0, false);
                     setTimeout(() => {
                         calculateItemsInView();
                     }, 0);
@@ -1380,10 +1388,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
                 }
 
-                const offset = horizontal ? { x: firstIndexScrollPostion, y: 0 } : { x: 0, y: firstIndexScrollPostion };
-
                 // Do the scroll
-                refScroller.current!.scrollTo({ ...offset, animated });
+                scrollTo(firstIndexScrollPostion, animated);
 
                 const totalSizeWithScrollAdjust = peek$<number>(ctx, "totalSizeWithScrollAdjust");
                 if (
@@ -1392,7 +1398,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 ) {
                     // This fixes scrollToIndex being inaccurate when the estimatedItemSize is smaller than the actual item size
                     const doScrollTo = () => {
-                        refScroller.current!.scrollTo({ ...offset, animated });
+                        scrollTo(firstIndexScrollPostion, animated);
                     };
                     setTimeout(doScrollTo, animated ? 150 : 50);
                     if (animated) {
@@ -1454,8 +1460,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     }
                 },
                 scrollToOffset: ({ offset, animated }) => {
-                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
-                    refScroller.current!.scrollTo({ ...offsetObj, animated });
+                    scrollTo(offset, animated);
                 },
                 scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
             };
@@ -1467,11 +1472,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         useEffect(() => {
             if (initialContentOffset) {
                 refState.current?.scrollAdjustHandler.setDisableAdjust(true);
-                refScroller.current?.scrollTo({
-                    x: horizontal ? initialContentOffset : 0,
-                    y: horizontal ? 0 : initialContentOffset,
-                    animated: false,
-                });
+                scrollTo(initialContentOffset, false);
+
                 setTimeout(() => {
                     refState.current?.scrollAdjustHandler.setDisableAdjust(false);
                 }, 0);
@@ -1492,11 +1494,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         );
         if (initialContentOffset) {
             const doScrollTo = () => {
-                refScroller.current?.scrollTo({
-                    x: horizontal ? initialContentOffset : 0,
-                    y: horizontal ? 0 : initialContentOffset,
-                    animated: false,
-                });
+                scrollTo(initialContentOffset, false);
                 calculateItemsInView();
             };
             // If scrolling to the end it may have not made it all the way, so
