@@ -1188,6 +1188,23 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         if (needsCalculate) {
+            let fixingScroll = false;
+            if (needsUpdateContainersDidLayout && initialScrollIndex && !state.didInitialScroll) {
+                const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+                state.didInitialScroll = true;
+                if (updatedOffset !== initialContentOffset) {
+                    fixingScroll = true;
+                    // If offset of initialScrollIndex is different than it was before,
+                    // scroll to the updated offset
+                    scrollTo(updatedOffset, false);
+                    // If estimated size is way off it may require a second scroll to get it right
+                    requestAnimationFrame(() => {
+                        const updatedOffset2 = calculateOffsetForIndex(initialScrollIndex);
+                        scrollTo(updatedOffset2, false);
+                    });
+                }
+            }
+
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
             if (
@@ -1223,24 +1240,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
                     if (needsUpdateContainersDidLayout) {
-                        // Needs to be in a microtask because we can't set animated values from onLayout
+                        // If we are fixing scroll, we need to delay for a frame until after the scroll is done
+                        if (fixingScroll) {
+                            requestAnimationFrame(setDidLayout);
+                        } else {
+                            // Otherwise it needs to be in a microtask because we can't set animated values from onLayout
                         queueMicrotask(setDidLayout);
                     }
                 }
             }
-            if (needsUpdateContainersDidLayout && initialScrollIndex && !state.didInitialScroll) {
-                const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
-                state.didInitialScroll = true;
-                if (updatedOffset !== initialContentOffset) {
-                    // If offset of initialScrollIndex is different than it was before,
-                    // scroll to the updated offset
-                    scrollTo(updatedOffset, false);
-                    // If estimated size is way off it may require a second scroll to get it right
-                    requestAnimationFrame(() => {
-                        const updatedOffset2 = calculateOffsetForIndex(initialScrollIndex);
-                        scrollTo(updatedOffset2, false);
-                    });
-                }
             }
         }
     }, []);
