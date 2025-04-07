@@ -106,7 +106,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
     const combinedRef = useCombinedRef(refScroller, refScrollView);
-    const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
+    const scrollBuffer = (drawDistance ?? DEFAULT_DRAW_DISTANCE) || 1;
     const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
     const refState = useRef<InternalState>();
