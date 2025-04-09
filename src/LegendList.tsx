@@ -1238,13 +1238,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // Batching adds a slight delay so this ensures that calculation is batched only if
                     // it's likely that multiple items will have changed size and a one frame delay is acceptable,
                     // such as when items are changed, the list changed size, or during scrolling.
-                    state.queuedCalculateItemsInView = requestAnimationFrame(() => {
-                        state.queuedCalculateItemsInView = undefined;
-                        calculateItemsInView();
-                        if (needsUpdateContainersDidLayout) {
-                            setDidLayout();
-                        }
-                    });
+                    if (!state.queuedCalculateItemsInView) {
+                        state.queuedCalculateItemsInView = requestAnimationFrame(() => {
+                            state.queuedCalculateItemsInView = undefined;
+                            calculateItemsInView();
+                            if (needsUpdateContainersDidLayout) {
+                                setDidLayout();
+                            }
+                        });
+                    }
                 } else {
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
