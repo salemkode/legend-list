@@ -248,13 +248,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
             refState.current?.scrollAdjustHandler.setDisableAdjust(true);
 
-            scrollTo(updatedOffset, false);
-            requestAnimationFrame(() => {
-                set$(ctx, "containersDidLayout", true);
-                refState.current?.scrollAdjustHandler.setDisableAdjust(false);
+            // Android sometimes doesn't scroll to the initial offset correctly if it's set immediately
+            // so do the scroll in a microtask
+            queueMicrotask(() => {
+                scrollTo(updatedOffset, false);
+                requestAnimationFrame(() => {
+                    set$(ctx, "containersDidLayout", true);
+                    refState.current?.scrollAdjustHandler.setDisableAdjust(false);
+                });
             });
         } else {
-            set$(ctx, "containersDidLayout", true);
+            queueMicrotask(() => {
+                set$(ctx, "containersDidLayout", true);
+            });
         }
     };
 
