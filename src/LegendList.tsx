@@ -9,7 +9,6 @@ import {
     Platform,
     RefreshControl,
     type ScrollView,
-    type StyleProp,
     StyleSheet,
     type ViewStyle,
 } from "react-native";
@@ -43,9 +42,12 @@ import { setupViewability, updateViewableItems } from "./viewability";
 const DEFAULT_DRAW_DISTANCE = 250;
 const DEFAULT_ITEM_SIZE = 100;
 
-function createColumnWrapperStyle(contentContainerStyle: StyleProp<ViewStyle>): ColumnWrapperStyle | undefined {
-    const { gap, columnGap, rowGap } = StyleSheet.flatten(contentContainerStyle);
+function createColumnWrapperStyle(contentContainerStyle: ViewStyle): ColumnWrapperStyle | undefined {
+    const { gap, columnGap, rowGap } = contentContainerStyle;
     if (gap || columnGap || rowGap) {
+        contentContainerStyle.gap = undefined;
+        contentContainerStyle.columnGap = undefined;
+        contentContainerStyle.rowGap = undefined;
         return {
             gap: gap as number,
             columnGap: columnGap as number,
@@ -96,6 +98,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         refScrollView,
         waitForInitialLayout = true,
         extraData,
+        contentContainerStyle: contentContainerStyleProp,
         onLayout: onLayoutProp,
         onRefresh,
         refreshing,
@@ -107,7 +110,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         onViewableItemsChanged,
         ...rest
     } = props;
-    const { style, contentContainerStyle } = props;
+    const { style } = props;
 
     const callbacks = useRef({
         onStartReached: rest.onStartReached,
@@ -117,6 +120,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     // ensure that the callbacks are updated
     callbacks.current.onStartReached = rest.onStartReached;
     callbacks.current.onEndReached = rest.onEndReached;
+
+    const contentContainerStyle = StyleSheet.flatten(contentContainerStyleProp);
 
     const ctx = useStateContext();
     ctx.columnWrapperStyle =
@@ -1574,6 +1579,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     ))
                 }
                 style={style}
+                contentContainerStyle={contentContainerStyle}
             />
             {__DEV__ && ENABLE_DEBUG_VIEW && <DebugView state={refState.current!} />}
         </>

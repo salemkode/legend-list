@@ -41,7 +41,7 @@ export const Container = <ItemT,>({
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
 
     let verticalPaddingStyles: ViewStyle | undefined;
-    if (columnWrapperStyle && !horizontal && numColumns > 1) {
+    if (columnWrapperStyle) {
         // Extract gap properties from columnWrapperStyle if available
         const { columnGap, rowGap, gap } = columnWrapperStyle;
 
