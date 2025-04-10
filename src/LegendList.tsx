@@ -1030,11 +1030,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const isFirst = !refState.current.renderItem;
 
     const memoizedLastItemKeys = useMemo(() => {
-        if (!dataProp.length) return new Set();
-        return new Set(
-            Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) => getId(dataProp.length - 1 - i)),
+        if (!dataProp.length) return [];
+        return Array.from({ length: Math.min(numColumnsProp, dataProp.length) }, (_, i) =>
+            getId(dataProp.length - 1 - i),
         );
-    }, [dataProp.length, numColumnsProp, dataProp.slice(-numColumnsProp).toString()]);
+    }, [dataProp, numColumnsProp]);
 
     // Run first time and whenever data changes
     const initalizeStateVars = () => {
@@ -1073,7 +1073,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const stylePaddingTop =
         StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
-    useEffect(initalizeStateVars, [memoizedLastItemKeys, numColumnsProp, stylePaddingTop]);
+    useEffect(initalizeStateVars, [memoizedLastItemKeys.join(","), numColumnsProp, stylePaddingTop]);
 
     const getRenderedItem = useCallback((key: string) => {
         const state = refState.current;

@@ -31,7 +31,7 @@ export const Container = <ItemT,>({
     const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;
     const numColumns = use$<number>("numColumns");
-    const lastItemKeys = use$<Set<string>>("lastItemKeys");
+    const lastItemKeys = use$<string[]>("lastItemKeys");
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
@@ -47,7 +47,7 @@ export const Container = <ItemT,>({
 
         // Create padding styles for vertical layouts with multiple columns
         verticalPaddingStyles = {
-            paddingBottom: !lastItemKeys.has(itemKey) ? rowGap || gap || undefined : undefined,
+            paddingBottom: !lastItemKeys.includes(itemKey) ? rowGap || gap || undefined : undefined,
             paddingHorizontal: (columnGap || gap || 0) / 2,
         };
     }
@@ -135,7 +135,7 @@ export const Container = <ItemT,>({
         <React.Fragment key={recycleItems ? undefined : itemKey}>
             <ContextContainer.Provider value={contextValue}>
                 {renderedItem}
-                {renderedItemInfo && ItemSeparatorComponent && !lastItemKeys.has(itemKey) && (
+                {renderedItemInfo && ItemSeparatorComponent && !lastItemKeys.includes(itemKey) && (
                     <ItemSeparatorComponent leadingItem={renderedItemInfo.item} />
                 )}
             </ContextContainer.Provider>
