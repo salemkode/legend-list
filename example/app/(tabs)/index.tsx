@@ -40,6 +40,10 @@ const data: ListElement[] = [
         url: "/accurate-scrollto",
     },
     {
+        title: "Accurate scrollToIndex 2",
+        url: "/accurate-scrollto-2",
+    },
+    {
         title: "Columns",
         url: "/columns",
     },

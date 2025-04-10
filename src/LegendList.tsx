@@ -1414,18 +1414,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
                 }
 
-                // Sometimes after scroll containers are randomly positioned so make sure we are calling calculateItemsInView
-                // after scroll is done in both maintainVisibleContentPosition and normal mode
-                // And disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
-                state.scrollAdjustHandler.setDisableAdjust(true);
-                setTimeout(
-                    () => {
-                        state.scrollAdjustHandler.setDisableAdjust(false);
-                        calculateItemsInView();
-                    },
-                    animated ? 150 : 50,
-                );
-
                 if (viewPosition) {
                     // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
                     // In the future we can improve this by listening for the item size change and then updating the scroll position
@@ -1433,24 +1421,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
                 }
 
+                // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
+                state.scrollAdjustHandler.setDisableAdjust(true);
+                state.scrollingToOffset = firstIndexScrollPostion;
                 // Do the scroll
                 scrollTo(firstIndexScrollPostion, animated);
-
-                const totalSizeWithScrollAdjust = peek$<number>(ctx, "totalSizeWithScrollAdjust");
-                if (
-                    maintainVisibleContentPosition &&
-                    totalSizeWithScrollAdjust - firstIndexScrollPostion < state.scrollLength
-                ) {
-                    // This fixes scrollToIndex being inaccurate when the estimatedItemSize is smaller than the actual item size
-                    const doScrollTo = () => {
-                        scrollTo(firstIndexScrollPostion, animated);
-                    };
-                    setTimeout(doScrollTo, animated ? 150 : 50);
-                    if (animated) {
-                        // The longer timeout is for slower devices
-                        setTimeout(doScrollTo, 350);
-                    }
-                }
             };
 
             const scrollIndexIntoView = (options: Parameters<LegendListRef["scrollIndexIntoView"]>[0]) => {
@@ -1537,6 +1512,23 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 updateItemSize={updateItemSize}
                 handleScroll={handleScroll}
                 onMomentumScrollEnd={(event) => {
+                    const scrollingToOffset = refState.current?.scrollingToOffset;
+                    if (scrollingToOffset !== undefined) {
+                        // If we are scrolling to an offset, its position may have changed during the scroll
+                        // if the actual sizes are different from the estimated sizes
+                        // So do another scroll to the same offset to make sure it's in the correct position
+
+                        // Android doesn't scroll correctly if called in onMomentumScrollEnd
+                        // so do the scroll in a requestAnimationFrame
+                        requestAnimationFrame(() => {
+                            scrollTo(scrollingToOffset, false);
+                            refState.current!.scrollingToOffset = undefined;
+                            requestAnimationFrame(() => {
+                                refState.current!.scrollAdjustHandler.setDisableAdjust(false);
+                            });
+                        });
+                    }
+
                     const wasPaused = refState.current!.scrollAdjustHandler.unPauseAdjust();
                     if (wasPaused) {
                         refState.current!.scrollVelocity = 0;

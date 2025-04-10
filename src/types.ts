@@ -293,6 +293,7 @@ export interface InternalState {
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
+    scrollingToOffset?: number | undefined;
     onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 }
 
