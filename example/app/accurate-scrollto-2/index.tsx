@@ -15,13 +15,14 @@ const App = () => {
             <View
                 style={{
                     padding: 10,
-                    backgroundColor: "#d00000",
-                    borderColor: "#700000",
+                    backgroundColor: "#fff",
+                    borderColor: "#ddd",
                     height: props.item.height,
                     borderWidth: 1,
+                    borderRadius: 12,
                 }}
             >
-                <Text style={{ color: "rgba(255,255,255,0.8)", fontWeight: "bold" }}>{props.item.name}</Text>
+                <Text style={{ fontWeight: "bold" }}>{props.item.name}</Text>
             </View>
         );
     };
