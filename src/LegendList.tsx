@@ -138,7 +138,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const calculateOffsetForIndex = (index = initialScrollIndex) => {
         // This function is called before refState is initialized, so we need to use dataProp
         const data = dataProp;
-        if (index) {
+        if (index !== undefined) {
             let offset = 0;
             const canGetSize = !!refState.current;
             if (canGetSize || getEstimatedItemSize) {
@@ -155,7 +155,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 offset = index * estimatedItemSize;
             }
 
-            return offset / numColumnsProp;
+            return offset / numColumnsProp - (refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0);
         }
         return 0;
     };
