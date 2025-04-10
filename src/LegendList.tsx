@@ -1036,6 +1036,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         );
     }, [dataProp, numColumnsProp]);
 
+    const stylePaddingTop =
+        StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
+
     // Run first time and whenever data changes
     const initalizeStateVars = () => {
         set$(ctx, "lastItemKeys", memoizedLastItemKeys);
@@ -1070,8 +1073,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     refState.current.renderItem = renderItem!;
 
     // TODO: This needs to support horizontal and other ways of defining padding
-    const stylePaddingTop =
-        StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
     useEffect(initalizeStateVars, [memoizedLastItemKeys.join(","), numColumnsProp, stylePaddingTop]);
 
