@@ -138,7 +138,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const calculateOffsetForIndex = (index = initialScrollIndex) => {
         // This function is called before refState is initialized, so we need to use dataProp
         const data = dataProp;
-        if (index) {
+        if (index !== undefined) {
             let offset = 0;
             const canGetSize = !!refState.current;
             if (canGetSize || getEstimatedItemSize) {
@@ -155,7 +155,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 offset = index * estimatedItemSize;
             }
 
-            return offset / numColumnsProp;
+            return offset / numColumnsProp - (refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0);
         }
         return 0;
     };
@@ -193,7 +193,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             indexByKey: new Map(),
             scrollHistory: [],
             scrollVelocity: 0,
-            sizesLaidOut: __DEV__ ? new Map() : undefined,
+            sizesKnown: new Map(),
             timeoutSizeMessage: 0,
             scrollTimer: undefined,
             belowAnchorElementPositions: undefined,
@@ -242,6 +242,28 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return undefined;
     };
 
+    const setDidLayout = () => {
+        refState.current!.queuedInitialLayout = true;
+        if (initialScrollIndex) {
+            const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+            refState.current?.scrollAdjustHandler.setDisableAdjust(true);
+
+            // Android sometimes doesn't scroll to the initial offset correctly if it's set immediately
+            // so do the scroll in a microtask
+            queueMicrotask(() => {
+                scrollTo(updatedOffset, false);
+                requestAnimationFrame(() => {
+                    set$(ctx, "containersDidLayout", true);
+                    refState.current?.scrollAdjustHandler.setDisableAdjust(false);
+                });
+            });
+        } else {
+            queueMicrotask(() => {
+                set$(ctx, "containersDidLayout", true);
+            });
+        }
+    };
+
     const addTotalSize = useCallback((key: string | null, add: number, totalSizeBelowAnchor: number) => {
         const state = refState.current!;
         const { indexByKey, anchorElement } = state;
@@ -273,7 +295,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             if (applyAdjustValue !== undefined) {
                 resultSize -= applyAdjustValue;
-                refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff: number) => {
+                state.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff: number) => {
                     // event state.scroll will contain invalid value, until next handleScroll
                     // apply adjustment
                     state.scroll -= diff;
@@ -356,7 +378,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const {
             data,
             scrollLength,
-            scroll: scrollState,
             startBufferedId: startBufferedIdOrig,
             positions,
             columns,
@@ -367,11 +388,28 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return;
         }
 
+        const totalSize = peek$<number>(ctx, "totalSizeWithScrollAdjust");
         const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
         const numColumns = peek$<number>(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-        const scroll = scrollState - previousScrollAdjust - topPad;
+        let scrollState = state.scroll;
+
+        // If this is before the initial layout, and we have an initialScrollIndex,
+        // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
+        // and use the calculated offset of the initialScrollIndex instead.
+        if (!state.queuedInitialLayout && initialScrollIndex) {
+            const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+            scrollState = updatedOffset;
+        }
+
+        let scroll = scrollState - previousScrollAdjust - topPad;
+
+        // Sometimes we may have scrolled past the visible area which can make items at the top of the
+        // screen not render. So make sure we clamp scroll to the end.
+        if (scroll + scrollLength > totalSize) {
+            scroll = totalSize - scrollLength;
+        }
 
         if (ENABLE_DEBUG_VIEW) {
             set$(ctx, "debugRawScroll", scrollState);
@@ -389,8 +427,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollBufferTop = scrollBuffer - scrollExtra;
             scrollBufferBottom = 0;
         }
-
-        //console.log(scrollExtra,scrollBufferTop,scrollBufferBottom)
 
         // Check precomputed scroll range to see if we can skip this check
         if (state.scrollForNextCalculateItemsInView) {
@@ -537,7 +573,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     : undefined;
         }
 
-        // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, startBufferedId);
+        // console.log("start", scroll, scrollState, startBuffered, startNoBuffer, endNoBuffer, endBuffered);
 
         if (startBuffered !== null && endBuffered !== null) {
             const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -684,6 +720,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.numPendingInitialLayout = state.endBuffered - state.startBuffered + 1;
         }
 
+        if (!state.queuedInitialLayout && endBuffered !== null) {
+            // If waiting for initial layout and all items in view have a known size then
+            // initial layout is complete
+            let areAllKnown = true;
+            for (let i = startBuffered!; areAllKnown && i <= endBuffered!; i++) {
+                const key = getId(i)!;
+                areAllKnown &&= state.sizesKnown!.has(key);
+            }
+            if (areAllKnown) {
+                setDidLayout();
+            }
+        }
+
         if (state.viewabilityConfigCallbackPairs) {
             updateViewableItems(
                 state,
@@ -716,7 +765,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const doMaintainScrollAtEnd = (animated: boolean) => {
         const state = refState.current;
-        if (state?.isAtBottom && maintainScrollAtEnd) {
+        // Run this only if scroll is at the bottom and after initial layout
+        if (state?.isAtBottom && maintainScrollAtEnd && peek$(ctx, "containersDidLayout")) {
             // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
             // scrollRef.current?.setNativeProps({
             //   contentContainerStyle: {
@@ -1113,7 +1163,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateItemSize = useCallback((itemKey: string, size: number) => {
         const state = refState.current!;
-        const { sizes, indexByKey, sizesLaidOut, data, rowHeights } = state;
+        const { sizes, indexByKey, sizesKnown, data, rowHeights } = state;
         if (!data) {
             return;
         }
@@ -1138,6 +1188,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
+        sizesKnown?.set(itemKey, size);
+
         if (!prevSize || Math.abs(prevSize - size) > 0.5) {
             let diff: number;
             needsCalculate = true;
@@ -1156,7 +1208,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
-                sizesLaidOut!.set(itemKey, size);
                 if (state.timeoutSizeMessage) {
                     clearTimeout(state.timeoutSizeMessage);
                 }
@@ -1165,7 +1216,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.timeoutSizeMessage = undefined;
                     let total = 0;
                     let num = 0;
-                    for (const [key, size] of sizesLaidOut!) {
+                    for (const [_, size] of sizesKnown!) {
                         num++;
                         total += size;
                     }
@@ -1197,23 +1248,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         if (needsCalculate) {
-            let fixingScroll = false;
-            if (needsUpdateContainersDidLayout && initialScrollIndex && !state.didInitialScroll) {
-                const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
-                state.didInitialScroll = true;
-                if (updatedOffset !== initialContentOffset) {
-                    fixingScroll = true;
-                    // If offset of initialScrollIndex is different than it was before,
-                    // scroll to the updated offset
-                    scrollTo(updatedOffset, false);
-                    // If estimated size is way off it may require a second scroll to get it right
-                    requestAnimationFrame(() => {
-                        const updatedOffset2 = calculateOffsetForIndex(initialScrollIndex);
-                        scrollTo(updatedOffset2, false);
-                    });
-                }
-            }
-
             // TODO: Could this be optimized to only calculate items in view that have changed?
             const scrollVelocity = state.scrollVelocity;
             if (
@@ -1221,16 +1255,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
             ) {
                 // Calculate positions if not currently scrolling and not waiting on other items to layout
-                const setDidLayout = () => {
-                    set$(ctx, "containersDidLayout", true);
-                    if (Platform.OS === "web") {
-                        // On web we need to wait until after the hack where containers have a useEffect
-                        // to catch not resizing which updates size in a timeout of 16ms
-                        setTimeout(() => {
-                            state.scrollAdjustHandler.setDisableAdjust(false);
-                        }, 32);
-                    }
-                };
                 if (Date.now() - state.lastBatchingAction < 500) {
                     // If this item layout is within 500ms of the most recent list layout, scroll, or column change,
                     // batch calculations from layout to reduce the number of computations and renders.
@@ -1242,23 +1266,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         state.queuedCalculateItemsInView = requestAnimationFrame(() => {
                             state.queuedCalculateItemsInView = undefined;
                             calculateItemsInView();
-                            if (needsUpdateContainersDidLayout) {
-                                setDidLayout();
-                            }
                         });
                     }
                 } else {
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
-                    if (needsUpdateContainersDidLayout) {
-                        // If we are fixing scroll, we need to delay for a frame until after the scroll is done
-                        if (fixingScroll) {
-                            requestAnimationFrame(setDidLayout);
-                        } else {
-                            // Otherwise it needs to be in a microtask because we can't set animated values from onLayout
-                            queueMicrotask(setDidLayout);
-                        }
-                    }
                 }
             }
         }

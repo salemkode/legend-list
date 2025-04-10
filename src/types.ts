@@ -253,7 +253,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
-    sizesLaidOut: Map<string, number> | undefined;
+    sizesKnown: Map<string, number> | undefined;
     pendingAdjust: number;
     isStartReached: boolean;
     isEndReached: boolean;
@@ -289,10 +289,10 @@ export interface InternalState {
     enableScrollForNextCalculateItemsInView: boolean;
     minIndexSizeChanged: number | undefined;
     numPendingInitialLayout: number; // 0 if first load, -1 if done
+    queuedInitialLayout?: boolean | undefined;
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
-    didInitialScroll?: boolean;
     onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 }
 
