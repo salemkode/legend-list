@@ -224,13 +224,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             onScroll: onScrollProp,
         };
 
-        if (maintainVisibleContentPosition) {
-            if (initialScrollIndex) {
+        const dataLength = dataProp.length;
+
+        if (maintainVisibleContentPosition && dataLength > 0) {
+            if (initialScrollIndex && initialScrollIndex < dataLength) {
                 refState.current!.anchorElement = {
                     coordinate: initialContentOffset,
                     id: getId(initialScrollIndex),
                 };
-            } else if (dataProp.length) {
+            } else if (dataLength > 0) {
                 refState.current!.anchorElement = {
                     coordinate: initialContentOffset,
                     id: getId(0),
