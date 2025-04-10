@@ -378,7 +378,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const {
             data,
             scrollLength,
-            scroll: scrollState,
             startBufferedId: startBufferedIdOrig,
             positions,
             columns,
@@ -394,6 +393,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const numColumns = peek$<number>(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
+        let scrollState = state.scroll;
+
+        // If this is before the initial layout, and we have an initialScrollIndex,
+        // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
+        // and use the calculated offset of the initialScrollIndex instead.
+        if (!state.queuedInitialLayout && initialScrollIndex) {
+            const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+            scrollState = updatedOffset;
+        }
+
         let scroll = scrollState - previousScrollAdjust - topPad;
 
         // Sometimes we may have scrolled past the visible area which can make items at the top of the
@@ -564,16 +573,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     : undefined;
         }
 
-        // console.log(
-        //     "start",
-        //     scroll,
-        //     scrollState,
-        //     startBuffered,
-        //     startNoBuffer,
-        //     endNoBuffer,
-        //     endBuffered,
-        //     startBufferedId,
-        // );
+        // console.log("start", scroll, scrollState, startBuffered, startNoBuffer, endNoBuffer, endBuffered);
 
         if (startBuffered !== null && endBuffered !== null) {
             const prevNumContainers = ctx.values.get("numContainers") as number;
