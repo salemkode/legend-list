@@ -9,7 +9,9 @@ import {
     Platform,
     RefreshControl,
     type ScrollView,
+    type StyleProp,
     StyleSheet,
+    type ViewStyle,
 } from "react-native";
 import {
     useRecyclingEffect as useRecyclingEffectHook,
@@ -24,6 +26,7 @@ import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, POSITION_OUT_OF_VIEW 
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
+    ColumnWrapperStyle,
     InternalState,
     LegendListProps,
     LegendListRecyclingState,
@@ -39,6 +42,17 @@ import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
 const DEFAULT_ITEM_SIZE = 100;
+
+function createColumnWrapperStyle(contentContainerStyle: StyleProp<ViewStyle>): ColumnWrapperStyle | undefined {
+    const { gap, columnGap, rowGap } = StyleSheet.flatten(contentContainerStyle);
+    if (gap || columnGap || rowGap) {
+        return {
+            gap: gap as number,
+            columnGap: columnGap as number,
+            rowGap: rowGap as number,
+        };
+    }
+}
 
 export const LegendList = typedForwardRef(function LegendList<T>(
     props: LegendListProps<T>,
@@ -105,7 +119,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     callbacks.current.onEndReached = rest.onEndReached;
 
     const ctx = useStateContext();
-    ctx.columnWrapperStyle = columnWrapperStyle;
+    ctx.columnWrapperStyle =
+        columnWrapperStyle || (contentContainerStyle ? createColumnWrapperStyle(contentContainerStyle) : undefined);
 
     const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
     const combinedRef = useCombinedRef(refScroller, refScrollView);
