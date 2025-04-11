@@ -12,12 +12,7 @@ import {
     StyleSheet,
     type ViewStyle,
 } from "react-native";
-import {
-    useRecyclingEffect as useRecyclingEffectHook,
-    useRecyclingState as useRecyclingStateHook,
-    useViewabilityAmount as useViewabilityAmountHook,
-    useViewability as useViewabilityHook,
-} from "./ContextContainer";
+import {} from "./ContextContainer";
 import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
@@ -1113,23 +1108,40 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         // TODO1.0: Remove these before 1.0, make sure docs have them as separate imports
-        const useViewability = (configId: string, callback: ViewabilityCallback) => {
-            useViewabilityHook(configId, callback);
-        };
-        const useViewabilityAmount = (callback: ViewabilityAmountCallback) => {
-            useViewabilityAmountHook(callback);
-        };
-        const useRecyclingEffect = (effect: (info: LegendListRecyclingState<unknown>) => void | (() => void)) => {
-            useRecyclingEffectHook(effect);
-        };
-        const useRecyclingState = (valueOrFun: ((info: LegendListRecyclingState<unknown>) => any) | any) => {
-            return useRecyclingStateHook(valueOrFun);
-        };
+        const useViewability = __DEV__
+            ? (configId: string, callback: ViewabilityCallback) => {
+                  console.warn(
+                      `[legend-list] useViewability has been moved from a render prop to a regular import: import { useViewability } from "@legendapp/list";`,
+                  );
+              }
+            : undefined;
+        const useViewabilityAmount = __DEV__
+            ? (callback: ViewabilityAmountCallback) => {
+                  console.warn(
+                      `[legend-list] useViewabilityAmount has been moved from a render prop to a regular import: import { useViewabilityAmount } from "@legendapp/list";`,
+                  );
+              }
+            : undefined;
+        const useRecyclingEffect = __DEV__
+            ? (effect: (info: LegendListRecyclingState<unknown>) => void | (() => void)) => {
+                  console.warn(
+                      `[legend-list] useRecyclingEffect has been moved from a render prop to a regular import: import { useRecyclingEffect } from "@legendapp/list";`,
+                  );
+              }
+            : undefined;
+        const useRecyclingState = __DEV__
+            ? (valueOrFun: ((info: LegendListRecyclingState<unknown>) => any) | any) => {
+                  console.warn(
+                      `[legend-list] useRecyclingState has been moved from a render prop to a regular import: import { useRecyclingState } from "@legendapp/list";`,
+                  );
+              }
+            : undefined;
 
         const renderedItem = refState.current!.renderItem?.({
             item: data[index],
             index,
             extraData: peek$(ctx, "extraData"),
+            // @ts-expect-error TODO: Remove these before 1.0
             useViewability,
             useViewabilityAmount,
             useRecyclingEffect,

@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
+import { LegendList, type LegendListRenderItemProps, useViewabilityAmount } from "@legendapp/list";
 import { useRef, useState } from "react";
 import { Animated, Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
@@ -99,14 +99,7 @@ const renderRightActions = () => {
 // Inline Separator makes containers rerender each data change
 const Separator = () => <View style={{ height: 10 }} />;
 
-export const ItemCard = ({
-    item,
-    index,
-    useRecyclingEffect,
-    useRecyclingState,
-    useViewability,
-    useViewabilityAmount,
-}: LegendListRenderItemProps<Item>) => {
+export const ItemCard = ({ item, index }: LegendListRenderItemProps<Item>) => {
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled

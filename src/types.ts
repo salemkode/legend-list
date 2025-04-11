@@ -309,11 +309,6 @@ export interface LegendListRenderItemProps<ItemT> {
     item: ItemT;
     index: number;
     extraData: any;
-    // TODO: Remove these before 1.0.0 release.
-    useViewability: (configId: string, callback: ViewabilityCallback) => void;
-    useViewabilityAmount: (callback: ViewabilityAmountCallback) => void;
-    useRecyclingEffect: (effect: (info: LegendListRecyclingState<ItemT>) => void | (() => void)) => void;
-    useRecyclingState: <T>(updateState: ((info: LegendListRecyclingState<ItemT>) => T) | T) => [T, React.Dispatch<T>];
 }
 
 export type ScrollState = {
