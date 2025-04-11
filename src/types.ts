@@ -422,6 +422,7 @@ export interface ViewToken<ItemT = any> {
     key: string;
     index: number;
     isViewable: boolean;
+    containerId: number;
 }
 
 export interface ViewAmountToken<ItemT = any> extends ViewToken<ItemT> {
@@ -429,7 +430,6 @@ export interface ViewAmountToken<ItemT = any> extends ViewToken<ItemT> {
     size: number;
     percentVisible: number;
     percentOfScroller: number;
-    position: number;
     scrollSize: number;
 }
 
