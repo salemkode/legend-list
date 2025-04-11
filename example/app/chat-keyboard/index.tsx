@@ -1,9 +1,9 @@
-import { LegendList } from "@legendapp/list";
+import { AnimatedLegendList } from "@legendapp/list/reanimated";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useState } from "react";
 import { Button, Platform, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAvoidingView, KeyboardProvider } from "react-native-keyboard-controller";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Message = {
     id: string;
@@ -53,51 +53,76 @@ const ChatExample = () => {
         }
     };
 
+    // Note: There's something weird with the SafeAreaView interacting with the KeyboardAvoidingView here I think,
+    // so there's some weird margins going on...
+
     return (
         <KeyboardProvider>
-            <SafeAreaView style={styles.container} edges={["bottom"]}>
-
-                <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={headerHeight}>
-                    <LegendList
-                        data={messages}
-                        contentContainerStyle={styles.contentContainer}
-                        keyExtractor={(item) => item.id}
-                        estimatedItemSize={80}
-                        maintainScrollAtEnd
-                        alignItemsAtEnd
-                        renderItem={({ item }) => (
-                            <>
-                                <View
-                                    style={[
-                                        styles.messageContainer,
-                                        item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
-                                        item.sender === "bot" ? styles.botStyle : styles.userStyle,
-                                    ]}
-                                >
-                                    <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
-                                        {item.text}
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}
-                                >
-                                    <Text style={styles.timeStampText}>
-                                        {new Date(item.timeStamp).toLocaleTimeString()}
-                                    </Text>
-                                </View>
-                            </>
-                        )}
-                    />
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={inputText}
-                            onChangeText={setInputText}
-                            placeholder="Type a message"
+            <SafeAreaView style={styles.container}>
+                <View
+                    style={{
+                        flex: 1,
+                        marginTop: -headerHeight,
+                        marginBottom: headerHeight / 2,
+                    }}
+                >
+                    <KeyboardAvoidingView
+                        style={{ flex: 1 }}
+                        behavior="position"
+                        keyboardVerticalOffset={headerHeight * 1.2}
+                    >
+                        <AnimatedLegendList
+                            data={messages}
+                            contentContainerStyle={styles.contentContainer}
+                            keyExtractor={(item) => item.id}
+                            estimatedItemSize={80}
+                            maintainScrollAtEnd
+                            alignItemsAtEnd
+                            // renderScrollComponent={(props) => <KeyboardAwareScrollView {...props} />}
+                            renderItem={({ item }) => (
+                                <>
+                                    <View
+                                        style={[
+                                            styles.messageContainer,
+                                            item.sender === "bot"
+                                                ? styles.botMessageContainer
+                                                : styles.userMessageContainer,
+                                            item.sender === "bot" ? styles.botStyle : styles.userStyle,
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.messageText,
+                                                item.sender === "user" && styles.userMessageText,
+                                            ]}
+                                        >
+                                            {item.text}
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.timeStamp,
+                                            item.sender === "bot" ? styles.botStyle : styles.userStyle,
+                                        ]}
+                                    >
+                                        <Text style={styles.timeStampText}>
+                                            {new Date(item.timeStamp).toLocaleTimeString()}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
                         />
-                        <Button title="Send" onPress={sendMessage} />
-                    </View>
-                </KeyboardAvoidingView>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.input}
+                                value={inputText}
+                                onChangeText={setInputText}
+                                placeholder="Type a message"
+                            />
+                            <Button title="Send" onPress={sendMessage} />
+                        </View>
+                    </KeyboardAvoidingView>
+                </View>
             </SafeAreaView>
         </KeyboardProvider>
     );
