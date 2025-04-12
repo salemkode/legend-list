@@ -134,76 +134,56 @@ const ChatExample = () => {
 
     return (
         <KeyboardProvider>
-            {/* <SafeAreaView style={styles.container}> */}
-            {/* <View
-                style={{
-                    flex: 1,
-                    backgroundColor: "red",
-                    // marginTop: -headerHeight,
-                    marginBottom: headerHeight,
-                }}
-            > */}
             <KeyboardAvoidingView
                 style={styles.container}
                 behavior="position"
                 contentContainerStyle={{ flex: 1 }}
                 keyboardVerticalOffset={headerHeight}
             >
-                <View style={{ flex: 1 }}>
-                    <KeyboardAvoidingLegendList
-                        data={messages}
-                        contentContainerStyle={styles.contentContainer}
-                        keyExtractor={(item) => item.id}
-                        estimatedItemSize={80}
-                        LegendList={AnimatedLegendList}
-                        maintainScrollAtEnd
-                        alignItemsAtEnd
-                        initialScrollIndex={messages.length - 1}
-                        maintainVisibleContentPosition
-                        // renderScrollComponent={(props) => <KeyboardAwareScrollView {...props} />}
-                        renderItem={({ item }) => (
-                            <>
-                                <View
-                                    style={[
-                                        styles.messageContainer,
-                                        item.sender === "bot"
-                                            ? styles.botMessageContainer
-                                            : styles.userMessageContainer,
-                                        item.sender === "bot" ? styles.botStyle : styles.userStyle,
-                                    ]}
-                                >
-                                    <Text
-                                        style={[styles.messageText, item.sender === "user" && styles.userMessageText]}
-                                    >
-                                        {item.text}
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.timeStamp,
-                                        item.sender === "bot" ? styles.botStyle : styles.userStyle,
-                                    ]}
-                                >
-                                    <Text style={styles.timeStampText}>
-                                        {new Date(item.timeStamp).toLocaleTimeString()}
-                                    </Text>
-                                </View>
-                            </>
-                        )}
+                <KeyboardAvoidingLegendList
+                    data={messages}
+                    contentContainerStyle={styles.contentContainer}
+                    keyExtractor={(item) => item.id}
+                    estimatedItemSize={80}
+                    LegendList={AnimatedLegendList}
+                    maintainScrollAtEnd
+                    alignItemsAtEnd
+                    initialScrollIndex={messages.length - 1}
+                    maintainVisibleContentPosition
+                    // renderScrollComponent={(props) => <KeyboardAwareScrollView {...props} />}
+                    renderItem={({ item }) => (
+                        <>
+                            <View
+                                style={[
+                                    styles.messageContainer,
+                                    item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
+                                    item.sender === "bot" ? styles.botStyle : styles.userStyle,
+                                ]}
+                            >
+                                <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
+                                    {item.text}
+                                </Text>
+                            </View>
+                            <View
+                                style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}
+                            >
+                                <Text style={styles.timeStampText}>
+                                    {new Date(item.timeStamp).toLocaleTimeString()}
+                                </Text>
+                            </View>
+                        </>
+                    )}
+                />
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Type a message"
                     />
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={inputText}
-                            onChangeText={setInputText}
-                            placeholder="Type a message"
-                        />
-                        <Button title="Send" onPress={sendMessage} />
-                    </View>
+                    <Button title="Send" onPress={sendMessage} />
                 </View>
             </KeyboardAvoidingView>
-            {/* </View> */}
-            {/* </SafeAreaView> */}
         </KeyboardProvider>
     );
 };

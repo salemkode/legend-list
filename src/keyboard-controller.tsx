@@ -20,8 +20,6 @@ export const KeyboardAvoidingLegendList = typedForwardRef(function KeyboardAvoid
     useKeyboardHandler({
         onEnd: (e) => {
             "worklet";
-
-            // Properly pass the function to runOnJS and call the returned function with the height
             runOnJS(updatePadding)(e.height);
         },
     });
