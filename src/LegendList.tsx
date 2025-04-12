@@ -261,6 +261,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const setDidLayout = () => {
         refState.current!.queuedInitialLayout = true;
+        checkAtBottom();
         if (initialScrollIndex) {
             const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
             refState.current?.scrollAdjustHandler.setDisableAdjust(true);
@@ -819,6 +820,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const checkThreshold = (
         distance: number,
+        atThreshold: boolean,
         threshold: number,
         isReached: boolean,
         isBlockedByTimer: boolean,
@@ -826,7 +828,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         blockTimer?: (block: boolean) => void,
     ) => {
         const distanceAbs = Math.abs(distance);
-        const isAtThreshold = distanceAbs < threshold;
+        const isAtThreshold = atThreshold || distanceAbs < threshold;
 
         if (!isReached && !isBlockedByTimer) {
             if (isAtThreshold) {
@@ -851,16 +853,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!refState.current) {
             return;
         }
-        const { scrollLength, scroll, hasScrolled } = refState.current;
+        const { queuedInitialLayout, scrollLength, scroll } = refState.current;
         const contentSize = getContentSize(ctx);
-        if (contentSize > 0 && hasScrolled) {
+        if (contentSize > 0 && queuedInitialLayout) {
             // Check if at end
             const distanceFromEnd = contentSize - scroll - scrollLength;
             const distanceFromEndAbs = Math.abs(distanceFromEnd);
-            refState.current.isAtBottom = distanceFromEndAbs < scrollLength * maintainScrollAtEndThreshold;
+            const isContentLess = contentSize < scrollLength;
+            refState.current.isAtBottom =
+                isContentLess || distanceFromEndAbs < scrollLength * maintainScrollAtEndThreshold;
 
             refState.current.isEndReached = checkThreshold(
                 distanceFromEnd,
+                isContentLess,
                 onEndReachedThreshold! * scrollLength,
                 refState.current.isEndReached,
                 refState.current.endReachedBlockedByTimer,
@@ -883,6 +888,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         refState.current.isStartReached = checkThreshold(
             distanceFromTop,
+            false,
             onStartReachedThreshold! * scrollLength,
             refState.current.isStartReached,
             refState.current.startReachedBlockedByTimer,
