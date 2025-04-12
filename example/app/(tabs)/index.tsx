@@ -28,14 +28,6 @@ const data: ListElement[] = [
         url: "/chat-infinite",
     },
     {
-        title: "Chat keyboard",
-        url: "/chat-keyboard",
-    },
-    {
-        title: "Cards FlatList",
-        url: "/cards-flatlist",
-    },
-    {
         title: "Countries List",
         url: "/countries",
     },
@@ -94,6 +86,14 @@ const data: ListElement[] = [
     {
         title: "Countries Reorder",
         url: "/countries-reorder",
+    },
+    {
+        title: "Chat keyboard",
+        url: "/chat-keyboard",
+    },
+    {
+        title: "Cards FlatList",
+        url: "/cards-flatlist",
     },
 ].map(
     (v, i) =>
