@@ -1054,13 +1054,23 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }, [dataProp, numColumnsProp]);
 
     const stylePaddingTop =
-        StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
+        (StyleSheet.flatten(style)?.paddingTop as number) ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
     // Run first time and whenever data changes
     const initalizeStateVars = () => {
         set$(ctx, "lastItemKeys", memoizedLastItemKeys);
         set$(ctx, "numColumns", numColumnsProp);
-        set$(ctx, "stylePaddingTop", stylePaddingTop);
+
+        // If the stylePaddingTop has changed, scroll to an adjusted offset to
+        // keep the same content in view
+        if (maintainVisibleContentPosition) {
+            const prevPaddingTop = peek$<number>(ctx, "stylePaddingTop");
+            const paddingDiff = stylePaddingTop - prevPaddingTop;
+            if (paddingDiff) {
+                scrollTo(refState.current!.scroll + paddingDiff, false);
+            }
+            set$(ctx, "stylePaddingTop", stylePaddingTop);
+        }
     };
     if (isFirst) {
         initalizeStateVars();
