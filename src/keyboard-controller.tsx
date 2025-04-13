@@ -1,4 +1,4 @@
-import type { LegendList as LegendListBase, LegendListProps, LegendListRef } from "@legendapp/list";
+import { LegendList as LegendListBase, type LegendListProps, type LegendListRef } from "@legendapp/list";
 import type { AnimatedLegendList } from "@legendapp/list/animated";
 import type { AnimatedLegendList as ReanimatedLegendList } from "@legendapp/list/reanimated";
 // biome-ignore lint/style/useImportType: Leaving this out makes it crash in some environments
@@ -36,7 +36,7 @@ export const LegendList = typedForwardRef(function LegendList<
         },
     });
 
-    const LegendListComponent = LegendListProp ?? LegendList;
+    const LegendListComponent = LegendListProp ?? LegendListBase;
 
     // @ts-expect-error TODO: Fix this
     return <LegendListComponent style={{ paddingTop: padding }} {...rest} ref={forwardedRef as any} />;
