@@ -94,6 +94,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         waitForInitialLayout = true,
         extraData,
         contentContainerStyle: contentContainerStyleProp,
+        style: styleProp,
         onLayout: onLayoutProp,
         onRefresh,
         refreshing,
@@ -105,7 +106,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         onViewableItemsChanged,
         ...rest
     } = props;
-    const { style } = props;
 
     const callbacks = useRef({
         onStartReached: rest.onStartReached,
@@ -117,6 +117,17 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     callbacks.current.onEndReached = rest.onEndReached;
 
     const contentContainerStyle = StyleSheet.flatten(contentContainerStyleProp);
+    const style = StyleSheet.flatten(styleProp);
+    const stylePaddingTop =
+        (StyleSheet.flatten(style)?.paddingTop as number) ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
+
+    // Padding top is handled by PaddingAndAdjust so remove it from the style
+    if (style?.paddingTop) {
+        style.paddingTop = undefined;
+    }
+    if (contentContainerStyle?.paddingTop) {
+        contentContainerStyle.paddingTop = undefined;
+    }
 
     const ctx = useStateContext();
     ctx.columnWrapperStyle =
@@ -1059,9 +1070,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         );
     }, [dataProp, numColumnsProp]);
 
-    const stylePaddingTop =
-        (StyleSheet.flatten(style)?.paddingTop as number) ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
-
     // Run first time and whenever data changes
     const initalizeStateVars = () => {
         set$(ctx, "lastItemKeys", memoizedLastItemKeys);
@@ -1071,11 +1079,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // keep the same content in view
         if (maintainVisibleContentPosition) {
             const prevPaddingTop = peek$<number>(ctx, "stylePaddingTop");
-            const paddingDiff = stylePaddingTop - prevPaddingTop;
-            if (paddingDiff) {
-                scrollTo(refState.current!.scroll + paddingDiff, false);
-            }
             set$(ctx, "stylePaddingTop", stylePaddingTop);
+            if (prevPaddingTop !== undefined) {
+                const paddingDiff = stylePaddingTop - prevPaddingTop;
+                // If the style padding has changed then adjust the paddingTop and update scroll to compensate
+                if (paddingDiff) {
+                    set$(ctx, "paddingTop", peek$<number>(ctx, "paddingTop") + paddingDiff);
+
+                    // Only iOS seems to need the scroll compensation
+                    if (Platform.OS === "ios") {
+                        queueMicrotask(() => {
+                            scrollTo(refState.current!.scroll + paddingDiff, false);
+                        });
+                    }
+                }
+            }
         }
     };
     if (isFirst) {

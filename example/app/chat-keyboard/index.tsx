@@ -150,7 +150,6 @@ const ChatExample = () => {
                     alignItemsAtEnd
                     initialScrollIndex={messages.length - 1}
                     maintainVisibleContentPosition
-                    // renderScrollComponent={(props) => <KeyboardAwareScrollView {...props} />}
                     renderItem={({ item }) => (
                         <>
                             <View
