@@ -1,5 +1,5 @@
-import { KeyboardAvoidingLegendList } from "@legendapp/legend-list/keyboard-controller";
-import { AnimatedLegendList } from "@legendapp/legend-list/reanimated";
+import { LegendList } from "@legendapp/list/keyboard-controller";
+import { AnimatedLegendList } from "@legendapp/list/reanimated";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useState } from "react";
 import { Button, Platform, StyleSheet, Text, TextInput, View } from "react-native";
@@ -140,7 +140,7 @@ const ChatExample = () => {
                 contentContainerStyle={{ flex: 1 }}
                 keyboardVerticalOffset={headerHeight}
             >
-                <KeyboardAvoidingLegendList
+                <LegendList
                     data={messages}
                     contentContainerStyle={styles.contentContainer}
                     keyExtractor={(item) => item.id}

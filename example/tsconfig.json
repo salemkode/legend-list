@@ -9,10 +9,10 @@
             "@legendapp/list": [
                 "../src/index"
             ],
-            "@legendapp/legend-list/keyboard-controller": [
+            "@legendapp/list/keyboard-controller": [
                 "../src/keyboard-controller"
             ],
-            "@legendapp/legend-list/reanimated": [
+            "@legendapp/list/reanimated": [
                 "../src/reanimated"
             ]
         }

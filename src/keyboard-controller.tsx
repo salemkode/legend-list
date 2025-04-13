@@ -1,4 +1,4 @@
-import { LegendList, type LegendListProps, type LegendListRef } from "@legendapp/list";
+import type { LegendList as LegendListBase, LegendListProps, LegendListRef } from "@legendapp/list";
 import type { AnimatedLegendList } from "@legendapp/list/animated";
 import type { AnimatedLegendList as ReanimatedLegendList } from "@legendapp/list/reanimated";
 // biome-ignore lint/style/useImportType: Leaving this out makes it crash in some environments
@@ -14,9 +14,12 @@ type TypedForwardRef = <T, P = {}>(
 
 const typedForwardRef = forwardRef as TypedForwardRef;
 
-export const KeyboardAvoidingLegendList = typedForwardRef(function KeyboardAvoidingLegendList<
+export const LegendList = typedForwardRef(function LegendList<
     ItemT,
-    ListT extends typeof LegendList | typeof AnimatedLegendList | typeof ReanimatedLegendList = typeof LegendList,
+    ListT extends
+        | typeof LegendListBase
+        | typeof AnimatedLegendList
+        | typeof ReanimatedLegendList = typeof LegendListBase,
 >(props: LegendListProps<ItemT> & { LegendList?: ListT }, forwardedRef: ForwardedRef<LegendListRef>) {
     const { LegendList: LegendListProp, ...rest } = props;
     const [padding, setPadding] = useState(0);
