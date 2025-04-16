@@ -117,8 +117,8 @@ export type LegendListPropsBase<
     maintainScrollAtEnd?: boolean;
 
     /**
-     * Distance threshold in pixels to trigger maintainScrollAtEnd.
-     * @default 100
+     * Distance threshold in percentage of screen size to trigger maintainScrollAtEnd.
+     * @default 0.1
      */
     maintainScrollAtEndThreshold?: number;
 
