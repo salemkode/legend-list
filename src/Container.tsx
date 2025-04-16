@@ -40,16 +40,23 @@ export const Container = <ItemT,>({
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
 
-    let verticalPaddingStyles: ViewStyle | undefined;
+    let paddingStyles: ViewStyle | undefined;
     if (columnWrapperStyle) {
         // Extract gap properties from columnWrapperStyle if available
         const { columnGap, rowGap, gap } = columnWrapperStyle;
 
-        // Create padding styles for vertical layouts with multiple columns
-        verticalPaddingStyles = {
-            paddingBottom: !lastItemKeys.includes(itemKey) ? rowGap || gap || undefined : undefined,
-            paddingHorizontal: (columnGap || gap || 0) / 2,
-        };
+        // Create padding styles for both horizontal and vertical layouts with multiple columns
+        if (horizontal) {
+            paddingStyles = {
+                paddingRight: !lastItemKeys.includes(itemKey) ? columnGap || gap || undefined : undefined,
+                paddingVertical: (rowGap || gap || 0) / 2,
+            };
+        } else {
+            paddingStyles = {
+                paddingBottom: !lastItemKeys.includes(itemKey) ? rowGap || gap || undefined : undefined,
+                paddingHorizontal: (columnGap || gap || 0) / 2,
+            };
+        }
     }
 
     const style: StyleProp<ViewStyle> = horizontal
@@ -60,6 +67,7 @@ export const Container = <ItemT,>({
               bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
               left: position.relativeCoordinate,
+              ...(paddingStyles || {}),
           }
         : {
               position: "absolute",
@@ -67,7 +75,7 @@ export const Container = <ItemT,>({
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
               top: position.relativeCoordinate,
-              ...(verticalPaddingStyles || {}),
+              ...(paddingStyles || {}),
           };
 
     const renderedItemInfo = useMemo(
