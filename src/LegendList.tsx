@@ -116,10 +116,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     callbacks.current.onStartReached = rest.onStartReached;
     callbacks.current.onEndReached = rest.onEndReached;
 
-    const contentContainerStyle = StyleSheet.flatten(contentContainerStyleProp);
-    const style = StyleSheet.flatten(styleProp);
-    const stylePaddingTop =
-        (StyleSheet.flatten(style)?.paddingTop as number) ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
+    const contentContainerStyle = { ...StyleSheet.flatten(contentContainerStyleProp) };
+    const style = { ...StyleSheet.flatten(styleProp) };
+    const stylePaddingTopState =
+        ((style?.paddingTop as number) || 0) + ((contentContainerStyle?.paddingTop as number) || 0);
 
     // Padding top is handled by PaddingAndAdjust so remove it from the style
     if (style?.paddingTop) {
@@ -336,7 +336,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         set$(ctx, "totalSizeWithScrollAdjust", resultSize);
 
         if (alignItemsAtEnd) {
-            doUpdatePaddingTop();
+            updateAlignItemsPaddingTop();
         }
     }, []);
 
@@ -369,14 +369,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!state.anchorElement) {
             return new Map();
         }
-        let top = state.anchorElement!.coordinate;
         const anchorIndex = state.indexByKey.get(state.anchorElement.id)!;
         if (anchorIndex === 0) {
             return new Map();
         }
         const map = state.belowAnchorElementPositions || new Map();
         const numColumns = peek$<number>(ctx, "numColumns");
-
+        let top = state.anchorElement!.coordinate;
         for (let i = anchorIndex - 1; i >= 0; i--) {
             const id = getId(i);
             const rowNumber = Math.floor(i / numColumns);
@@ -396,7 +395,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const res = state.belowAnchorElementPositions!.get(id);
 
         if (res === undefined) {
-            console.warn(`Undefined position below achor ${id} ${state.anchorElement?.id}`);
+            console.warn(`Undefined position below anchor ${id} ${state.anchorElement?.id}`);
             return 0;
         }
         return res;
@@ -418,7 +417,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         const totalSize = peek$<number>(ctx, "totalSizeWithScrollAdjust");
-        const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
+        const topPad = peek$<number>(ctx, "stylePaddingTop") + peek$<number>(ctx, "headerSize");
         const numColumns = peek$<number>(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
@@ -534,7 +533,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         };
 
         // scan data forwards
-        for (let i = loopStart; i < data!.length; i++) {
+        for (let i = Math.max(0, loopStart); i < data!.length; i++) {
             const id = getId(i)!;
             const size = getItemSize(id, i, data[i]);
 
@@ -775,12 +774,31 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     }, []);
 
-    const doUpdatePaddingTop = () => {
+    const setPaddingTop = ({
+        stylePaddingTop,
+        alignItemsPaddingTop,
+    }: { stylePaddingTop?: number; alignItemsPaddingTop?: number }) => {
+        if (stylePaddingTop !== undefined) {
+            set$(ctx, "stylePaddingTop", stylePaddingTop);
+        }
+        if (alignItemsPaddingTop !== undefined) {
+            set$(ctx, "alignItemsPaddingTop", alignItemsPaddingTop);
+        }
+
+        set$(
+            ctx,
+            "paddingTop",
+            (stylePaddingTop ?? peek$<number>(ctx, "stylePaddingTop")) +
+                (alignItemsPaddingTop ?? peek$<number>(ctx, "alignItemsPaddingTop")),
+        );
+    };
+
+    const updateAlignItemsPaddingTop = () => {
         if (alignItemsAtEnd) {
             const { scrollLength } = refState.current!;
             const contentSize = getContentSize(ctx);
             const paddingTop = Math.max(0, Math.floor(scrollLength - contentSize));
-            set$(ctx, "paddingTop", paddingTop);
+            setPaddingTop({ alignItemsPaddingTop: paddingTop });
         }
     };
 
@@ -812,7 +830,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // });
 
             // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
-            const paddingTop = peek$<number>(ctx, "paddingTop") || 0;
+            const paddingTop = peek$<number>(ctx, "alignItemsPaddingTop");
             if (paddingTop > 0) {
                 // if paddingTop exists, list is shorter then a screen, so scroll should be 0 anyways
                 state.scroll = 0;
@@ -1077,23 +1095,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // If the stylePaddingTop has changed, scroll to an adjusted offset to
         // keep the same content in view
-        if (maintainVisibleContentPosition) {
-            const prevPaddingTop = peek$<number>(ctx, "stylePaddingTop");
-            set$(ctx, "stylePaddingTop", stylePaddingTop);
-            if (prevPaddingTop !== undefined) {
-                const paddingDiff = stylePaddingTop - prevPaddingTop;
-                // If the style padding has changed then adjust the paddingTop and update scroll to compensate
-                if (paddingDiff) {
-                    set$(ctx, "paddingTop", peek$<number>(ctx, "paddingTop") + paddingDiff);
+        const prevPaddingTop = peek$<number>(ctx, "stylePaddingTop");
+        setPaddingTop({ stylePaddingTop: stylePaddingTopState });
 
-                    // Only iOS seems to need the scroll compensation
-                    if (Platform.OS === "ios") {
-                        queueMicrotask(() => {
-                            scrollTo(refState.current!.scroll + paddingDiff, false);
-                        });
-                    }
-                }
-            }
+        const paddingDiff = stylePaddingTopState - prevPaddingTop;
+        // If the style padding has changed then adjust the paddingTop and update scroll to compensate
+        // Only iOS seems to need the scroll compensation
+        if (paddingDiff && prevPaddingTop !== undefined && Platform.OS === "ios") {
+            queueMicrotask(() => {
+                scrollTo(refState.current!.scroll + paddingDiff, false);
+            });
         }
     };
     if (isFirst) {
@@ -1125,7 +1136,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     // TODO: This needs to support horizontal and other ways of defining padding
 
-    useEffect(initalizeStateVars, [memoizedLastItemKeys.join(","), numColumnsProp, stylePaddingTop]);
+    useEffect(initalizeStateVars, [memoizedLastItemKeys.join(","), numColumnsProp, stylePaddingTopState]);
 
     const getRenderedItem = useCallback((key: string) => {
         const state = refState.current;
@@ -1356,7 +1367,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         doInitialAllocateContainers();
 
         doMaintainScrollAtEnd(false);
-        doUpdatePaddingTop();
+        updateAlignItemsPaddingTop();
         checkAtBottom();
         checkAtTop();
 

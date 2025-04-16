@@ -30,6 +30,7 @@ export type ListenerType =
     | "totalSize"
     | "totalSizeWithScrollAdjust"
     | "paddingTop"
+    | "alignItemsPaddingTop"
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
@@ -52,9 +53,14 @@ export interface StateContext {
 const ContextState = React.createContext<StateContext | null>(null);
 
 export function StateProvider({ children }: { children: React.ReactNode }) {
-    const [value] = React.useState(() => ({
+    const [value] = React.useState<StateContext>(() => ({
         listeners: new Map(),
-        values: new Map(),
+        values: new Map<ListenerType, any>([
+            ["paddingTop", 0],
+            ["alignItemsPaddingTop", 0],
+            ["stylePaddingTop", 0],
+            ["headerSize", 0],
+        ]),
         mapViewabilityCallbacks: new Map<string, ViewabilityCallback>(),
         mapViewabilityValues: new Map<string, ViewToken>(),
         mapViewabilityAmountCallbacks: new Map<number, ViewabilityAmountCallback>(),
