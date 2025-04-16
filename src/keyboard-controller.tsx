@@ -4,6 +4,7 @@ import type { AnimatedLegendList as ReanimatedLegendList } from "@legendapp/list
 // biome-ignore lint/style/useImportType: Leaving this out makes it crash in some environments
 import * as React from "react";
 import { type ForwardedRef, forwardRef, useState } from "react";
+import { StyleSheet } from "react-native";
 import { useKeyboardHandler } from "react-native-keyboard-controller";
 import { runOnJS } from "react-native-reanimated";
 
@@ -21,7 +22,7 @@ export const LegendList = typedForwardRef(function LegendList<
         | typeof AnimatedLegendList
         | typeof ReanimatedLegendList = typeof LegendListBase,
 >(props: LegendListProps<ItemT> & { LegendList?: ListT }, forwardedRef: ForwardedRef<LegendListRef>) {
-    const { LegendList: LegendListProp, ...rest } = props;
+    const { LegendList: LegendListProp, style: styleProp, ...rest } = props;
     const [padding, setPadding] = useState(0);
 
     // Define this function outside the worklet
@@ -38,6 +39,9 @@ export const LegendList = typedForwardRef(function LegendList<
 
     const LegendListComponent = LegendListProp ?? LegendListBase;
 
-    // @ts-expect-error TODO: Fix this
-    return <LegendListComponent style={{ paddingTop: padding }} {...rest} ref={forwardedRef as any} />;
+    const styleFlattened = StyleSheet.flatten(styleProp) || {};
+    const style = { ...styleFlattened, paddingTop: padding + ((styleFlattened.paddingTop as number) || 0) };
+
+    // @ts-expect-error TODO: Fix this type
+    return <LegendListComponent {...rest} style={style} ref={forwardedRef} />;
 });
