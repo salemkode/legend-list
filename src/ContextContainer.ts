@@ -12,11 +12,11 @@ interface ContextContainerType {
 
 export const ContextContainer = createContext<ContextContainerType>(null as any);
 
-export function useViewability(configId: string, callback: ViewabilityCallback) {
+export function useViewability(callback: ViewabilityCallback, configId?: string) {
     const ctx = useStateContext();
     const { containerId } = useContext(ContextContainer);
 
-    const key = containerId + configId;
+    const key = containerId + (configId ?? "");
 
     useInit(() => {
         const value = ctx.mapViewabilityValues.get(key);
