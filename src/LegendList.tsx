@@ -270,20 +270,58 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return undefined;
     };
 
+    const scrollToIndex = ({
+        index,
+        viewOffset = 0,
+        animated = true,
+        viewPosition = 0,
+    }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
+        const state = refState.current!;
+        const firstIndexOffset = calculateOffsetForIndex(index);
+        let firstIndexScrollPostion = firstIndexOffset - viewOffset;
+        const diff = Math.abs(state.scroll - firstIndexScrollPostion);
+
+        // TODO: include checking if destination element position is already known, to avoid unneeded anchor element switches
+        const needsReanchoring = maintainVisibleContentPosition && diff > 100;
+        state.scrollForNextCalculateItemsInView = undefined;
+
+        if (needsReanchoring) {
+            // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
+            // now let's cleanup old positions and set new anchor element
+            const id = getId(index);
+            state.anchorElement = { id, coordinate: firstIndexOffset };
+            state.belowAnchorElementPositions?.clear();
+            state.positions.clear();
+            calcTotalSizesAndPositions({ forgetPositions: true }); // since we are choosing new anchor, we need to recalulate positions
+            state.startBufferedId = id;
+            state.minIndexSizeChanged = index;
+
+            // when doing scrollTo, it's important to use latest adjust value
+            firstIndexScrollPostion = firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
+        }
+
+        if (viewPosition) {
+            // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
+            // In the future we can improve this by listening for the item size change and then updating the scroll position
+            firstIndexScrollPostion -=
+                viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
+        }
+
+        // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
+        state.scrollAdjustHandler.setDisableAdjust(true);
+        state.scrollingToOffset = firstIndexScrollPostion;
+        // Do the scroll
+        scrollTo(firstIndexScrollPostion, animated);
+    };
+
     const setDidLayout = () => {
         refState.current!.queuedInitialLayout = true;
         checkAtBottom();
         if (initialScrollIndex) {
-            const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
-            refState.current?.scrollAdjustHandler.setDisableAdjust(true);
-
-            // Android sometimes doesn't scroll to the initial offset correctly if it's set immediately
-            // so do the scroll in a microtask
             queueMicrotask(() => {
-                scrollTo(updatedOffset, false);
+                scrollToIndex({ index: initialScrollIndex, animated: false });
                 requestAnimationFrame(() => {
                     set$(ctx, "containersDidLayout", true);
-                    refState.current?.scrollAdjustHandler.setDisableAdjust(false);
                 });
             });
         } else {
@@ -1462,51 +1500,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     useImperativeHandle(
         forwardedRef,
         () => {
-            const scrollToIndex = ({
-                index,
-                viewOffset = 0,
-                animated = true,
-                viewPosition = 0,
-            }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
-                const state = refState.current!;
-                const firstIndexOffset = calculateOffsetForIndex(index);
-                let firstIndexScrollPostion = firstIndexOffset - viewOffset;
-                const diff = Math.abs(state.scroll - firstIndexScrollPostion);
-
-                // TODO: include checking if destination element position is already known, to avoid unneeded anchor element switches
-                const needsReanchoring = maintainVisibleContentPosition && diff > 100;
-                state.scrollForNextCalculateItemsInView = undefined;
-
-                if (needsReanchoring) {
-                    // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
-                    // now let's cleanup old positions and set new anchor element
-                    const id = getId(index);
-                    state.anchorElement = { id, coordinate: firstIndexOffset };
-                    state.belowAnchorElementPositions?.clear();
-                    state.positions.clear();
-                    calcTotalSizesAndPositions({ forgetPositions: true }); // since we are choosing new anchor, we need to recalulate positions
-                    state.startBufferedId = id;
-                    state.minIndexSizeChanged = index;
-
-                    // when doing scrollTo, it's important to use latest adjust value
-                    firstIndexScrollPostion =
-                        firstIndexOffset - viewOffset + state.scrollAdjustHandler.getAppliedAdjust();
-                }
-
-                if (viewPosition) {
-                    // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
-                    // In the future we can improve this by listening for the item size change and then updating the scroll position
-                    firstIndexScrollPostion -=
-                        viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
-                }
-
-                // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
-                state.scrollAdjustHandler.setDisableAdjust(true);
-                state.scrollingToOffset = firstIndexScrollPostion;
-                // Do the scroll
-                scrollTo(firstIndexScrollPostion, animated);
-            };
-
             const scrollIndexIntoView = (options: Parameters<LegendListRef["scrollIndexIntoView"]>[0]) => {
                 if (refState.current) {
                     const { index, ...rest } = options;
