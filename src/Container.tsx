@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { Text } from "react-native";
 import { ContextContainer } from "./ContextContainer";
@@ -36,6 +36,8 @@ export const Container = <ItemT,>({
     const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
+    const ref = useRef<View>(null);
+    const [layoutRenderCount, forceLayoutRender] = useState(0);
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
@@ -85,6 +87,9 @@ export const Container = <ItemT,>({
     const { index, renderedItem } = renderedItemInfo || {};
 
     const didLayout = false;
+    const triggerLayout = useCallback(() => {
+        forceLayoutRender((v) => v + 1);
+    }, []);
 
     const onLayout = (event: LayoutChangeEvent) => {
         if (itemKey !== undefined) {
@@ -98,7 +103,6 @@ export const Container = <ItemT,>({
         }
     };
 
-    const ref = useRef<View>(null);
     if (isNewArchitecture) {
         // New architecture supports unstable_getBoundingClientRect for getting layout synchronously
         useLayoutEffect(() => {
@@ -113,7 +117,7 @@ export const Container = <ItemT,>({
                     }
                 }
             }
-        }, [itemKey]);
+        }, [itemKey, layoutRenderCount]);
     } else {
         // Since old architecture cannot use unstable_getBoundingClientRect it needs to ensure that
         // all containers updateItemSize even if the container did not resize.
@@ -134,10 +138,10 @@ export const Container = <ItemT,>({
         }, [itemKey]);
     }
 
-    const contextValue = useMemo(
-        () => ({ containerId: id, itemKey, index: index!, value: data }),
-        [id, itemKey, index, data],
-    );
+    const contextValue = useMemo(() => {
+        ctx.viewRefs.set(id, ref);
+        return { containerId: id, itemKey, index: index!, value: data, triggerLayout };
+    }, [id, itemKey, index, data]);
 
     const contentFragment = (
         <React.Fragment key={recycleItems ? undefined : itemKey}>

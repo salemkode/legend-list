@@ -439,6 +439,73 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return res;
     };
 
+    const fixGaps = useCallback(() => {
+        const state = refState.current!;
+        const { data, scrollLength, positions, startBuffered, endBuffered } = state!;
+        if (!data || scrollLength === 0) {
+            return;
+        }
+        const numContainers = ctx.values.get("numContainers") as number;
+        let numMeasurements = 0;
+
+        // Run through all containers and if we don't already have a known size then measure the item
+        // This is useful because when multiple items render in one frame, the first container fires a
+        // useLayoutEffect and we can measure all containers before their useLayoutEffects fire after a delay.
+        // This lets use fix any gaps/overlaps that might be visible before the useLayoutEffects fire for each container.
+        for (let i = 0; i < numContainers; i++) {
+            const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+            const isSizeKnown = refState.current!.sizesKnown!.get(itemKey);
+            if (itemKey && !isSizeKnown) {
+                const containerRef = ctx.viewRefs.get(i);
+                if (containerRef) {
+                    let measured: { width: number; height: number } | undefined;
+                    containerRef.current?.measure((x, y, width, height) => {
+                        measured = { width, height };
+                    });
+                    numMeasurements++;
+                    if (measured) {
+                        const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+                        updateItemSize(itemKey, size, /*fromFixGaps*/ true);
+                    }
+                }
+            }
+        }
+        if (numMeasurements > 0) {
+            let top: number | undefined;
+            const diffs = new Map<string, number>();
+            // Calculate the changed position for each item in view
+            for (let i = startBuffered; i <= endBuffered; i++) {
+                const id = getId(i)!;
+                if (top === undefined) {
+                    top = positions.get(id);
+                }
+                if (positions.get(id) !== top) {
+                    diffs.set(id, top! - positions.get(id)!);
+                    positions.set(id, top!);
+                }
+                const size = getItemSize(id, i, data[i]);
+                const bottom = top! + size;
+                top = bottom;
+            }
+
+            // Apply the changed positions to the containers
+            for (let i = 0; i < numContainers; i++) {
+                const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                const diff = diffs.get(itemKey);
+                if (diff) {
+                    const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
+                    const newPos = prevPos.top + diff;
+                    if (prevPos.top !== newPos) {
+                        const pos = { ...prevPos };
+                        pos.relativeCoordinate += diff;
+                        pos.top += diff;
+                        set$(ctx, `containerPosition${i}`, pos);
+                    }
+                }
+            }
+        }
+    }, []);
+
     const calculateItemsInView = useCallback(() => {
         const state = refState.current!;
         const {
@@ -1279,9 +1346,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         doInitialAllocateContainers();
     });
 
-    const updateItemSize = useCallback((itemKey: string, size: number) => {
+    const updateItemSize = useCallback((itemKey: string, size: number, fromFixGaps?: boolean) => {
         const state = refState.current!;
-        const { sizes, indexByKey, sizesKnown, data, rowHeights } = state;
+        const { sizes, indexByKey, sizesKnown, data, rowHeights, startBuffered, endBuffered } = state;
         if (!data) {
             return;
         }
@@ -1365,9 +1432,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        if (needsCalculate) {
-            // TODO: Could this be optimized to only calculate items in view that have changed?
+        // We can skip calculating items in view if they have already gone out of view. This can happen on slow
+        // devices or when the list is scrolled quickly.
+        const isInView = index >= startBuffered && index <= endBuffered;
+
+        if (!fromFixGaps && needsCalculate && isInView) {
             const scrollVelocity = state.scrollVelocity;
+            let didCalculate = false;
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || state.numPendingInitialLayout < 0)
@@ -1389,7 +1460,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 } else {
                     // Otherwise this action is likely from a single item changing so it should run immediately
                     calculateItemsInView();
+                    didCalculate = true;
                 }
+            }
+
+            // If this did not trigger a full calculate we should fix any gaps/overlaps
+            if (!didCalculate) {
+                fixGaps();
             }
         }
     }, []);
