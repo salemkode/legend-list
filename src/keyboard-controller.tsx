@@ -4,7 +4,7 @@ import type { AnimatedLegendList as ReanimatedLegendList } from "@legendapp/list
 // biome-ignore lint/style/useImportType: Leaving this out makes it crash in some environments
 import * as React from "react";
 import { type ForwardedRef, forwardRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { type Insets, StyleSheet } from "react-native";
 import { useKeyboardHandler } from "react-native-keyboard-controller";
 import { runOnJS } from "react-native-reanimated";
 
@@ -22,7 +22,12 @@ export const LegendList = typedForwardRef(function LegendList<
         | typeof AnimatedLegendList
         | typeof ReanimatedLegendList = typeof LegendListBase,
 >(props: LegendListProps<ItemT> & { LegendList?: ListT }, forwardedRef: ForwardedRef<LegendListRef>) {
-    const { LegendList: LegendListProp, style: styleProp, ...rest } = props;
+    const {
+        LegendList: LegendListProp,
+        style: styleProp,
+        scrollIndicatorInsets: scrollIndicatorInsetsProp,
+        ...rest
+    } = props;
     const [padding, setPadding] = useState(0);
 
     // Define this function outside the worklet
@@ -41,7 +46,13 @@ export const LegendList = typedForwardRef(function LegendList<
 
     const styleFlattened = StyleSheet.flatten(styleProp) || {};
     const style = { ...styleFlattened, paddingTop: padding + ((styleFlattened.paddingTop as number) || 0) };
+    const scrollIndicatorInsets: Insets = scrollIndicatorInsetsProp ? { ...scrollIndicatorInsetsProp } : {};
+    if (!props.horizontal) {
+        scrollIndicatorInsets.top = (scrollIndicatorInsets.top || 0) + padding;
+    }
 
-    // @ts-expect-error TODO: Fix this type
-    return <LegendListComponent {...rest} style={style} ref={forwardedRef} />;
+    return (
+        // @ts-expect-error TODO: Fix this type
+        <LegendListComponent {...rest} style={style} scrollIndicatorInsets={scrollIndicatorInsets} ref={forwardedRef} />
+    );
 });
