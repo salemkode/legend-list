@@ -36,6 +36,7 @@ export const Container = <ItemT,>({
     const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
+    const ref = useRef<View>(null);
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
@@ -98,7 +99,6 @@ export const Container = <ItemT,>({
         }
     };
 
-    const ref = useRef<View>(null);
     if (isNewArchitecture) {
         // New architecture supports unstable_getBoundingClientRect for getting layout synchronously
         useLayoutEffect(() => {
@@ -134,10 +134,10 @@ export const Container = <ItemT,>({
         }, [itemKey]);
     }
 
-    const contextValue = useMemo(
-        () => ({ containerId: id, itemKey, index: index!, value: data }),
-        [id, itemKey, index, data],
-    );
+    const contextValue = useMemo(() => {
+        ctx.viewRefs.set(id, ref);
+        return { containerId: id, itemKey, index: index!, value: data };
+    }, [id, itemKey, index, data]);
 
     const contentFragment = (
         <React.Fragment key={recycleItems ? undefined : itemKey}>
