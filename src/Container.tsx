@@ -3,12 +3,9 @@ import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } fr
 import { Text } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
-import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE } from "./constants";
+import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
 import { use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
-
-// @ts-expect-error nativeFabricUIManager is not defined in the global object types
-const isNewArchitecture = global.nativeFabricUIManager != null;
 
 export const Container = <ItemT,>({
     id,
@@ -103,7 +100,7 @@ export const Container = <ItemT,>({
         }
     };
 
-    if (isNewArchitecture) {
+    if (IsNewArchitecture) {
         // New architecture supports unstable_getBoundingClientRect for getting layout synchronously
         useLayoutEffect(() => {
             if (itemKey !== undefined) {

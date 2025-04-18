@@ -16,7 +16,7 @@ import {} from "./ContextContainer";
 import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
-import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
+import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -1465,7 +1465,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             // If this did not trigger a full calculate we should fix any gaps/overlaps
-            if (!didCalculate) {
+            if (!didCalculate && IsNewArchitecture) {
                 fixGaps();
             }
         }
