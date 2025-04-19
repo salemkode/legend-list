@@ -1,9 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LegendList, type LegendListRenderItemProps, useRecyclingState, useViewabilityAmount } from "@legendapp/list";
-import { useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { Animated, Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import Swipeable, { type SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { ContextContainer } from "../../src/ContextContainer";
 import { useAnimatedValue } from "../../src/useAnimatedValue";
 
 export interface Item {
@@ -103,7 +104,8 @@ export const ItemCard = ({ item, index }: LegendListRenderItemProps<Item>) => {
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled
-    const [isExpanded, setIsExpanded] = useRecyclingState(() => false);
+    const isInLegendList = !!useContext(ContextContainer);
+    const [isExpanded, setIsExpanded] = isInLegendList ? useRecyclingState(() => false) : useState(false);
 
     const swipeableState = useRef(false);
 
