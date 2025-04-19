@@ -1436,7 +1436,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // devices or when the list is scrolled quickly.
         const isInView = index >= startBuffered && index <= endBuffered;
 
-        if (!fromFixGaps && needsCalculate && isInView) {
+        if (needsUpdateContainersDidLayout || (!fromFixGaps && needsCalculate && isInView)) {
             const scrollVelocity = state.scrollVelocity;
             let didCalculate = false;
             if (
