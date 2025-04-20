@@ -12,7 +12,7 @@ import {
     StyleSheet,
     type ViewStyle,
 } from "react-native";
-import {} from "./ContextContainer";
+import { warnDevOnce } from "src/helpers";
 import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
@@ -23,11 +23,8 @@ import type {
     ColumnWrapperStyle,
     InternalState,
     LegendListProps,
-    LegendListRecyclingState,
     LegendListRef,
     ScrollState,
-    ViewabilityAmountCallback,
-    ViewabilityCallback,
 } from "./types";
 import { typedForwardRef } from "./types";
 import { useCombinedRef } from "./useCombinedRef";
@@ -249,7 +246,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     id: getId(0),
                 };
             } else {
-                console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
+                __DEV__ &&
+                    warnDevOnce(
+                        "maintainVisibleContentPosition",
+                        "[legend-list] maintainVisibleContentPosition was not able to find an anchor element",
+                    );
             }
         }
         set$(ctx, "scrollAdjust", 0);
@@ -1218,6 +1219,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
         refState.current.lastBatchingAction = Date.now();
         if (!keyExtractorProp && !isFirst && didDataChange) {
+            __DEV__ &&
+                warnDevOnce(
+                    "keyExtractor",
+                    "Changing data without a keyExtractor can cause slow performance and resetting scroll. If your list data can change you should use a keyExtractor with a unique id for best performance and behavior.",
+                );
             // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
             refState.current.sizes.clear();
             refState.current.positions.clear();
@@ -1259,30 +1265,34 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // TODO1.0: Remove these before 1.0, make sure docs have them as separate imports
         const useViewability = __DEV__
-            ? (configId: string, callback: ViewabilityCallback) => {
-                  console.warn(
-                      `[legend-list] useViewability has been moved from a render prop to a regular import: import { useViewability } from "@legendapp/list";`,
+            ? () => {
+                  warnDevOnce(
+                      "useViewability",
+                      `useViewability has been moved from a render prop to a regular import: import { useViewability } from "@legendapp/list";`,
                   );
               }
             : undefined;
         const useViewabilityAmount = __DEV__
-            ? (callback: ViewabilityAmountCallback) => {
-                  console.warn(
-                      `[legend-list] useViewabilityAmount has been moved from a render prop to a regular import: import { useViewabilityAmount } from "@legendapp/list";`,
+            ? () => {
+                  warnDevOnce(
+                      "useViewabilityAmount",
+                      `useViewabilityAmount has been moved from a render prop to a regular import: import { useViewabilityAmount } from "@legendapp/list";`,
                   );
               }
             : undefined;
         const useRecyclingEffect = __DEV__
-            ? (effect: (info: LegendListRecyclingState<unknown>) => void | (() => void)) => {
-                  console.warn(
-                      `[legend-list] useRecyclingEffect has been moved from a render prop to a regular import: import { useRecyclingEffect } from "@legendapp/list";`,
+            ? () => {
+                  warnDevOnce(
+                      "useRecyclingEffect",
+                      `useRecyclingEffect has been moved from a render prop to a regular import: import { useRecyclingEffect } from "@legendapp/list";`,
                   );
               }
             : undefined;
         const useRecyclingState = __DEV__
-            ? (valueOrFun: ((info: LegendListRecyclingState<unknown>) => any) | any) => {
-                  console.warn(
-                      `[legend-list] useRecyclingState has been moved from a render prop to a regular import: import { useRecyclingState } from "@legendapp/list";`,
+            ? () => {
+                  warnDevOnce(
+                      "useRecyclingState",
+                      `useRecyclingState has been moved from a render prop to a regular import: import { useRecyclingState } from "@legendapp/list";`,
                   );
               }
             : undefined;
@@ -1494,7 +1504,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const isWidthZero = event.nativeEvent.layout.width === 0;
             const isHeightZero = event.nativeEvent.layout.height === 0;
             if (isWidthZero || isHeightZero) {
-                console.warn(
+                warnDevOnce(
+                    "height0",
                     `[legend-list] List ${
                         isWidthZero ? "width" : "height"
                     } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
