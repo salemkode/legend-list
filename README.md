@@ -1,24 +1,20 @@
 # Legend List
 
-**Legend List** is a high-performance list component for **React Native**, written purely in Javascript / Typescript (no native dependencies). It aims to be a drop-in replacement for `FlatList` and/or `FlashList` with better performance, especially when handling dynamically sized items.
-
----
-
-## ⚠️ Caution: Experimental ⚠️
-
-This is an early release to test and gather feedback. It's not used in production yet and needs more work to reach parity with FlatList (and FlashList) features.
+**Legend List** is a high-performance list component for **React Native**, written purely in Typescript with no native dependencies. It is a drop-in replacement for `FlatList` and `FlashList` with better performance, especially when handling dynamically sized items.
 
 ---
 
 ## 🤔 Why Legend List?
 
-*   **Performance:** Designed from the ground up for speed, aiming to outperform `FlatList` in common scenarios.
+*   **Performance:** Designed from the ground up and heavily optimized for performance, it is faster than FlatList and other list libraries in most scenarios.
 *   **Dynamic Item Sizes:** Natively supports items with varying heights without performance hits.
-*   **Drop-in Potential:** Aims for API compatibility with `FlatList` for easier migration.
-*   **Pure JS/TS:** No native module linking required, ensuring easier integration and compatibility across platforms.
+*   **Drop-in Replacement:** API compatibility with `FlatList` and `FlashList` for easier migration.
+*   **100% JS:** No native module linking required, ensuring easy integration and compatibility across platforms.
 *   **Lightweight:** Our goal is to keep LegendList as small of a dependency as possible. For more advanced use cases, we plan on supporting optional plugins. This ensures that we keep the package size as small as possible.
+*   **Bidirectional infinite lists:** Supports infinite scrolling in both directions with no flashes or scroll jumping
+*   **Chat UIs without inverted:** Chat UIs can align their content to the bottom and maintain scroll at end, so that the list doesn't need to be inverted, which causes weird behavior (in animations, etc...)
 
-For more information, listen to the podcast we had on [React Native Radio](https://infinite.red/react-native-radio/rnr-325-legend-list-with-jay-meistrich)!
+For more information, listen to the Legend List episode of the [React Native Radio Podcast](https://infinite.red/react-native-radio/rnr-325-legend-list-with-jay-meistrich) and the [livestream with Expo](https://www.youtube.com/watch?v=XpZMveUCke8).
 
 ---
 ## ✨ Additional Features
@@ -32,7 +28,7 @@ Beyond standard `FlatList` capabilities:
 
 ---
 
-## 📚 Documentation (In Progress)
+## 📚 Documentation
 
 For comprehensive documentation, guides, and the full API reference, please visit:
 
@@ -56,7 +52,7 @@ yarn add @legendapp/list
 ```
 
 ### Example
-```ts
+```tsx
 import React, { useRef } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import { LegendList, LegendListRef, LegendListRenderItemProps } from "@legendapp/list";
@@ -70,7 +66,6 @@ interface UserData {
 }
 
 const LegendListExample = () => {
-
     // Optional: Ref for accessing list methods (e.g., scrollTo)
     const listRef = useRef<LegendListRef | null>(null);
 
@@ -84,21 +79,17 @@ const LegendListExample = () => {
     };
 
     return (
-        <LegendList<UserData>
+        <LegendList
             // Required Props
             data={data}
             renderItem={renderItem}
+            estimatedItemSize={70}
 
-            // Strongly Recommended Prop (Improves performance)
+            // Recommended props (Improves performance)
             keyExtractor={(item) => item.id}
-
-            // Optional Props
-            ref={listRef}
             recycleItems={true}
-            maintainScrollAtEnd={false}
-            maintainScrollAtEndThreshold={1}
 
-            // See docs for all available props!
+            ref={listRef}
         />
     );
 };
@@ -117,15 +108,20 @@ export default LegendListExample;
 
 1. `cd example`
 2. `npm i`
-3. `npm run bootstrap-start`
+3. `npm run ios`
 
 ## PRs gladly accepted!
 
-There's not a lot of code here so hopefully it's easy to contribute. If you want to add a missing feature or fix a bug please post an issue to see if development is already in progress so we can make sure to not duplicate work 😀.
+There's not a ton of code so hopefully it's easy to contribute. If you want to add a missing feature or fix a bug please post an issue to see if development is already in progress so we can make sure to not duplicate work 😀.
 
-## TODO list
+## Upcoming Roadmap
 
-See [Road to v1](https://github.com/LegendApp/legend-list/issues/28)
+- [] Column spans
+- [] overrideItemLayout
+- [] Sticky headers
+- [] Masonry layout
+- [] getItemType
+- [] React for web (not React Native) implementation
 
 ## Community
 
