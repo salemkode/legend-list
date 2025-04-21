@@ -85,7 +85,6 @@ const LegendListExample = () => {
             // Required Props
             data={data}
             renderItem={renderItem}
-            estimatedItemSize={70}
 
             // Recommended props (Improves performance)
             keyExtractor={(item) => item.id}
