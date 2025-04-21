@@ -213,6 +213,13 @@ export type LegendListPropsBase<
     renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
 
     /**
+     * This will log a suggested estimatedItemSize.
+     * @required
+     * @default false
+     */
+    suggestEstimatedItemSize?: boolean;
+
+    /**
      * Configuration for determining item viewability.
      */
     viewabilityConfig?: ViewabilityConfig;
@@ -253,7 +260,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
-    sizesKnown: Map<string, number> | undefined;
+    sizesKnown: Map<string, number>;
     pendingAdjust: number;
     isStartReached: boolean;
     isEndReached: boolean;
@@ -294,6 +301,13 @@ export interface InternalState {
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
     scrollingToOffset?: number | undefined;
+    averageSizes: Record<
+        string,
+        {
+            num: number;
+            avg: number;
+        }
+    >;
     onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 }
 

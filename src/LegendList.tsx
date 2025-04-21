@@ -84,6 +84,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         renderItem,
         estimatedItemSize,
         getEstimatedItemSize,
+        suggestEstimatedItemSize,
         ListEmptyComponent,
         onItemSizeChanged,
         scrollEventThrottle,
@@ -145,17 +146,37 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return `${ret}`;
     };
 
-    const getItemSize = (key: string, index: number, data: T) => {
-        const sizeKnown = refState.current!.sizes.get(key)!;
+    const getItemSize = (key: string, index: number, data: T, useAverageSize = false) => {
+        const state = refState.current!;
+        const sizeKnown = state.sizesKnown.get(key)!;
+        // If we already know the size, use it
         if (sizeKnown !== undefined) {
             return sizeKnown;
         }
 
-        const size =
-            (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
-        // TODO: I don't think I like this setting sizes when it's not really known, how to do
-        // that better and support viewability checking sizes
-        refState.current!.sizes.set(key, size);
+        // Get average size of rendered items if we don't know the size
+        let size: number | undefined;
+        if (size === undefined && useAverageSize) {
+            // TODO: Hook this up to actual item type later once we have item types
+            const itemType = "";
+            const average = state.averageSizes[itemType];
+            if (average) {
+                size = average.avg;
+            }
+        }
+
+        const sizePrevious = state.sizesKnown.get(key)!;
+        if (sizePrevious !== undefined) {
+            return sizePrevious;
+        }
+
+        // Get estimated size if we don't have an average size
+        if (size === undefined) {
+            size = getEstimatedItemSize ? getEstimatedItemSize(index, data) : (estimatedItemSize ?? DEFAULT_ITEM_SIZE);
+        }
+
+        // Save to rendered sizes
+        state.sizes.set(key, size);
         return size;
     };
     const calculateOffsetForIndex = (index = initialScrollIndex) => {
@@ -229,6 +250,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             numPendingInitialLayout: 0,
             queuedCalculateItemsInView: 0,
             lastBatchingAction: Date.now(),
+            averageSizes: {},
             onScroll: onScrollProp,
         };
 
@@ -400,7 +422,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return rowHeight;
     };
 
-    // this function rebuilds it's data on each addTotalSize
+    // this function rebuilds its data on each addTotalSize
     // this can be further optimized either by rebuilding part that's changed or by moving achorElement up, keeping number of function iterations minimal
     const buildElementPositionsBelowAnchor = (): Map<string, number> => {
         const state = refState.current!;
@@ -458,7 +480,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // This lets use fix any gaps/overlaps that might be visible before the useLayoutEffects fire for each container.
         for (let i = 0; i < numContainers; i++) {
             const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-            const isSizeKnown = refState.current!.sizesKnown!.get(itemKey);
+            const isSizeKnown = state.sizesKnown.get(itemKey);
             if (itemKey && !isSizeKnown) {
                 const containerRef = ctx.viewRefs.get(i);
                 if (containerRef) {
@@ -609,7 +631,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const top = newPosition || positions.get(id)!;
 
             if (top !== undefined) {
-                const size = getItemSize(id, i, data[i]);
+                const size = getItemSize(id, i, data[i], /*useAverageSize*/ true);
                 const bottom = top + size;
                 if (bottom > scroll - scrollBuffer) {
                     loopStart = i;
@@ -644,7 +666,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // scan data forwards
         for (let i = Math.max(0, loopStart); i < data!.length; i++) {
             const id = getId(i)!;
-            const size = getItemSize(id, i, data[i]);
+            const size = getItemSize(id, i, data[i], /*useAverageSize*/ true);
 
             maxSizeInRow = Math.max(maxSizeInRow, size);
 
@@ -863,7 +885,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let areAllKnown = true;
             for (let i = startBuffered!; areAllKnown && i <= endBuffered!; i++) {
                 const key = getId(i)!;
-                areAllKnown &&= state.sizesKnown!.has(key);
+                areAllKnown &&= state.sizesKnown.has(key);
             }
             if (areAllKnown) {
                 setDidLayout();
@@ -1077,6 +1099,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     };
 
     const calcTotalSizesAndPositions = ({ forgetPositions = false }) => {
+        const state = refState.current;
         let totalSize = 0;
         let totalSizeBelowIndex = 0;
         const indexByKey = new Map();
@@ -1085,7 +1108,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let maxSizeInRow = 0;
         const numColumns = peek$<number>(ctx, "numColumns") ?? numColumnsProp;
 
-        if (!refState.current) {
+        if (!state) {
             return;
         }
 
@@ -1101,51 +1124,41 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             indexByKey.set(key, i);
             // save positions for items that are still in the list at the same indices
             // throw out everything else
-            if (
-                !forgetPositions &&
-                refState.current.positions.get(key) != null &&
-                refState.current.indexByKey.get(key) === i
-            ) {
-                newPositions.set(key, refState.current.positions.get(key)!);
+            if (!forgetPositions && state.positions.get(key) != null && state.indexByKey.get(key) === i) {
+                newPositions.set(key, state.positions.get(key)!);
             }
         }
         // getAnchorElementIndex needs indexByKey, build it first
-        refState.current.indexByKey = indexByKey;
-        refState.current.positions = newPositions;
+        state.indexByKey = indexByKey;
+        state.positions = newPositions;
 
         if (!forgetPositions && !isFirst) {
             // check if anchorElement is still in the list
             if (maintainVisibleContentPosition) {
-                if (
-                    refState.current.anchorElement == null ||
-                    indexByKey.get(refState.current.anchorElement.id) == null
-                ) {
+                if (state.anchorElement == null || indexByKey.get(state.anchorElement.id) == null) {
                     if (dataProp.length) {
                         const newAnchorElement = {
                             coordinate: 0,
                             id: getId(0),
                         };
-                        refState.current.anchorElement = newAnchorElement;
-                        refState.current.belowAnchorElementPositions?.clear();
+                        state.anchorElement = newAnchorElement;
+                        state.belowAnchorElementPositions?.clear();
                         // reset scroll to 0 and schedule rerender
                         scrollTo(0, false);
                         setTimeout(() => {
                             calculateItemsInView();
                         }, 0);
                     } else {
-                        refState.current.startBufferedId = undefined;
+                        state.startBufferedId = undefined;
                     }
                 }
             } else {
                 // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
-                if (
-                    refState.current.startBufferedId != null &&
-                    newPositions.get(refState.current.startBufferedId) == null
-                ) {
+                if (state.startBufferedId != null && newPositions.get(state.startBufferedId) == null) {
                     if (dataProp.length) {
-                        refState.current.startBufferedId = getId(0);
+                        state.startBufferedId = getId(0);
                     } else {
-                        refState.current.startBufferedId = undefined;
+                        state.startBufferedId = undefined;
                     }
                     // reset scroll to 0 and schedule rerender
                     scrollTo(0, false);
@@ -1175,12 +1188,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        // If have any height leftover from a row that doesn't extend through the last column
-        // add it to total size
         if (maxSizeInRow > 0) {
+            // If have any height leftover from a row that doesn't extend through the last column
+            // add it to total size
             totalSize += maxSizeInRow;
         }
-        const state = refState.current;
         state.ignoreScrollFromCalcTotal = true;
         requestAnimationFrame(() => {
             state.ignoreScrollFromCalcTotal = false;
@@ -1361,7 +1373,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateItemSize = useCallback((itemKey: string, size: number, fromFixGaps?: boolean) => {
         const state = refState.current!;
-        const { sizes, indexByKey, sizesKnown, data, rowHeights, startBuffered, endBuffered } = state;
+        const { sizes, indexByKey, sizesKnown, data, rowHeights, startBuffered, endBuffered, averageSizes } = state;
         if (!data) {
             return;
         }
@@ -1386,7 +1398,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        sizesKnown?.set(itemKey, size);
+        sizesKnown!.set(itemKey, size);
+
+        // TODO: Hook this up to actual item type later once we have item types
+        const itemType = "";
+        let averages = averageSizes[itemType];
+        if (!averages) {
+            averages = averageSizes[itemType] = {
+                num: 0,
+                avg: 0,
+            };
+        }
+        averages.avg = (averages.avg * averages.num + size) / (averages.num + 1);
+        averages.num++;
 
         if (!prevSize || Math.abs(prevSize - size) > 0.5) {
             let diff: number;
@@ -1405,20 +1429,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 diff = size - prevSize;
             }
 
-            if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
+            if (__DEV__ && suggestEstimatedItemSize) {
                 if (state.timeoutSizeMessage) {
                     clearTimeout(state.timeoutSizeMessage);
                 }
 
                 state.timeoutSizeMessage = setTimeout(() => {
                     state.timeoutSizeMessage = undefined;
-                    let total = 0;
-                    let num = 0;
-                    for (const [_, size] of sizesKnown!) {
-                        num++;
-                        total += size;
-                    }
-                    const avg = Math.round(total / num);
+                    const num = sizesKnown.size;
+                    const avg = state.averageSizes[""].avg;
 
                     console.warn(
                         `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
