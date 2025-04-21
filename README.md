@@ -21,10 +21,11 @@ For more information, listen to the Legend List episode of the [React Native Rad
 
 Beyond standard `FlatList` capabilities:
 
-*   `maintainScrollAtEnd`: (boolean) If `true` and the user is scrolled near the bottom (within `maintainScrollAtEndThreshold * screen height`), the list automatically scrolls to the end when items are added or heights change. Ideal for chat interfaces.
 *   `recycleItems`: (boolean) Toggles item component recycling.
     *   `true`: Reuses item components for optimal performance. Be cautious if your item components contain local state, as it might be reused unexpectedly.
     *   `false` (default): Creates new item components every time. Less performant but safer if items have complex internal state.
+*   `maintainScrollAtEnd`: (boolean) If `true` and the user is scrolled near the bottom (within `maintainScrollAtEndThreshold * screen height`), the list automatically scrolls to the end when items are added or heights change. Useful for chat interfaces.
+*   `alignItemsAtEnd`: (boolean) Useful for chat UIs, content smaller than the View will be aligned to the bottom of the list.
 
 ---
 
@@ -53,10 +54,9 @@ yarn add @legendapp/list
 
 ### Example
 ```tsx
-import React, { useRef } from "react";
-import { View, Image, Text, StyleSheet } from "react-native";
-import { LegendList, LegendListRef, LegendListRenderItemProps } from "@legendapp/list";
-import { userData } from "../userData"; // Assuming userData is defined elsewhere
+import React, { useRef } from "react"
+import { View, Image, Text, StyleSheet } from "react-native"
+import { LegendList, LegendListRef, LegendListRenderItemProps } from "@legendapp/list"
 
 // Define the type for your data items
 interface UserData {
@@ -67,16 +67,18 @@ interface UserData {
 
 const LegendListExample = () => {
     // Optional: Ref for accessing list methods (e.g., scrollTo)
-    const listRef = useRef<LegendListRef | null>(null);
+    const listRef = useRef<LegendListRef | null>(null)
+
+    const data = []
 
     const renderItem = ({ item }: LegendListRenderItemProps<UserData>) => {
         return (
-            <View style={styles.itemContainer}>
-                <Image style={styles.profilePic} source={{ uri: item.photoUri }} />
-                <Text style={styles.name}>{item.name}</Text>
+            <View>
+                <Image source={{ uri: item.photoUri }} />
+                <Text>{item.name}</Text>
             </View>
-        );
-    };
+        )
+    }
 
     return (
         <LegendList
@@ -91,10 +93,10 @@ const LegendListExample = () => {
 
             ref={listRef}
         />
-    );
-};
+    )
+}
 
-export default LegendListExample;
+export default LegendListExample
 
 ```
 
@@ -102,13 +104,14 @@ export default LegendListExample;
 
 ## How to Build
 
-`npm run build` will build the package to the `dist` folder.
+1. `bun i`
+2. `bun run build` will build the package to the `dist` folder.
 
 ## Running the Example
 
 1. `cd example`
-2. `npm i`
-3. `npm run ios`
+2. `bun i`
+3. `bun run ios`
 
 ## PRs gladly accepted!
 
@@ -121,7 +124,7 @@ There's not a ton of code so hopefully it's easy to contribute. If you want to a
 - [] Sticky headers
 - [] Masonry layout
 - [] getItemType
-- [] React for web (not React Native) implementation
+- [] React DOM implementation
 
 ## Community
 

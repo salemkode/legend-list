@@ -24,7 +24,7 @@ const data: ListElement[] = [
         url: "/chat-example",
     },
     {
-        title: "🚧🚧🚧Infinite chat🚧🚧🚧",
+        title: "Infinite chat",
         url: "/chat-infinite",
     },
     {

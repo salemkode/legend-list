@@ -49,7 +49,6 @@ const defaultChatMessages: Message[] = [
     },
 ];
 
-// TODO: under construction
 const ChatExample = () => {
     const [messages, setMessages] = useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = useState("");
