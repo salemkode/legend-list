@@ -130,5 +130,5 @@ export function useRecyclingState<ItemT>(valueOrFun: ((info: LegendListRecycling
         [triggerLayout],
     );
 
-    return [refState.current.value, setState];
+    return [refState.current.value, setState] as const;
 }
