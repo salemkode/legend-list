@@ -968,9 +968,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             // TODO: This kinda works too, but with more of a flash
             requestAnimationFrame(() => {
+                state.maintainingScrollAtEnd = true;
                 refScroller.current?.scrollToEnd({
                     animated,
                 });
+                setTimeout(
+                    () => {
+                        state.maintainingScrollAtEnd = false;
+                    },
+                    animated ? 500 : 0,
+                );
             });
 
             return true;
@@ -1012,9 +1019,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!refState.current) {
             return;
         }
-        const { queuedInitialLayout, scrollLength, scroll } = refState.current;
+        const { queuedInitialLayout, scrollLength, scroll, maintainingScrollAtEnd } = refState.current;
         const contentSize = getContentSize(ctx);
-        if (contentSize > 0 && queuedInitialLayout) {
+        if (contentSize > 0 && queuedInitialLayout && !maintainingScrollAtEnd) {
             // Check if at end
             const distanceFromEnd = contentSize - scroll - scrollLength;
             const distanceFromEndAbs = Math.abs(distanceFromEnd);
@@ -1091,9 +1098,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (!didMaintainScrollAtEnd && dataProp.length > state.data.length) {
                     state.isEndReached = false;
                 }
+
+                if (!didMaintainScrollAtEnd) {
                 checkAtTop();
                 checkAtBottom();
             }
+        }
         }
     };
 
