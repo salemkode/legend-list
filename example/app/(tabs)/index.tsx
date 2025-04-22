@@ -43,10 +43,7 @@ const data: ListElement[] = [
         title: "Columns",
         url: "/columns",
     },
-    {
-        title: "Cards FlashList",
-        url: "/cards-flashlist",
-    },
+
     {
         title: "Cards Columns",
         url: "/cards-columns",
@@ -90,6 +87,14 @@ const data: ListElement[] = [
     {
         title: "Chat keyboard",
         url: "/chat-keyboard",
+    },
+    {
+        title: "Cards FlashList",
+        url: "/cards-flashlist",
+    },
+    {
+        title: "Cards no recycle",
+        url: "/cards-no-recycle",
     },
     {
         title: "Cards FlatList",
