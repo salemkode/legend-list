@@ -16,7 +16,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { warnDevOnce } from "./helpers";
+import { roundSize, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -161,7 +161,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const itemType = "";
             const average = state.averageSizes[itemType];
             if (average) {
-                size = average.avg;
+                size = roundSize(average.avg);
             }
         }
 

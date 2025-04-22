@@ -10,3 +10,7 @@ export function warnDevOnce(id: string, text: string) {
         console.warn(`[legend-list] ${text}`);
     }
 }
+
+export function roundSize(size: number) {
+    return Math.floor(size * 8) / 8; // Round to nearest quater pixel to avoid accumulating rounding errors
+}
