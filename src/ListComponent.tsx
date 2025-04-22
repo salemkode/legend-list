@@ -17,7 +17,7 @@ import { useValue$ } from "./useValue$";
 
 interface ListComponentProps<ItemT>
     extends Omit<
-        LegendListProps<ItemT>,
+        LegendListProps<ItemT> & { scrollEventThrottle: number | undefined },
         | "data"
         | "estimatedItemSize"
         | "drawDistance"

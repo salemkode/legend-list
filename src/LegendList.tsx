@@ -87,7 +87,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         suggestEstimatedItemSize,
         ListEmptyComponent,
         onItemSizeChanged,
-        scrollEventThrottle,
         refScrollView,
         waitForInitialLayout = true,
         extraData,
@@ -1726,7 +1725,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 alignItemsAtEnd={alignItemsAtEnd}
                 ListEmptyComponent={dataProp.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
-                scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
+                scrollEventThrottle={Platform.OS === "web" ? 16 : undefined}
                 waitForInitialLayout={waitForInitialLayout}
                 refreshControl={
                     refreshControl ??

@@ -248,7 +248,10 @@ export type AnchoredPosition = {
     top: number; // used for calculating the position of the container
 };
 
-export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
+export type LegendListProps<ItemT> = LegendListPropsBase<
+    ItemT,
+    Omit<ComponentProps<typeof ScrollView>, "scrollEventThrottle">
+>;
 
 export interface InternalState {
     anchorElement?: {
