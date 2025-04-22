@@ -148,7 +148,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const getItemSize = (key: string, index: number, data: T, useAverageSize = false) => {
         const state = refState.current!;
         const sizeKnown = state.sizesKnown.get(key)!;
-        // If we already know the size, use it
+        // If size has been measured, use it
         if (sizeKnown !== undefined) {
             return sizeKnown;
         }
@@ -168,11 +168,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (average) {
                 size = roundSize(average.avg);
             }
-        }
-
-        const sizePrevious = state.sizesKnown.get(key)!;
-        if (sizePrevious !== undefined) {
-            return sizePrevious;
         }
 
         // Get estimated size if we don't have an average size
