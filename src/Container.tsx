@@ -4,6 +4,7 @@ import { Text } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
+import { roundSize } from "./helpers";
 import { use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
 
@@ -91,7 +92,7 @@ export const Container = <ItemT,>({
     const onLayout = (event: LayoutChangeEvent) => {
         if (itemKey !== undefined) {
             const layout = event.nativeEvent.layout;
-            const size = Math.floor(layout[horizontal ? "width" : "height"] * 8) / 8; // Round to nearest quater pixel to avoid accumulating rounding errors
+            const size = roundSize(layout[horizontal ? "width" : "height"]);
             refLastSize.current = size;
             updateItemSize(itemKey, size);
 
