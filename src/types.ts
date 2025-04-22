@@ -38,10 +38,8 @@ export type LegendListPropsBase<
     drawDistance?: number;
 
     /**
-     * Estimated size of each item in pixels; sufficient for most cases. If
-     * you leave this blank, a warning should appear and you will get
-     * a suggested size.
-     * @required
+     * Estimated size of each item in pixels, a hint for the first render. After some
+     * items are rendered, the average size of rendered items will be used instead.
      * @default undefined
      */
     estimatedItemSize?: number;

@@ -1,10 +1,10 @@
-# Legend List 
+# Legend List
 
 **Legend List** is a high-performance list component for **React Native**, written purely in Javascript / Typescript (no native dependencies). It aims to be a drop-in replacement for `FlatList` and/or `FlashList` with better performance, especially when handling dynamically sized items.
 
 ---
 
-## ⚠️ Caution: Experimental ⚠️ 
+## ⚠️ Caution: Experimental ⚠️
 
 This is an early release to test and gather feedback. It's not used in production yet and needs more work to reach parity with FlatList (and FlashList) features.
 
@@ -13,7 +13,7 @@ This is an early release to test and gather feedback. It's not used in productio
 ## 🤔 Why Legend List?
 
 *   **Performance:** Designed from the ground up for speed, aiming to outperform `FlatList` in common scenarios.
-*   **Dynamic Item Sizes:** Natively supports items with varying heights without performance hits. Just provide an `estimatedItemSize`.
+*   **Dynamic Item Sizes:** Natively supports items with varying heights without performance hits.
 *   **Drop-in Potential:** Aims for API compatibility with `FlatList` for easier migration.
 *   **Pure JS/TS:** No native module linking required, ensuring easier integration and compatibility across platforms.
 *   **Lightweight:** Our goal is to keep LegendList as small of a dependency as possible. For more advanced use cases, we plan on supporting optional plugins. This ensures that we keep the package size as small as possible.
@@ -21,7 +21,7 @@ This is an early release to test and gather feedback. It's not used in productio
 For more information, listen to the podcast we had on [React Native Radio](https://infinite.red/react-native-radio/rnr-325-legend-list-with-jay-meistrich)!
 
 ---
-## ✨ Additional Features 
+## ✨ Additional Features
 
 Beyond standard `FlatList` capabilities:
 
@@ -57,7 +57,7 @@ yarn add @legendapp/list
 
 ### Example
 ```ts
-import React, { useRef } from "react"; 
+import React, { useRef } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import { LegendList, LegendListRef, LegendListRenderItemProps } from "@legendapp/list";
 import { userData } from "../userData"; // Assuming userData is defined elsewhere
@@ -87,17 +87,16 @@ const LegendListExample = () => {
         <LegendList<UserData>
             // Required Props
             data={data}
-            renderItem={renderItem} 
-            estimatedItemSize={70} 
+            renderItem={renderItem}
 
             // Strongly Recommended Prop (Improves performance)
-            keyExtractor={(item) => item.id} 
+            keyExtractor={(item) => item.id}
 
             // Optional Props
-            ref={listRef} 
-            recycleItems={true}   
-            maintainScrollAtEnd={false} 
-            maintainScrollAtEndThreshold={1} 
+            ref={listRef}
+            recycleItems={true}
+            maintainScrollAtEnd={false}
+            maintainScrollAtEndThreshold={1}
 
             // See docs for all available props!
         />
