@@ -283,6 +283,7 @@ export interface InternalState {
     scrollPrevTime: number;
     scrollVelocity: number;
     scrollAdjustHandler: ScrollAdjustHandler;
+    maintainingScrollAtEnd?: boolean;
     totalSize: number;
     totalSizeBelowAnchor: number;
     timeouts: Set<number>;

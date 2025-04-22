@@ -28,7 +28,7 @@ const defaultChatMessages: Message[] = [
 const ChatExample = () => {
     const [messages, setMessages] = useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = useState("");
-    const headerHeight = Platform.OS === "ios" ? useHeaderHeight() : 0;
+    const headerHeight = Platform.OS === "ios" ? useHeaderHeight() : 80;
 
     const sendMessage = () => {
         const text = inputText || "Empty message";
@@ -54,7 +54,12 @@ const ChatExample = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={["bottom"]}>
-            <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={headerHeight}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior="position"
+                keyboardVerticalOffset={headerHeight}
+                contentContainerStyle={{ flex: 1 }}
+            >
                 <LegendList
                     data={messages}
                     contentContainerStyle={styles.contentContainer}

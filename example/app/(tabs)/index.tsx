@@ -49,6 +49,10 @@ const data: ListElement[] = [
         url: "/cards-columns",
     },
     {
+        title: "Chat keyboard",
+        url: "/chat-keyboard",
+    },
+    {
         title: "Movies FlashList",
         url: "/movies-flashlist",
     },
@@ -83,10 +87,6 @@ const data: ListElement[] = [
     {
         title: "Countries Reorder",
         url: "/countries-reorder",
-    },
-    {
-        title: "Chat keyboard",
-        url: "/chat-keyboard",
     },
     {
         title: "Cards FlashList",

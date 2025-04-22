@@ -105,7 +105,7 @@ const defaultChatMessages: Message[] = [
 const ChatExample = () => {
     const [messages, setMessages] = useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = useState("");
-    const headerHeight = Platform.OS === "ios" ? useHeaderHeight() : 0;
+    const headerHeight = Platform.OS === "ios" ? useHeaderHeight() : 56;
 
     const sendMessage = () => {
         const text = inputText || "Empty message";
