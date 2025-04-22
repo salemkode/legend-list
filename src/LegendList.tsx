@@ -153,8 +153,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return sizeKnown;
         }
 
-        // Get average size of rendered items if we don't know the size
         let size: number | undefined;
+
+        // Get estimated size per item if available
+        if (getEstimatedItemSize) {
+            size = getEstimatedItemSize(index, data);
+        }
+
+        // Get average size of rendered items if we don't know the size
         if (size === undefined && useAverageSize) {
             // TODO: Hook this up to actual item type later once we have item types
             const itemType = "";
@@ -171,7 +177,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Get estimated size if we don't have an average size
         if (size === undefined) {
-            size = getEstimatedItemSize ? getEstimatedItemSize(index, data) : (estimatedItemSize ?? DEFAULT_ITEM_SIZE);
+            size = estimatedItemSize ?? DEFAULT_ITEM_SIZE;
         }
 
         // Save to rendered sizes
@@ -1100,10 +1106,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 }
 
                 if (!didMaintainScrollAtEnd) {
-                checkAtTop();
-                checkAtBottom();
+                    checkAtTop();
+                    checkAtBottom();
+                }
             }
-        }
         }
     };
 
