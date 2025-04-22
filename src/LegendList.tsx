@@ -443,7 +443,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const fixGaps = useCallback(() => {
         const state = refState.current!;
         const { data, scrollLength, positions, startBuffered, endBuffered } = state!;
-        if (!data || scrollLength === 0) {
+
+        // TODO: Fix behavior with multiple columns and stop returning
+        const numColumns = peek$<number>(ctx, "numColumns");
+        if (!data || scrollLength === 0 || numColumns > 1) {
             return;
         }
         const numContainers = ctx.values.get("numContainers") as number;
