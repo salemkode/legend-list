@@ -917,7 +917,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 setTimeout(() => {
                     // Then reset it back to how it was
                     set$(ctx, "totalSizeWithScrollAdjust", prevTotalSize);
-                }, 0);
+                }, 16);
             }
 
             // Now set the padding
