@@ -956,21 +956,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const state = refState.current;
         // Run this only if scroll is at the bottom and after initial layout
         if (state?.isAtBottom && maintainScrollAtEnd && peek$(ctx, "containersDidLayout")) {
-            // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
-            // scrollRef.current?.setNativeProps({
-            //   contentContainerStyle: {
-            //     height:
-            //       visibleRange$.totalSize.get() + visibleRange$.topPad.get() + 48,
-            //   },
-            //   contentOffset: {
-            //     y:
-            //       visibleRange$.totalSize.peek() +
-            //       visibleRange$.topPad.peek() -
-            //       SCREEN_LENGTH +
-            //       48 * 3,
-            //   },
-            // });
-
             // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
             const paddingTop = peek$(ctx, "alignItemsPaddingTop");
             if (paddingTop > 0) {
@@ -978,7 +963,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 state.scroll = 0;
             }
 
-            // TODO: This kinda works too, but with more of a flash
             requestAnimationFrame(() => {
                 state.maintainingScrollAtEnd = true;
                 refScroller.current?.scrollToEnd({
