@@ -1,6 +1,6 @@
 {
     "name": "list-test",
-    "license": "0BSD",
+    "license": "MIT",
     "main": "expo-router/entry",
     "version": "1.0.0",
     "scripts": {

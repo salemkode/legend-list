@@ -136,7 +136,7 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
           )
         : ScrollView;
 
-    // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
+    // TODO: Try this again? This had bad behavior of sometimes setting the min size to greater than
     // the screen size
     // const style = React.useMemo(() => {
     //     const extraStyle: StyleProp<ViewStyle> = {};

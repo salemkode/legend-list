@@ -1290,49 +1290,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return null;
         }
 
-        // TODO1.0: Remove these before 1.0, make sure docs have them as separate imports
-        const useViewability = __DEV__
-            ? () => {
-                  warnDevOnce(
-                      "useViewability",
-                      `useViewability has been moved from a render prop to a regular import: import { useViewability } from "@legendapp/list";`,
-                  );
-              }
-            : undefined;
-        const useViewabilityAmount = __DEV__
-            ? () => {
-                  warnDevOnce(
-                      "useViewabilityAmount",
-                      `useViewabilityAmount has been moved from a render prop to a regular import: import { useViewabilityAmount } from "@legendapp/list";`,
-                  );
-              }
-            : undefined;
-        const useRecyclingEffect = __DEV__
-            ? () => {
-                  warnDevOnce(
-                      "useRecyclingEffect",
-                      `useRecyclingEffect has been moved from a render prop to a regular import: import { useRecyclingEffect } from "@legendapp/list";`,
-                  );
-              }
-            : undefined;
-        const useRecyclingState = __DEV__
-            ? () => {
-                  warnDevOnce(
-                      "useRecyclingState",
-                      `useRecyclingState has been moved from a render prop to a regular import: import { useRecyclingState } from "@legendapp/list";`,
-                  );
-              }
-            : undefined;
-
         const renderedItem = refState.current!.renderItem?.({
             item: data[index],
             index,
             extraData: peek$(ctx, "extraData"),
-            // @ts-expect-error TODO: Remove these before 1.0
-            useViewability,
-            useViewabilityAmount,
-            useRecyclingEffect,
-            useRecyclingState,
         });
 
         return { index, item: data[index], renderedItem };
