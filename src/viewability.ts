@@ -195,7 +195,7 @@ function computeViewability(
     index: number,
 ): ViewAmountToken {
     const { sizes, positions, scroll: scrollState, scrollAdjustHandler } = state;
-    const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
+    const topPad = (peek$(ctx, "stylePaddingTop") || 0) + (peek$(ctx, "headerSize") || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
@@ -256,9 +256,9 @@ function isViewable(
 }
 
 function findContainerId(ctx: StateContext, key: string) {
-    const numContainers = peek$<number>(ctx, "numContainers");
+    const numContainers = peek$(ctx, "numContainers");
     for (let i = 0; i < numContainers; i++) {
-        const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+        const itemKey = peek$(ctx, `containerItemKey${i}`);
         if (itemKey === key) {
             return i;
         }

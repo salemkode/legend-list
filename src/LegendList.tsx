@@ -403,7 +403,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const getRowHeight = (n: number): number => {
         const { rowHeights, data } = refState.current!;
-        const numColumns = peek$<number>(ctx, "numColumns");
+        const numColumns = peek$(ctx, "numColumns");
         if (numColumns === 1) {
             const id = getId(n);
             return getItemSize(id, n, data[n]);
@@ -435,7 +435,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return new Map();
         }
         const map = state.belowAnchorElementPositions || new Map();
-        const numColumns = peek$<number>(ctx, "numColumns");
+        const numColumns = peek$(ctx, "numColumns");
         let top = state.anchorElement!.coordinate;
         for (let i = anchorIndex - 1; i >= 0; i--) {
             const id = getId(i);
@@ -467,7 +467,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const { data, scrollLength, positions, startBuffered, endBuffered } = state!;
 
         // TODO: Fix behavior with multiple columns and stop returning
-        const numColumns = peek$<number>(ctx, "numColumns");
+        const numColumns = peek$(ctx, "numColumns");
         if (!data || scrollLength === 0 || numColumns > 1) {
             return;
         }
@@ -479,7 +479,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // useLayoutEffect and we can measure all containers before their useLayoutEffects fire after a delay.
         // This lets use fix any gaps/overlaps that might be visible before the useLayoutEffects fire for each container.
         for (let i = 0; i < numContainers; i++) {
-            const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+            const itemKey = peek$(ctx, `containerItemKey${i}`);
             const isSizeKnown = state.sizesKnown.get(itemKey);
             if (itemKey && !isSizeKnown) {
                 const containerRef = ctx.viewRefs.get(i);
@@ -516,10 +516,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             // Apply the changed positions to the containers
             for (let i = 0; i < numContainers; i++) {
-                const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                const itemKey = peek$(ctx, `containerItemKey${i}`);
                 const diff = diffs.get(itemKey);
                 if (diff) {
-                    const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
+                    const prevPos = peek$(ctx, `containerPosition${i}`);
                     const newPos = prevPos.top + diff;
                     if (prevPos.top !== newPos) {
                         const pos = { ...prevPos };
@@ -547,9 +547,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return;
         }
 
-        const totalSize = peek$<number>(ctx, "totalSizeWithScrollAdjust");
-        const topPad = peek$<number>(ctx, "stylePaddingTop") + peek$<number>(ctx, "headerSize");
-        const numColumns = peek$<number>(ctx, "numColumns");
+        const totalSize = peek$(ctx, "totalSizeWithScrollAdjust");
+        const topPad = peek$(ctx, "stylePaddingTop") + peek$(ctx, "headerSize");
+        const numColumns = peek$(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         let scrollState = state.scroll;
@@ -759,7 +759,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // Note that since this is only checking top it may not be 100% accurate but that's fine.
 
                     for (let u = 0; u < numContainers; u++) {
-                        const key = peek$<string>(ctx, `containerItemKey${u}`);
+                        const key = peek$(ctx, `containerItemKey${u}`);
                         // Hasn't been allocated yet, just use it
                         if (key === undefined) {
                             furthestIndex = u;
@@ -767,7 +767,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         }
 
                         const index = state.indexByKey.get(key)!;
-                        const pos = peek$<AnchoredPosition>(ctx, `containerPosition${u}`).top;
+                        const pos = peek$(ctx, `containerPosition${u}`).top;
 
                         if (index < startBuffered || index > endBuffered) {
                             const distance = Math.abs(pos - top);
@@ -793,11 +793,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${containerId}`, -1);
 
-                        if (
-                            __DEV__ &&
-                            !didWarnMoreContainers &&
-                            numContainers > peek$<number>(ctx, "numContainersPooled")
-                        ) {
+                        if (__DEV__ && !didWarnMoreContainers && numContainers > peek$(ctx, "numContainersPooled")) {
                             didWarnMoreContainers = true;
                             console.warn(
                                 "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize. numContainers:",
@@ -810,7 +806,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             if (numContainers !== prevNumContainers) {
                 set$(ctx, "numContainers", numContainers);
-                if (numContainers > peek$<number>(ctx, "numContainersPooled")) {
+                if (numContainers > peek$(ctx, "numContainersPooled")) {
                     set$(ctx, "numContainersPooled", Math.ceil(numContainers * 1.5));
                 }
             }
@@ -819,7 +815,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // TODO: This could be optimized to only update the containers that have changed
             // but it likely would have little impact. Remove this comment if not worth doing.
             for (let i = 0; i < numContainers; i++) {
-                const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                const itemKey = peek$(ctx, `containerItemKey${i}`);
                 const itemIndex = state.indexByKey.get(itemKey)!;
                 const item = data[itemIndex];
                 if (item !== undefined) {
@@ -827,7 +823,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                         // This is fairly complex because we want to avoid setting container position if it's not even in view
                         // because it will trigger a render
-                        const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`).top;
+                        const prevPos = peek$(ctx, `containerPosition${i}`);
                         const pos = positions.get(id) || 0;
                         const size = getItemSize(id, itemIndex, data[i]);
 
@@ -855,7 +851,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                             pos.type = "bottom";
                         }
 
-                        const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
+                        const prevPos = peek$(ctx, `containerPosition${i}`);
                         const prevColumn = peek$(ctx, `containerColumn${i}`);
                         const prevData = peek$(ctx, `containerItemData${i}`);
 
@@ -919,8 +915,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         set$(
             ctx,
             "paddingTop",
-            (stylePaddingTop ?? peek$<number>(ctx, "stylePaddingTop")) +
-                (alignItemsPaddingTop ?? peek$<number>(ctx, "alignItemsPaddingTop")),
+            (stylePaddingTop ?? peek$(ctx, "stylePaddingTop")) +
+                (alignItemsPaddingTop ?? peek$(ctx, "alignItemsPaddingTop")),
         );
     };
 
@@ -961,7 +957,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // });
 
             // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
-            const paddingTop = peek$<number>(ctx, "alignItemsPaddingTop");
+            const paddingTop = peek$(ctx, "alignItemsPaddingTop");
             if (paddingTop > 0) {
                 // if paddingTop exists, list is shorter then a screen, so scroll should be 0 anyways
                 state.scroll = 0;
@@ -1075,12 +1071,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 refState.current!.scrollForNextCalculateItemsInView = undefined;
 
                 // Reset containers that aren't used anymore because the data has changed
-                const numContainers = peek$<number>(ctx, "numContainers");
+                const numContainers = peek$(ctx, "numContainers");
                 for (let i = 0; i < numContainers; i++) {
-                    const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
+                    const itemKey = peek$(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
-                        set$(ctx, `containerItemKey${i}`, undefined);
-                        set$(ctx, `containerItemData${i}`, undefined);
+                        set$(ctx, `containerItemKey${i}`, null as any);
+                        set$(ctx, `containerItemData${i}`, null as any);
                         set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
@@ -1116,7 +1112,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const newPositions = new Map();
         let column = 1;
         let maxSizeInRow = 0;
-        const numColumns = peek$<number>(ctx, "numColumns") ?? numColumnsProp;
+        const numColumns = peek$(ctx, "numColumns") ?? numColumnsProp;
 
         if (!state) {
             return;
@@ -1226,7 +1222,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // If the stylePaddingTop has changed, scroll to an adjusted offset to
         // keep the same content in view
-        const prevPaddingTop = peek$<number>(ctx, "stylePaddingTop");
+        const prevPaddingTop = peek$(ctx, "stylePaddingTop");
         setPaddingTop({ stylePaddingTop: stylePaddingTopState });
 
         const paddingDiff = stylePaddingTopState - prevPaddingTop;
@@ -1241,7 +1237,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     if (isFirst) {
         initalizeStateVars();
     }
-    if (isFirst || didDataChange || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+    if (isFirst || didDataChange || numColumnsProp !== peek$(ctx, "numColumns")) {
         refState.current.lastBatchingAction = Date.now();
         if (!keyExtractorProp && !isFirst && didDataChange) {
             __DEV__ &&
@@ -1388,7 +1384,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return;
         }
         const index = indexByKey.get(itemKey)!;
-        const numColumns = peek$<number>(ctx, "numColumns");
+        const numColumns = peek$(ctx, "numColumns");
 
         state.minIndexSizeChanged =
             state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;

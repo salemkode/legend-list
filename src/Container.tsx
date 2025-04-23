@@ -6,7 +6,6 @@ import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
 import { roundSize } from "./helpers";
 import { use$, useStateContext } from "./state";
-import type { AnchoredPosition } from "./types";
 
 export const Container = <ItemT,>({
     id,
@@ -25,14 +24,14 @@ export const Container = <ItemT,>({
 }) => {
     const ctx = useStateContext();
     const columnWrapperStyle = ctx.columnWrapperStyle;
-    const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
-    const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
-    const column = use$<number>(`containerColumn${id}`) || 0;
-    const numColumns = use$<number>("numColumns");
-    const lastItemKeys = use$<string[]>("lastItemKeys");
-    const itemKey = use$<string>(`containerItemKey${id}`);
-    const data = use$<any>(`containerItemData${id}`); // to detect data changes
-    const extraData = use$<string>("extraData"); // to detect extraData changes
+    const maintainVisibleContentPosition = use$("maintainVisibleContentPosition");
+    const position = use$(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
+    const column = use$(`containerColumn${id}`) || 0;
+    const numColumns = use$("numColumns");
+    const lastItemKeys = use$("lastItemKeys");
+    const itemKey = use$(`containerItemKey${id}`);
+    const data = use$(`containerItemData${id}`); // to detect data changes
+    const extraData = use$("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
     const ref = useRef<View>(null);
     const [layoutRenderCount, forceLayoutRender] = useState(0);
