@@ -335,6 +335,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         state.scrollingToOffset = firstIndexScrollPostion;
         // Do the scroll
         scrollTo(firstIndexScrollPostion, animated);
+
+        if (!animated) {
+            requestAnimationFrame(() => {
+                state.scrollingToOffset = undefined;
+                state.scrollAdjustHandler.setDisableAdjust(false);
+            });
+        }
     };
 
     const setDidLayout = () => {
