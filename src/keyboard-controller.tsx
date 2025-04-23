@@ -24,7 +24,7 @@ export const LegendList = typedForwardRef(function LegendList<
 >(props: LegendListProps<ItemT> & { LegendList?: ListT }, forwardedRef: ForwardedRef<LegendListRef>) {
     const {
         LegendList: LegendListProp,
-        style: styleProp,
+        contentContainerStyle: contentContainerStyleProp,
         scrollIndicatorInsets: scrollIndicatorInsetsProp,
         ...rest
     } = props;
@@ -44,15 +44,20 @@ export const LegendList = typedForwardRef(function LegendList<
 
     const LegendListComponent = LegendListProp ?? LegendListBase;
 
-    const styleFlattened = StyleSheet.flatten(styleProp) || {};
-    const style = { ...styleFlattened, paddingTop: padding + ((styleFlattened.paddingTop as number) || 0) };
+    const contentContainerStyleFlattened = StyleSheet.flatten(contentContainerStyleProp) || {};
+    const contentContainerStyle = { ...contentContainerStyleFlattened, paddingTop: padding };
     const scrollIndicatorInsets: Insets = scrollIndicatorInsetsProp ? { ...scrollIndicatorInsetsProp } : {};
     if (!props.horizontal) {
-        scrollIndicatorInsets.top = (scrollIndicatorInsets.top || 0) + padding;
+        scrollIndicatorInsets.top = (scrollIndicatorInsets?.top || 0) + padding;
     }
 
     return (
         // @ts-expect-error TODO: Fix this type
-        <LegendListComponent {...rest} style={style} scrollIndicatorInsets={scrollIndicatorInsets} ref={forwardedRef} />
+        <LegendListComponent
+            {...rest}
+            contentContainerStyle={contentContainerStyle}
+            scrollIndicatorInsets={scrollIndicatorInsets}
+            ref={forwardedRef}
+        />
     );
 });
