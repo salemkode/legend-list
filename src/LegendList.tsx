@@ -906,6 +906,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         alignItemsPaddingTop,
     }: { stylePaddingTop?: number; alignItemsPaddingTop?: number }) => {
         if (stylePaddingTop !== undefined) {
+            const prevStylePaddingTop = peek$(ctx, "stylePaddingTop") || 0;
+            if (stylePaddingTop < prevStylePaddingTop) {
+                // If reducing top padding then we need to make sure the ScrollView doesn't
+                // scroll itself because the height reduced.
+                // First add the padding to the total size so that the total height in the ScrollView
+                // doesn't change
+                const prevTotalSize = peek$(ctx, "totalSizeWithScrollAdjust") || 0;
+                set$(ctx, "totalSizeWithScrollAdjust", prevTotalSize + prevStylePaddingTop);
+                setTimeout(() => {
+                    // Then reset it back to how it was
+                    set$(ctx, "totalSizeWithScrollAdjust", prevTotalSize);
+                }, 0);
+            }
+
+            // Now set the padding
             set$(ctx, "stylePaddingTop", stylePaddingTop);
         }
         if (alignItemsPaddingTop !== undefined) {
