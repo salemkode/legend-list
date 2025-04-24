@@ -148,31 +148,34 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const getItemSize = (key: string, index: number, data: T, useAverageSize = false) => {
         const state = refState.current!;
         const sizeKnown = state.sizesKnown.get(key)!;
-        // If size has been measured, use it
-        if (sizeKnown !== undefined) {
-            return sizeKnown;
-        }
-
+        // Note: Can't return sizeKnown because it will throw off the total size calculations
+        // because this is called in updateItemSize
+        const sizePrevious = state.sizes.get(key)!;
         let size: number | undefined;
+        const numColumns = peek$(ctx, "numColumns");
 
-        // Get estimated size per item if available
-        if (getEstimatedItemSize) {
-            size = getEstimatedItemSize(index, data);
-        }
-
-        // Get average size of rendered items if we don't know the size
-        if (size === undefined && useAverageSize) {
+        // Get average size of rendered items if we don't know the size or are using getEstimatedItemSize
+        // TODO: Columns throws off the size, come back and fix that by using getRowHeight
+        if (sizeKnown === undefined && !getEstimatedItemSize && numColumns === 1 && useAverageSize) {
             // TODO: Hook this up to actual item type later once we have item types
             const itemType = "";
             const average = state.averageSizes[itemType];
             if (average) {
                 size = roundSize(average.avg);
+                if (size !== sizePrevious) {
+                    addTotalSize(key, size - sizePrevious, 0);
+                }
             }
         }
 
-        // Get estimated size if we don't have an average size
+        if (size === undefined && sizePrevious !== undefined) {
+            // If we already have a cached size, use it
+            return sizePrevious;
+        }
+
+        // Get estimated size if we don't have an average or already cached size
         if (size === undefined) {
-            size = estimatedItemSize ?? DEFAULT_ITEM_SIZE;
+            size = (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
         }
 
         // Save to rendered sizes
