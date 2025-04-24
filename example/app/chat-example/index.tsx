@@ -56,7 +56,7 @@ const ChatExample = () => {
         <SafeAreaView style={styles.container} edges={["bottom"]}>
             <KeyboardAvoidingView
                 style={styles.container}
-                behavior="position"
+                behavior="padding"
                 keyboardVerticalOffset={headerHeight}
                 contentContainerStyle={{ flex: 1 }}
             >
