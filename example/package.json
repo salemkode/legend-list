@@ -10,7 +10,8 @@
         "ios": "expo run:ios",
         "web": "expo start --web",
         "test": "jest --watchAll",
-        "lint": "expo lint"
+        "lint": "expo lint",
+        "prebuild:clean": "rm -rf ios android && npx expo prebuild --clean && npx expo prebuild"
     },
     "jest": {
         "preset": "jest-expo"
