@@ -202,7 +202,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 offset = index * estimatedItemSize;
             }
 
-            return offset / numColumnsProp - (refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0);
+            const adjust = peek$(ctx, "containersDidLayout")
+                ? refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0
+                : 0;
+
+            return offset / numColumnsProp - adjust;
         }
         return 0;
     };
