@@ -13,7 +13,14 @@ import type { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 export type LegendListPropsBase<
     ItemT,
     TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>,
-> = Omit<TScrollView, "contentOffset" | "contentInset" | "maintainVisibleContentPosition" | "stickyHeaderIndices"> & {
+> = Omit<
+    TScrollView,
+    | "contentOffset"
+    | "contentInset"
+    | "maintainVisibleContentPosition"
+    | "stickyHeaderIndices"
+    | "removeClippedSubviews"
+> & {
     /**
      * If true, aligns items at the end of the list.
      * @default false
