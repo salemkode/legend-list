@@ -92,6 +92,9 @@ const LegendListExample = () => {
             keyExtractor={(item) => item.id}
             recycleItems={true}
 
+            // Recommended if data can change
+            maintainVisibleContentPosition
+
             ref={listRef}
         />
     )
