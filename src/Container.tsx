@@ -93,11 +93,6 @@ export const Container = <ItemT,>({
             const layout = event.nativeEvent.layout;
             const size = roundSize(layout[horizontal ? "width" : "height"]);
 
-            // Old architecture sometimes returns 0 size and then updates it with the correct size
-            if (!IsNewArchitecture && size === 0 && layout.x === 0 && layout.y === 0) {
-                return;
-            }
-
             refLastSize.current = size;
             updateItemSize(itemKey, size);
 
