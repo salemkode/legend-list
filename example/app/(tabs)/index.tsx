@@ -20,10 +20,6 @@ const data: ListElement[] = [
         url: "/bidirectional-infinite-list",
     },
     {
-        title: "Initial Scroll Index keyed",
-        url: "/initial-scroll-index-keyed",
-    },
-    {
         title: "Chat example",
         url: "/chat-example",
     },
@@ -67,6 +63,10 @@ const data: ListElement[] = [
     {
         title: "Initial scroll index(free element height)",
         url: "/initial-scroll-index-free-height",
+    },
+    {
+        title: "Initial Scroll Index keyed",
+        url: "/initial-scroll-index-keyed",
     },
     {
         title: "Mutable elements",
