@@ -14,3 +14,7 @@ export function warnDevOnce(id: string, text: string) {
 export function roundSize(size: number) {
     return Math.floor(size * 8) / 8; // Round to nearest quater pixel to avoid accumulating rounding errors
 }
+
+export function isNullOrUndefined(value: unknown) {
+    return value === null || value === undefined;
+}

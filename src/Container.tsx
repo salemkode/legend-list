@@ -4,7 +4,7 @@ import { Text } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
-import { roundSize } from "./helpers";
+import { isNullOrUndefined, roundSize } from "./helpers";
 import { use$, useStateContext } from "./state";
 
 export const Container = <ItemT,>({
@@ -89,7 +89,7 @@ export const Container = <ItemT,>({
     }, []);
 
     const onLayout = (event: LayoutChangeEvent) => {
-        if (itemKey !== undefined) {
+        if (!isNullOrUndefined(itemKey)) {
             const layout = event.nativeEvent.layout;
             const size = roundSize(layout[horizontal ? "width" : "height"]);
 
@@ -109,7 +109,7 @@ export const Container = <ItemT,>({
     if (IsNewArchitecture) {
         // New architecture supports unstable_getBoundingClientRect for getting layout synchronously
         useLayoutEffect(() => {
-            if (itemKey !== undefined) {
+            if (!isNullOrUndefined(itemKey)) {
                 // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
                 const measured = ref.current?.unstable_getBoundingClientRect?.();
                 if (measured) {
@@ -128,7 +128,7 @@ export const Container = <ItemT,>({
             // Catch a bug where a container is reused and is the exact same size as the previous item
             // so it does not fire an onLayout, so we need to trigger it manually.
             // TODO: There must be a better way to do this?
-            if (itemKey) {
+            if (!isNullOrUndefined(itemKey)) {
                 const timeout = setTimeout(() => {
                     if (!didLayout && refLastSize.current) {
                         updateItemSize(itemKey, refLastSize.current);
