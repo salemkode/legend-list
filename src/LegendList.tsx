@@ -1465,7 +1465,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
 
             // If this did not trigger a full calculate we should fix any gaps/overlaps
-            if (!didCalculate && IsNewArchitecture) {
+            if (!didCalculate && !needsUpdateContainersDidLayout && IsNewArchitecture) {
                 fixGaps();
             }
         }
