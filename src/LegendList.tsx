@@ -1396,7 +1396,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         averages.avg = (averages.avg * averages.num + size) / (averages.num + 1);
         averages.num++;
 
-        if (!prevSize || Math.abs(prevSize - size) > 0.5) {
+        if (!prevSize || Math.abs(prevSize - size) > 0.1) {
             let diff: number;
             needsCalculate = true;
 
