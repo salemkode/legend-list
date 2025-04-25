@@ -559,6 +559,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             columns,
             scrollAdjustHandler,
             scrollVelocity: speed,
+            disableAveragesForScrolls,
         } = state!;
         if (!data || scrollLength === 0) {
             return;
@@ -570,6 +571,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         let scrollState = state.scroll;
+        const useAverageSize = !disableAveragesForScrolls;
 
         // If this is before the initial layout, and we have an initialScrollIndex,
         // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
@@ -648,7 +650,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const top = newPosition || positions.get(id)!;
 
             if (top !== undefined) {
-                const size = getItemSize(id, i, data[i], /*useAverageSize*/ true);
+                const size = getItemSize(id, i, data[i], useAverageSize);
                 const bottom = top + size;
                 if (bottom > scroll - scrollBuffer) {
                     loopStart = i;
@@ -683,7 +685,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // scan data forwards
         for (let i = Math.max(0, loopStart); i < data!.length; i++) {
             const id = getId(i)!;
-            const size = getItemSize(id, i, data[i], /*useAverageSize*/ true);
+            const size = getItemSize(id, i, data[i], useAverageSize);
 
             maxSizeInRow = Math.max(maxSizeInRow, size);
 
@@ -1057,8 +1059,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
         const { scrollLength, scroll } = refState.current;
         const distanceFromTop = scroll;
-        const distanceFromTopAbs = Math.abs(distanceFromTop);
-        refState.current.isAtTop = distanceFromTopAbs < 0;
+        refState.current.isAtTop = distanceFromTop <= 0;
 
         refState.current.isStartReached = checkThreshold(
             distanceFromTop,
@@ -1079,6 +1080,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.data = dataProp;
 
             if (!isFirst) {
+                // Disable using averages for the next 2 scrolls, because adding items to the top of the list
+                // causes jumpiness if using averages
+                // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
+                state.disableAveragesForScrolls = 2;
+
                 refState.current!.scrollForNextCalculateItemsInView = undefined;
 
                 // Reset containers that aren't used anymore because the data has changed
@@ -1570,6 +1576,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             if (!fromSelf) {
                 state.onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
+            }
+
+            if (state.disableAveragesForScrolls) {
+                state.disableAveragesForScrolls--;
             }
         },
         [],
