@@ -91,10 +91,23 @@ export const Container = <ItemT,>({
     const onLayout = (event: LayoutChangeEvent) => {
         if (!isNullOrUndefined(itemKey)) {
             const layout = event.nativeEvent.layout;
-            const size = roundSize(layout[horizontal ? "width" : "height"]);
+            let size = roundSize(layout[horizontal ? "width" : "height"]);
 
-            refLastSize.current = size;
-            updateItemSize(itemKey, size);
+            const doUpdate = () => {
+                refLastSize.current = size;
+                updateItemSize(itemKey, size);
+            };
+
+            if (IsNewArchitecture || size > 0) {
+                doUpdate();
+            } else {
+                // On old architecture, the size can be 0 sometimes, maybe when not fully rendered?
+                // So we need to make sure it's actually rendered and measure it to make sure it's actually 0.
+                ref.current?.measure?.((x, y, width, height) => {
+                    size = roundSize(horizontal ? width : height);
+                    doUpdate();
+                });
+            }
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
