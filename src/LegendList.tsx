@@ -1470,9 +1470,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const scrollVelocity = state.scrollVelocity;
             let didCalculate = false;
 
+            // TODO: The second part of this if should be merged into the previous if
+            // Can this be less complex in general?
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
-                (!waitForInitialLayout || needsUpdateContainersDidLayout)
+                (!waitForInitialLayout || needsUpdateContainersDidLayout || queuedInitialLayout)
             ) {
                 // Calculate positions if not currently scrolling and not waiting on other items to layout
                 if (Date.now() - state.lastBatchingAction < 500) {
