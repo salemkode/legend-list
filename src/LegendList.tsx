@@ -549,6 +549,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     }, []);
 
+    const checkAllSizesKnown = useCallback(() => {
+        const { startBuffered, endBuffered, sizesKnown } = refState.current!;
+        if (endBuffered !== null) {
+            // If waiting for initial layout and all items in view have a known size then
+            // initial layout is complete
+            let areAllKnown = true;
+            for (let i = startBuffered!; areAllKnown && i <= endBuffered!; i++) {
+                const key = getId(i)!;
+                areAllKnown &&= sizesKnown.has(key);
+            }
+            return areAllKnown;
+        }
+        return false;
+    }, []);
+
     const calculateItemsInView = useCallback(() => {
         const state = refState.current!;
         const {
@@ -893,12 +908,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!state.queuedInitialLayout && endBuffered !== null) {
             // If waiting for initial layout and all items in view have a known size then
             // initial layout is complete
-            let areAllKnown = true;
-            for (let i = startBuffered!; areAllKnown && i <= endBuffered!; i++) {
-                const key = getId(i)!;
-                areAllKnown &&= state.sizesKnown.has(key);
-            }
-            if (areAllKnown) {
+            if (checkAllSizesKnown()) {
                 setDidLayout();
             }
         }
@@ -1358,7 +1368,17 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateItemSize = useCallback((itemKey: string, size: number, fromFixGaps?: boolean) => {
         const state = refState.current!;
-        const { sizes, indexByKey, sizesKnown, data, rowHeights, startBuffered, endBuffered, averageSizes } = state;
+        const {
+            sizes,
+            indexByKey,
+            sizesKnown,
+            data,
+            rowHeights,
+            startBuffered,
+            endBuffered,
+            averageSizes,
+            queuedInitialLayout,
+        } = state;
         if (!data) {
             return;
         }
@@ -1371,7 +1391,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const prevSize = getItemSize(itemKey, index, data as any);
 
         let needsCalculate = false;
-        const needsUpdateContainersDidLayout = !peek$(ctx, "containersDidLayout");
+        let needsUpdateContainersDidLayout = false;
 
         sizesKnown!.set(itemKey, size);
 
@@ -1422,7 +1442,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             // Reset scrollForNextCalculateItemsInView because a position may have changed making the previous
             // precomputed scroll range invalid
-            refState.current!.scrollForNextCalculateItemsInView = undefined;
+            state.scrollForNextCalculateItemsInView = undefined;
 
             addTotalSize(itemKey, diff, 0);
 
@@ -1439,13 +1459,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
+        if (!queuedInitialLayout && checkAllSizesKnown()) {
+            needsUpdateContainersDidLayout = true;
+        }
+
         // We can skip calculating items in view if they have already gone out of view. This can happen on slow
         // devices or when the list is scrolled quickly.
         const isInView = index >= startBuffered && index <= endBuffered;
 
-        if (needsUpdateContainersDidLayout || (!fromFixGaps && needsCalculate && isInView)) {
+        if (needsUpdateContainersDidLayout || (!fromFixGaps && needsCalculate && (isInView || !queuedInitialLayout))) {
             const scrollVelocity = state.scrollVelocity;
             let didCalculate = false;
+
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
                 (!waitForInitialLayout || needsUpdateContainersDidLayout)
