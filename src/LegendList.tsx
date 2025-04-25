@@ -805,7 +805,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                         if (index < startBuffered || index > endBuffered) {
                             const distance = Math.abs(pos - top);
-                            if (index < 0 || distance > furthestDistance) {
+                            if (index < 0 || pos === POSITION_OUT_OF_VIEW || distance > furthestDistance) {
                                 furthestDistance = distance;
                                 furthestIndex = u;
                             }
