@@ -358,6 +358,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             queueMicrotask(() => {
                 scrollToIndex({ index: initialScrollIndex, animated: false });
                 requestAnimationFrame(() => {
+                    // Old architecture sometimes doesn't scroll to the initial index correctly
+                    if (!IsNewArchitecture) {
+                        scrollToIndex({ index: initialScrollIndex, animated: false });
+                    }
                     set$(ctx, "containersDidLayout", true);
                 });
             });
