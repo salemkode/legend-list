@@ -304,7 +304,6 @@ export interface InternalState {
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
     minIndexSizeChanged: number | undefined;
-    numPendingInitialLayout: number; // 0 if first load, -1 if done
     queuedInitialLayout?: boolean | undefined;
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;

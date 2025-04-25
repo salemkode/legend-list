@@ -254,7 +254,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollForNextCalculateItemsInView: undefined,
             enableScrollForNextCalculateItemsInView: true,
             minIndexSizeChanged: 0,
-            numPendingInitialLayout: 0,
             queuedCalculateItemsInView: 0,
             lastBatchingAction: Date.now(),
             averageSizes: {},
@@ -888,11 +887,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        // If it's 0 then we're waiting for the initial layout to complete
-        if (state.numPendingInitialLayout === 0) {
-            state.numPendingInitialLayout = state.endBuffered - state.startBuffered + 1;
-        }
-
         if (!state.queuedInitialLayout && endBuffered !== null) {
             // If waiting for initial layout and all items in view have a known size then
             // initial layout is complete
@@ -1370,17 +1364,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const prevSize = getItemSize(itemKey, index, data as any);
 
         let needsCalculate = false;
-        let needsUpdateContainersDidLayout = false;
-
-        if (state.numPendingInitialLayout > 0) {
-            state.numPendingInitialLayout--;
-            if (state.numPendingInitialLayout === 0) {
-                needsCalculate = true;
-                // Set to -1 to indicate that the initial layout has been completed
-                state.numPendingInitialLayout = -1;
-                needsUpdateContainersDidLayout = true;
-            }
-        }
+        const needsUpdateContainersDidLayout = !peek$(ctx, "containersDidLayout");
 
         sizesKnown!.set(itemKey, size);
 
@@ -1457,7 +1441,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let didCalculate = false;
             if (
                 (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
-                (!waitForInitialLayout || state.numPendingInitialLayout < 0)
+                (!waitForInitialLayout || needsUpdateContainersDidLayout)
             ) {
                 // Calculate positions if not currently scrolling and not waiting on other items to layout
                 if (Date.now() - state.lastBatchingAction < 500) {
