@@ -641,6 +641,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         const scrollBottom = scroll + scrollLength;
+        const prevStartBuffered = state.startBuffered;
         const prevEndBuffered = state.endBuffered;
         let startNoBuffer: number | null = null;
         let startBuffered: number | null = null;
@@ -884,7 +885,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         if (
                             (pos + size >= scroll && pos <= scrollBottom) ||
                             (prevPos + size >= scroll && prevPos <= scrollBottom) ||
-                            endBuffered < prevEndBuffered
+                            endBuffered < prevEndBuffered ||
+                            startBuffered > prevStartBuffered
                         ) {
                             set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         }
