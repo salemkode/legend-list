@@ -343,17 +343,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
-        state.scrollAdjustHandler.setDisableAdjust(true);
-        state.scrollingToOffset = firstIndexScrollPostion;
         // Do the scroll
         scrollTo(firstIndexScrollPostion, animated);
-
-        if (!animated) {
-            requestAnimationFrame(() => {
-                state.scrollingToOffset = undefined;
-                state.scrollAdjustHandler.setDisableAdjust(false);
-            });
-        }
     };
 
     const setDidLayout = () => {
@@ -997,12 +988,31 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     };
 
+    const finishScrollTo = () => {
+        const state = refState.current;
+        if (state) {
+            state.scrollingToOffset = undefined;
+            state.scrollAdjustHandler.setDisableAdjust(false);
+            calculateItemsInView();
+        }
+    };
+
     const scrollTo = (offset: number, animated: boolean | undefined) => {
+        const state = refState.current!;
+
+        // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
+        state.scrollAdjustHandler.setDisableAdjust(true);
+        state.scrollingToOffset = offset;
+        // Do the scroll
         refScroller.current?.scrollTo({
             x: horizontal ? offset : 0,
             y: horizontal ? 0 : offset,
             animated: !!animated,
         });
+
+        if (!animated) {
+            requestAnimationFrame(finishScrollTo);
+        }
     };
 
     const doMaintainScrollAtEnd = (animated: boolean) => {
@@ -1583,6 +1593,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // Ignore scroll from calcTotal unless it's scrolling to 0
             if (state.ignoreScrollFromCalcTotal && newScroll !== 0) {
                 return;
+            }
+
+            if (state.scrollingToOffset !== undefined && Math.abs(newScroll - state.scrollingToOffset) < 10) {
+                finishScrollTo();
             }
 
             if (state.disableScrollJumpsFrom !== undefined) {
