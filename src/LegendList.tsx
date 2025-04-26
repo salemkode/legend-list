@@ -464,11 +464,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const disableScrollJumps = (timeout: number) => {
         const state = refState.current!;
+
+        // Don't disable scroll jumps if we're not scrolling to an offset
+        // Resetting containers can cause a jump, so we don't want to disable scroll jumps in that case
+        if (state.scrollingToOffset === undefined) {
         state.disableScrollJumpsFrom = state.scroll - state.scrollAdjustHandler.getAppliedAdjust();
 
         setTimeout(() => {
             state.disableScrollJumpsFrom = undefined;
         }, timeout);
+        }
     };
 
     const getElementPositionBelowAchor = (id: string) => {
