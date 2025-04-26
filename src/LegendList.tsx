@@ -306,6 +306,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         viewPosition = 0,
     }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
         const state = refState.current!;
+        if (index >= state.data.length) {
+            index = state.data.length - 1;
+        } else if (index < 0) {
+            index = 0;
+        }
+
         const firstIndexOffset = calculateOffsetForIndex(index);
         let firstIndexScrollPostion = firstIndexOffset - viewOffset;
         const diff = Math.abs(state.scroll - firstIndexScrollPostion);
