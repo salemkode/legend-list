@@ -16,7 +16,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { roundSize, warnDevOnce } from "./helpers";
+import { isNullOrUndefined, roundSize, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -783,6 +783,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const prevNumContainers = ctx.values.get("numContainers") as number;
             let numContainers = prevNumContainers;
             let didWarnMoreContainers = false;
+            const allocatedContainers = new Set<number>();
             for (let i = startBuffered; i <= endBuffered; i++) {
                 let isContained = false;
                 const id = getId(i)!;
@@ -804,6 +805,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // Note that since this is only checking top it may not be 100% accurate but that's fine.
 
                     for (let u = 0; u < numContainers; u++) {
+                        if (allocatedContainers.has(u)) {
+                            continue;
+                        }
                         const key = peek$(ctx, `containerItemKey${u}`);
                         // Hasn't been allocated yet, just use it
                         if (key === undefined) {
@@ -814,6 +818,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         const index = state.indexByKey.get(key)!;
                         const pos = peek$(ctx, `containerPosition${u}`).top;
 
+                        if (isNullOrUndefined(index) || pos === POSITION_OUT_OF_VIEW) {
+                            furthestIndex = u;
+                            break;
+                        }
+
                         if (index < startBuffered || index > endBuffered) {
                             const distance = Math.abs(pos - top);
                             if (index < 0 || pos === POSITION_OUT_OF_VIEW || distance > furthestDistance) {
@@ -822,13 +831,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                             }
                         }
                     }
-                    if (furthestIndex >= 0) {
-                        set$(ctx, `containerItemKey${furthestIndex}`, id);
-                        const index = state.indexByKey.get(id)!;
-                        set$(ctx, `containerItemData${furthestIndex}`, data[index]);
-                    } else {
-                        const containerId = numContainers;
 
+                    const containerId = furthestIndex >= 0 ? furthestIndex : numContainers;
+                    set$(ctx, `containerItemKey${containerId}`, id);
+                    const index = state.indexByKey.get(id)!;
+                    set$(ctx, `containerItemData${containerId}`, data[index]);
+                    allocatedContainers.add(containerId);
+
+                    if (furthestIndex === -1) {
                         numContainers++;
                         set$(ctx, `containerItemKey${containerId}`, id);
                         const index = state.indexByKey.get(id)!;
