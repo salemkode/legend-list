@@ -1499,7 +1499,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // TODO: The second part of this if should be merged into the previous if
             // Can this be less complex in general?
             if (
-                (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1) &&
+                (Number.isNaN(scrollVelocity) ||
+                    Math.abs(scrollVelocity) < 1 ||
+                    state.scrollingToOffset !== undefined) &&
                 (!waitForInitialLayout || needsUpdateContainersDidLayout || queuedInitialLayout)
             ) {
                 // Calculate positions if not currently scrolling and not waiting on other items to layout
