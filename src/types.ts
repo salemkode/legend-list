@@ -308,7 +308,7 @@ export interface InternalState {
     queuedCalculateItemsInView: number | undefined;
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
-    disableAveragesForScrolls?: number;
+    disableScrollJumpsFrom?: number;
     scrollingToOffset?: number | undefined;
     averageSizes: Record<
         string,

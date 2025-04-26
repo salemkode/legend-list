@@ -465,6 +465,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return map;
     };
 
+    const disableScrollJumps = (timeout: number) => {
+        const state = refState.current!;
+        state.disableScrollJumpsFrom = state.scroll - state.scrollAdjustHandler.getAppliedAdjust();
+
+        setTimeout(() => {
+            state.disableScrollJumpsFrom = undefined;
+        }, timeout);
+    };
+
     const getElementPositionBelowAchor = (id: string) => {
         const state = refState.current!;
         if (!refState.current!.belowAnchorElementPositions) {
@@ -574,7 +583,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             columns,
             scrollAdjustHandler,
             scrollVelocity: speed,
-            disableAveragesForScrolls,
         } = state!;
         if (!data || scrollLength === 0) {
             return;
@@ -586,7 +594,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         let scrollState = state.scroll;
-        const useAverageSize = !disableAveragesForScrolls;
+        // Don't use averages when disabling scroll jumps because adding items to the top of the list
+        // causes jumpiness if using averages
+        // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
+        const useAverageSize = !state.disableScrollJumpsFrom;
 
         // If this is before the initial layout, and we have an initialScrollIndex,
         // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
@@ -1090,10 +1101,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.data = dataProp;
 
             if (!isFirst) {
-                // Disable using averages for the next 2 scrolls, because adding items to the top of the list
-                // causes jumpiness if using averages
-                // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
-                state.disableAveragesForScrolls = 2;
+                disableScrollJumps(2000);
 
                 refState.current!.scrollForNextCalculateItemsInView = undefined;
 
@@ -1557,6 +1565,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 return;
             }
 
+            if (state.disableScrollJumpsFrom !== undefined) {
+                // If the scroll is too far from the disableScrollJumpsFrom position, don't update the scroll position
+                // This is to prevent jumpiness when adding items to the top of the list
+                const scrollMinusAdjust = newScroll - state.scrollAdjustHandler.getAppliedAdjust();
+                if (Math.abs(scrollMinusAdjust - state.disableScrollJumpsFrom) > 200) {
+                    return;
+                }
+
+                // If it's close enough, we're past the jumpiness period so reset the disableScrollJumpsFrom position
+                state.disableScrollJumpsFrom = undefined;
+            }
+
             state.hasScrolled = true;
             state.lastBatchingAction = Date.now();
             const currentTime = performance.now();
@@ -1603,10 +1623,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             if (!fromSelf) {
                 state.onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
-            }
-
-            if (state.disableAveragesForScrolls) {
-                state.disableAveragesForScrolls--;
             }
         },
         [],
