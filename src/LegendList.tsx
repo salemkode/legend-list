@@ -1321,7 +1321,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (!didAllocateContainers) {
             checkResetContainers(/*isFirst*/ isFirst);
         }
-    }, [isFirst, dataProp, numColumnsProp]);
+    }, [dataProp, numColumnsProp]);
 
     useEffect(() => {
         set$(ctx, "extraData", extraData);
