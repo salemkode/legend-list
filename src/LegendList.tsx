@@ -82,7 +82,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         columnWrapperStyle,
         keyExtractor: keyExtractorProp,
         renderItem,
-        estimatedItemSize,
+        estimatedItemSize: estimatedItemSizeProp,
         getEstimatedItemSize,
         suggestEstimatedItemSize,
         ListEmptyComponent,
@@ -132,6 +132,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
     const combinedRef = useCombinedRef(refScroller, refScrollView);
+    const estimatedItemSize = estimatedItemSizeProp ?? DEFAULT_ITEM_SIZE;
     const scrollBuffer = (drawDistance ?? DEFAULT_DRAW_DISTANCE) || 1;
     const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
@@ -175,7 +176,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Get estimated size if we don't have an average or already cached size
         if (size === undefined) {
-            size = (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
+            size = getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize;
         }
 
         // Save to rendered sizes
@@ -198,7 +199,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 for (let i = 0; i < index; i++) {
                     offset += sizeFn(i);
                 }
-            } else if (estimatedItemSize) {
+            } else {
                 offset = index * estimatedItemSize;
             }
 
@@ -1355,7 +1356,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Allocate containers
         const { scrollLength, data } = state;
         if (scrollLength > 0 && data.length > 0 && !peek$(ctx, "numContainers")) {
-            const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
+            const averageItemSize = getEstimatedItemSize ? getEstimatedItemSize(0, data[0]) : estimatedItemSize;
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
