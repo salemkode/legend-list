@@ -599,7 +599,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Don't use averages when disabling scroll jumps because adding items to the top of the list
         // causes jumpiness if using averages
         // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
-        const useAverageSize = !state.disableScrollJumpsFrom;
+        const useAverageSize = !state.disableScrollJumpsFrom && speed >= 0 && peek$(ctx, "containersDidLayout");
 
         // If this is before the initial layout, and we have an initialScrollIndex,
         // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
