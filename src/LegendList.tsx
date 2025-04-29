@@ -644,7 +644,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
 
         const scrollBottom = scroll + scrollLength;
-        const prevEndBuffered = state.endBuffered;
         let startNoBuffer: number | null = null;
         let startBuffered: number | null = null;
         let startBufferedId: string | null = null;
@@ -713,9 +712,21 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         let foundEnd = false;
 
+        // TODO PERF: Could cache this while looping through numContainers at the end of this function
+        // This takes 0.03 ms in an example in the ios simulator
+        const prevNumContainers = ctx.values.get("numContainers") as number;
+        let maxIndexRendered = 0;
+        for (let i = 0; i < prevNumContainers; i++) {
+            const key = peek$(ctx, `containerItemKey${i}`);
+            if (key !== undefined) {
+                const index = state.indexByKey.get(key)!;
+                maxIndexRendered = Math.max(maxIndexRendered, index);
+            }
+        }
+
         // scan data forwards
         // Continue until we've found the end and we've updated positions of all items that were previously in view
-        for (let i = Math.max(0, loopStart); i < data!.length && (!foundEnd || i <= prevEndBuffered); i++) {
+        for (let i = Math.max(0, loopStart); i < data!.length && (!foundEnd || i <= maxIndexRendered); i++) {
             const id = getId(i)!;
             const size = getItemSize(id, i, data[i], useAverageSize);
 
@@ -788,7 +799,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // console.log("start", scroll, scrollState, startBuffered, startNoBuffer, endNoBuffer, endBuffered);
 
         if (startBuffered !== null && endBuffered !== null) {
-            const prevNumContainers = ctx.values.get("numContainers") as number;
             let numContainers = prevNumContainers;
             let didWarnMoreContainers = false;
             const allocatedContainers = new Set<number>();
