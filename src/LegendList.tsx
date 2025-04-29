@@ -468,11 +468,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Don't disable scroll jumps if we're not scrolling to an offset
         // Resetting containers can cause a jump, so we don't want to disable scroll jumps in that case
         if (state.scrollingToOffset === undefined) {
-        state.disableScrollJumpsFrom = state.scroll - state.scrollAdjustHandler.getAppliedAdjust();
+            state.disableScrollJumpsFrom = state.scroll - state.scrollAdjustHandler.getAppliedAdjust();
 
-        setTimeout(() => {
-            state.disableScrollJumpsFrom = undefined;
-        }, timeout);
+            setTimeout(() => {
+                state.disableScrollJumpsFrom = undefined;
+            }, timeout);
         }
     };
 
@@ -880,15 +880,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                         // This is fairly complex because we want to avoid setting container position if it's not even in view
                         // because it will trigger a render
-                        const prevPos = peek$(ctx, `containerPosition${i}`);
+                        const prevPos = peek$(ctx, `containerPosition${i}`)?.relativeCoordinate;
                         const pos = positions.get(id) || 0;
                         const size = getItemSize(id, itemIndex, data[i]);
 
                         if (
                             (pos + size >= scroll && pos <= scrollBottom) ||
-                            (prevPos + size >= scroll && prevPos <= scrollBottom) ||
-                            endBuffered < prevEndBuffered ||
-                            startBuffered > prevStartBuffered
+                            (prevPos + size >= scroll && prevPos <= scrollBottom)
                         ) {
                             set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         }
