@@ -882,37 +882,43 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 const item = data[itemIndex];
                 if (item !== undefined) {
                     const id = getId(itemIndex);
+                    const position = positions.get(id);
+                    if (position === undefined) {
+                        // This item may have been in view before data changed and positions were reset
+                        // so we need to set it to out of view
+                        set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
+                    } else {
+                        const pos: AnchoredPosition = {
+                            type: "top",
+                            relativeCoordinate: positions.get(id)!,
+                            top: positions.get(id)!,
+                        };
+                        const column = columns.get(id) || 1;
 
-                    const pos: AnchoredPosition = {
-                        type: "top",
-                        relativeCoordinate: positions.get(id) || 0,
-                        top: positions.get(id) || 0,
-                    };
-                    const column = columns.get(id) || 1;
+                        // anchor elements to the bottom if element is below anchor
+                        if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
+                            const currentRow = Math.floor(itemIndex / numColumns);
+                            const rowHeight = getRowHeight(currentRow);
+                            const elementHeight = getItemSize(id, itemIndex, data[i]);
+                            const diff = rowHeight - elementHeight; // difference between row height and element height
+                            pos.relativeCoordinate = pos.top + getRowHeight(currentRow) - diff;
+                            pos.type = "bottom";
+                        }
 
-                    // anchor elements to the bottom if element is below anchor
-                    if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
-                        const currentRow = Math.floor(itemIndex / numColumns);
-                        const rowHeight = getRowHeight(currentRow);
-                        const elementHeight = getItemSize(id, itemIndex, data[i]);
-                        const diff = rowHeight - elementHeight; // difference between row height and element height
-                        pos.relativeCoordinate = pos.top + getRowHeight(currentRow) - diff;
-                        pos.type = "bottom";
-                    }
+                        const prevPos = peek$(ctx, `containerPosition${i}`);
+                        const prevColumn = peek$(ctx, `containerColumn${i}`);
+                        const prevData = peek$(ctx, `containerItemData${i}`);
 
-                    const prevPos = peek$(ctx, `containerPosition${i}`);
-                    const prevColumn = peek$(ctx, `containerColumn${i}`);
-                    const prevData = peek$(ctx, `containerItemData${i}`);
+                        if (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
+                            set$(ctx, `containerPosition${i}`, pos);
+                        }
+                        if (column >= 0 && column !== prevColumn) {
+                            set$(ctx, `containerColumn${i}`, column);
+                        }
 
-                    if (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
-                        set$(ctx, `containerPosition${i}`, pos);
-                    }
-                    if (column >= 0 && column !== prevColumn) {
-                        set$(ctx, `containerColumn${i}`, column);
-                    }
-
-                    if (prevData !== item) {
-                        set$(ctx, `containerItemData${i}`, data[itemIndex]);
+                        if (prevData !== item) {
+                            set$(ctx, `containerItemData${i}`, data[itemIndex]);
+                        }
                     }
                 }
             }
