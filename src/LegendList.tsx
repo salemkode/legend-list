@@ -1427,6 +1427,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
 
         const prevSize = getItemSize(itemKey, index, data as any);
+        const prevSizeKnown = sizesKnown.get(itemKey);
 
         let needsCalculate = false;
         let needsUpdateContainersDidLayout = false;
@@ -1484,7 +1485,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             addTotalSize(itemKey, diff, 0);
 
+            // Maintain scroll at end if this item has already rendered and is changing by more than 5px
+            // This prevents a bug where the list will scroll to the bottom when scrolling up and an item lays out
+            if (prevSizeKnown !== undefined && Math.abs(prevSizeKnown - size) > 5) {
             doMaintainScrollAtEnd(false); // *animated*/ index === data.length - 1);
+            }
 
             if (onItemSizeChanged) {
                 onItemSizeChanged({
