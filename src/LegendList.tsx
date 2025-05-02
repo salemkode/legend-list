@@ -16,7 +16,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { isNullOrUndefined, roundSize, warnDevOnce } from "./helpers";
+import { roundSize, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -227,10 +227,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             isAtTop: false,
             data: dataProp,
             scrollLength: initialScrollLength,
-            startBuffered: 0,
-            startNoBuffer: 0,
-            endBuffered: 0,
-            endNoBuffer: 0,
+            startBuffered: -1,
+            startNoBuffer: -1,
+            endBuffered: -1,
+            endNoBuffer: -1,
             scroll: initialContentOffset || 0,
             totalSize: 0,
             totalSizeBelowAnchor: 0,
@@ -774,6 +774,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
+        const prevStartBuffered = state.startBuffered;
+        const prevEndBuffered = state.endBuffered;
+
         Object.assign(state, {
             startBuffered,
             startBufferedId,
@@ -806,86 +809,58 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         if (startBuffered !== null && endBuffered !== null) {
             let numContainers = prevNumContainers;
-            let didWarnMoreContainers = false;
-            const allocatedContainers = new Set<number>();
-            for (let i = startBuffered; i <= endBuffered; i++) {
-                let isContained = false;
-                const id = getId(i)!;
-                // See if this item is already in a container
-                for (let j = 0; j < numContainers; j++) {
-                    const key = peek$(ctx, `containerItemKey${j}`);
-                    if (key === id) {
-                        isContained = true;
-                        break;
+
+            const needNewContainers: number[] = [];
+            if (startBuffered < prevStartBuffered! || endBuffered > prevEndBuffered!) {
+                const isContained = (i: number) => {
+                    const isContained = false;
+                    const id = getId(i)!;
+                    // See if this item is already in a container
+                    for (let j = 0; j < numContainers; j++) {
+                        const key = peek$(ctx, `containerItemKey${j}`);
+                        if (key === id) {
+                            return true;
+                        }
+                    }
+                };
+                for (let i = startBuffered!; i < prevStartBuffered; i++) {
+                    if (!isContained(i)) {
+                        needNewContainers.push(i);
                     }
                 }
-                // If it's not in a container, then we need to recycle a container out of view
-                if (!isContained) {
-                    const top = positions.get(id) || 0;
-                    let furthestIndex = -1;
-                    let furthestDistance = 0;
-                    // Find the furthest container so we can recycle a container from the other side of scroll
-                    // to reduce empty container flashing when switching directions
-                    // Note that since this is only checking top it may not be 100% accurate but that's fine.
-
-                    for (let u = 0; u < numContainers; u++) {
-                        if (allocatedContainers.has(u)) {
-                            continue;
-                        }
-                        const key = peek$(ctx, `containerItemKey${u}`);
-                        // Hasn't been allocated yet, just use it
-                        if (key === undefined) {
-                            furthestIndex = u;
-                            break;
-                        }
-
-                        const index = state.indexByKey.get(key)!;
-                        const pos = peek$(ctx, `containerPosition${u}`).top;
-
-                        if (isNullOrUndefined(index) || pos === POSITION_OUT_OF_VIEW) {
-                            furthestIndex = u;
-                            break;
-                        }
-
-                        if (index < startBuffered || index > endBuffered) {
-                            const distance = Math.abs(pos - top);
-                            if (index < 0 || pos === POSITION_OUT_OF_VIEW || distance > furthestDistance) {
-                                furthestDistance = distance;
-                                furthestIndex = u;
-                            }
-                        }
-                    }
-
-                    const containerId = furthestIndex >= 0 ? furthestIndex : numContainers;
-                    set$(ctx, `containerItemKey${containerId}`, id);
-                    const index = state.indexByKey.get(id)!;
-                    set$(ctx, `containerItemData${containerId}`, data[index]);
-                    allocatedContainers.add(containerId);
-
-                    if (furthestIndex === -1) {
-                        numContainers++;
-                        set$(ctx, `containerItemKey${containerId}`, id);
-                        const index = state.indexByKey.get(id)!;
-                        set$(ctx, `containerItemData${containerId}`, data[index]);
-
-                        // TODO: This may not be necessary as it'll get a new one in the next loop?
-                        set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
-                        set$(ctx, `containerColumn${containerId}`, -1);
-
-                        if (__DEV__ && !didWarnMoreContainers && numContainers > peek$(ctx, "numContainersPooled")) {
-                            didWarnMoreContainers = true;
-                            console.warn(
-                                "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
-                            );
-                        }
+                for (let i = prevEndBuffered + 1; i <= endBuffered!; i++) {
+                    if (!isContained(i)) {
+                        needNewContainers.push(i);
                     }
                 }
             }
 
-            if (numContainers !== prevNumContainers) {
-                set$(ctx, "numContainers", numContainers);
-                if (numContainers > peek$(ctx, "numContainersPooled")) {
-                    set$(ctx, "numContainersPooled", Math.ceil(numContainers * 1.5));
+            if (needNewContainers.length > 0) {
+                const availableContainers = findAvailableContainers(
+                    needNewContainers.length,
+                    startBuffered,
+                    endBuffered,
+                );
+                for (let idx = 0; idx < needNewContainers.length; idx++) {
+                    const i = needNewContainers[idx];
+                    const containerIndex = availableContainers[idx];
+                    const id = getId(i)!;
+
+                    set$(ctx, `containerItemKey${containerIndex}`, id);
+                    set$(ctx, `containerItemData${containerIndex}`, data[i]);
+
+                    if (containerIndex >= numContainers) {
+                        numContainers = containerIndex + 1;
+                    }
+
+                    // console.log("A", i, containerIndex, id, data[i]);
+                }
+
+                if (numContainers !== prevNumContainers) {
+                    set$(ctx, "numContainers", numContainers);
+                    if (numContainers > peek$(ctx, "numContainersPooled")) {
+                        set$(ctx, "numContainersPooled", Math.ceil(numContainers * 1.5));
+                    }
                 }
             }
 
@@ -899,6 +874,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (item !== undefined) {
                     const id = getId(itemIndex);
                     const position = positions.get(id);
+
+                    // console.log("B", i, itemKey, itemIndex, id, position);
                     if (position === undefined) {
                         // This item may have been in view before data changed and positions were reset
                         // so we need to set it to out of view
@@ -925,7 +902,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         const prevColumn = peek$(ctx, `containerColumn${i}`);
                         const prevData = peek$(ctx, `containerItemData${i}`);
 
-                        if (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
+                        if (!prevPos || (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top)) {
                             set$(ctx, `containerPosition${i}`, pos);
                         }
                         if (column >= 0 && column !== prevColumn) {
@@ -1283,6 +1260,61 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.ignoreScrollFromCalcTotal = false;
         });
         addTotalSize(null, totalSize, totalSizeBelowIndex);
+    };
+
+    const findAvailableContainers = (numNeeded: number, startBuffered: number, endBuffered: number): number[] => {
+        const state = refState.current!;
+        const availableContainers: Array<{ index: number; distance: number }> = [];
+        const numContainers = peek$(ctx, "numContainers") as number;
+
+        // Find the furthest container so we can recycle a container from the other side of scroll
+        // to reduce empty container flashing when switching directions
+
+        for (let u = 0; u < numContainers; u++) {
+            const key = peek$(ctx, `containerItemKey${u}`);
+            // Hasn't been allocated yet, just use it
+            if (key === undefined) {
+                availableContainers.push({ index: u, distance: Number.POSITIVE_INFINITY });
+                if (availableContainers.length >= numNeeded) {
+                    break;
+                }
+                continue;
+            }
+
+            const index = state.indexByKey.get(key)!;
+            if (index < startBuffered) {
+                const distance = startBuffered - index;
+                availableContainers.push({ index: u, distance });
+            }
+            if (index > endBuffered) {
+                const distance = index - endBuffered;
+                availableContainers.push({ index: u, distance });
+            }
+        }
+
+        // Sort by distance (furthest first), then by original index
+        availableContainers.sort((a, b) => {
+            return b.distance - a.distance;
+        });
+
+        if (availableContainers.length < numNeeded) {
+            const more = numNeeded - availableContainers.length;
+            for (let i = 0; i < more; i++) {
+                availableContainers.push({ index: numContainers + i, distance: Number.POSITIVE_INFINITY });
+            }
+
+            if (__DEV__ && numContainers + more > peek$(ctx, "numContainersPooled")) {
+                console.warn(
+                    "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
+                );
+            }
+        }
+
+        // Get only numNeeded containers
+        const sliced = availableContainers.slice(0, numNeeded);
+
+        // Sort by original index
+        return sliced.sort((a, b) => a.index - b.index).map((item) => item.index);
     };
 
     const isFirst = !refState.current.renderItem;
