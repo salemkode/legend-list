@@ -185,7 +185,7 @@ export const Container = <ItemT,>({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
 
-        if (ENABLE_DEVMODE) {
+        if (__DEV__ && ENABLE_DEVMODE) {
             anchorStyle.borderColor = position.type === "top" ? "red" : "blue";
             anchorStyle.borderWidth = 1;
         }
@@ -193,7 +193,7 @@ export const Container = <ItemT,>({
             <LeanView style={style}>
                 <LeanView style={anchorStyle} onLayout={onLayout} ref={ref}>
                     {contentFragment}
-                    {ENABLE_DEVMODE && (
+                    {__DEV__ && ENABLE_DEVMODE && (
                         <Text style={{ position: "absolute", top: 0, left: 0, zIndex: 1000 }}>{position.top}</Text>
                     )}
                 </LeanView>
