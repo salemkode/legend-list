@@ -38,11 +38,10 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 ref={listRef}
                 data={data}
                 renderItem={renderItem}
-                keyExtractor={(item) => `id${item.id}`}
+                keyExtractor={(item) => item.id}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
                 recycleItems={true}
-                numColumns={numColumns}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
             />
