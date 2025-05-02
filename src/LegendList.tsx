@@ -16,7 +16,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { roundSize, warnDevOnce } from "./helpers";
+import { comparatorByDistance, comparatorDefault, roundSize, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -1264,57 +1264,74 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const findAvailableContainers = (numNeeded: number, startBuffered: number, endBuffered: number): number[] => {
         const state = refState.current!;
-        const availableContainers: Array<{ index: number; distance: number }> = [];
         const numContainers = peek$(ctx, "numContainers") as number;
 
-        // Find the furthest container so we can recycle a container from the other side of scroll
-        // to reduce empty container flashing when switching directions
+        // Quick return for common case
+        if (numNeeded === 0) return [];
 
+        const result: number[] = [];
+        const availableContainers: Array<{ index: number; distance: number }> = [];
+
+        // First pass: collect unallocated containers (most efficient to use)
         for (let u = 0; u < numContainers; u++) {
             const key = peek$(ctx, `containerItemKey${u}`);
             // Hasn't been allocated yet, just use it
             if (key === undefined) {
-                availableContainers.push({ index: u, distance: Number.POSITIVE_INFINITY });
-                if (availableContainers.length >= numNeeded) {
-                    break;
+                result.push(u);
+                if (result.length >= numNeeded) {
+                    return result; // Early exit if we have enough unallocated containers
                 }
-                continue;
             }
+        }
+
+        // Second pass: collect containers that are out of view
+        for (let u = 0; u < numContainers; u++) {
+            const key = peek$(ctx, `containerItemKey${u}`);
+            if (key === undefined) continue; // Skip already collected containers
 
             const index = state.indexByKey.get(key)!;
             if (index < startBuffered) {
-                const distance = startBuffered - index;
-                availableContainers.push({ index: u, distance });
-            }
-            if (index > endBuffered) {
-                const distance = index - endBuffered;
-                availableContainers.push({ index: u, distance });
+                availableContainers.push({ index: u, distance: startBuffered - index });
+            } else if (index > endBuffered) {
+                availableContainers.push({ index: u, distance: index - endBuffered });
             }
         }
 
-        // Sort by distance (furthest first), then by original index
-        availableContainers.sort((a, b) => {
-            return b.distance - a.distance;
-        });
+        // If we need more containers than we have available so far
+        const remaining = numNeeded - result.length;
+        if (remaining > 0) {
+            if (availableContainers.length > 0) {
+                // Only sort if we need to
+                if (availableContainers.length > remaining) {
+                    // Sort by distance (furthest first)
+                    availableContainers.sort(comparatorByDistance);
+                    // Take just what we need
+                    availableContainers.length = remaining;
+                }
 
-        if (availableContainers.length < numNeeded) {
-            const more = numNeeded - availableContainers.length;
-            for (let i = 0; i < more; i++) {
-                availableContainers.push({ index: numContainers + i, distance: Number.POSITIVE_INFINITY });
+                // Add to result, keeping track of original indices
+                for (const container of availableContainers) {
+                    result.push(container.index);
+                }
             }
 
-            if (__DEV__ && numContainers + more > peek$(ctx, "numContainersPooled")) {
-                console.warn(
-                    "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
-                );
+            // If we still need more, create new containers
+            const stillNeeded = numNeeded - result.length;
+            if (stillNeeded > 0) {
+                for (let i = 0; i < stillNeeded; i++) {
+                    result.push(numContainers + i);
+                }
+
+                if (__DEV__ && numContainers + stillNeeded > peek$(ctx, "numContainersPooled")) {
+                    console.warn(
+                        "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
+                    );
+                }
             }
         }
 
-        // Get only numNeeded containers
-        const sliced = availableContainers.slice(0, numNeeded);
-
-        // Sort by original index
-        return sliced.sort((a, b) => a.index - b.index).map((item) => item.index);
+        // Sort by index for consistent ordering
+        return result.sort(comparatorDefault);
     };
 
     const isFirst = !refState.current.renderItem;

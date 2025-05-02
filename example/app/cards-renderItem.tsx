@@ -108,6 +108,8 @@ export const ItemCard = memo(({ item, index }: LegendListRenderItemProps<Item>) 
 
     const swipeableState = useRef(false);
 
+    // console.log(Math.round(performance.now()), "renderItem", index);
+
     // A callback when the item is recycled
     // useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
     //     if (swipeableState.current) {
