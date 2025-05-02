@@ -828,7 +828,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         needNewContainers.push(i);
                     }
                 }
-                for (let i = prevEndBuffered + 1; i <= endBuffered!; i++) {
+                for (let i = Math.max(prevEndBuffered + 1, startBuffered); i <= endBuffered!; i++) {
                     if (!isContained(i)) {
                         needNewContainers.push(i);
                     }
