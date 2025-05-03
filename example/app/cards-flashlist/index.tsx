@@ -39,14 +39,12 @@ export default function HomeScreen() {
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="flashlist">
             <FlashList
-                // style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 data={data}
                 renderItem={renderItemFn}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
-                // initialScrollIndex={500}
                 ref={scrollRef}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
