@@ -595,8 +595,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const topPad = peek$(ctx, "stylePaddingTop") + peek$(ctx, "headerSize");
         const numColumns = peek$(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
-        const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
         let scrollState = state.scroll;
+        const scrollExtra = Math.max(-16, Math.min(16, speed)) * 24;
         // Don't use averages when disabling scroll jumps because adding items to the top of the list
         // causes jumpiness if using averages
         // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
@@ -610,7 +610,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollState = updatedOffset;
         }
 
-        let scroll = scrollState - previousScrollAdjust - topPad;
+        let scroll = scrollState + scrollExtra - previousScrollAdjust - topPad;
 
         // Sometimes we may have scrolled past the visible area which can make items at the top of the
         // screen not render. So make sure we clamp scroll to the end.
@@ -626,14 +626,16 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let scrollBufferTop = scrollBuffer;
         let scrollBufferBottom = scrollBuffer;
 
-        if (scrollExtra > 8) {
-            scrollBufferTop = 0;
-            scrollBufferBottom = scrollBuffer + scrollExtra;
+        if (speed > 0) {
+            scrollBufferTop = scrollBuffer * 0.1;
+            scrollBufferBottom = scrollBuffer * 1.9;
         }
-        if (scrollExtra < -8) {
-            scrollBufferTop = scrollBuffer - scrollExtra;
-            scrollBufferBottom = 0;
+        if (speed < 0) {
+            scrollBufferTop = scrollBuffer * 1.9;
+            scrollBufferBottom = scrollBuffer * 0.1;
         }
+
+        // console.log(Math.round(scrollExtra), scrollBufferTop, scrollBufferBottom);
 
         // Check precomputed scroll range to see if we can skip this check
         if (state.scrollForNextCalculateItemsInView) {
