@@ -44,6 +44,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 recycleItems={true}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
+                extraData={{ recycleState: true }}
             />
         </View>
     );
