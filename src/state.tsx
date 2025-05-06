@@ -1,6 +1,6 @@
 import * as React from "react";
-import { useSyncExternalStore } from "react";
 import type { View } from "react-native";
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 import type {
     AnchoredPosition,
     ColumnWrapperStyle,
