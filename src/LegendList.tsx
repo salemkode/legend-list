@@ -470,6 +470,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Resetting containers can cause a jump, so we don't want to disable scroll jumps in that case
         if (state.scrollingToOffset === undefined) {
             state.disableScrollJumpsFrom = state.scroll - state.scrollAdjustHandler.getAppliedAdjust();
+            state.scrollHistory.length = 0;
 
             setTimeout(() => {
                 state.disableScrollJumpsFrom = undefined;
@@ -627,13 +628,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let scrollBufferTop = scrollBuffer;
         let scrollBufferBottom = scrollBuffer;
 
+        if (Math.abs(speed) > 4) {
         if (speed > 0) {
             scrollBufferTop = scrollBuffer * 0.1;
             scrollBufferBottom = scrollBuffer * 1.9;
-        }
-        if (speed < 0) {
+            } else {
             scrollBufferTop = scrollBuffer * 1.9;
             scrollBufferBottom = scrollBuffer * 0.1;
+        }
         }
 
         // console.log(Math.round(scrollExtra), scrollBufferTop, scrollBufferBottom);
