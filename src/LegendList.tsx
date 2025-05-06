@@ -576,7 +576,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         return false;
     }, []);
 
-    const calculateItemsInView = useCallback(() => {
+    const calculateItemsInView = useCallback((isReset?: boolean) => {
         const state = refState.current!;
         const {
             data,
@@ -813,9 +813,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let numContainers = prevNumContainers;
 
             const needNewContainers: number[] = [];
-            if (startBuffered < prevStartBuffered! || endBuffered > prevEndBuffered!) {
+            if (isReset || startBuffered < prevStartBuffered! || endBuffered > prevEndBuffered!) {
                 const isContained = (i: number) => {
-                    const isContained = false;
                     const id = getId(i)!;
                     // See if this item is already in a container
                     for (let j = 0; j < numContainers; j++) {
@@ -825,14 +824,23 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         }
                     }
                 };
-                for (let i = startBuffered!; i < prevStartBuffered; i++) {
-                    if (!isContained(i)) {
-                        needNewContainers.push(i);
+                if (isReset) {
+                    for (let i = startBuffered!; i <= endBuffered; i++) {
+                        if (!isContained(i)) {
+                            needNewContainers.push(i);
+                        }
                     }
-                }
-                for (let i = Math.max(prevEndBuffered + 1, startBuffered); i <= endBuffered!; i++) {
-                    if (!isContained(i)) {
-                        needNewContainers.push(i);
+                } else {
+                    // Check only newly visible items at the top and bottom
+                    for (let i = startBuffered!; i < prevStartBuffered; i++) {
+                        if (!isContained(i)) {
+                            needNewContainers.push(i);
+                        }
+                    }
+                    for (let i = Math.max(prevEndBuffered + 1, startBuffered); i <= endBuffered!; i++) {
+                        if (!isContained(i)) {
+                            needNewContainers.push(i);
+                        }
                     }
                 }
             }
@@ -1144,7 +1152,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     state.positions.clear();
                 }
 
-                calculateItemsInView();
+                calculateItemsInView(/*isReset*/ true);
 
                 const didMaintainScrollAtEnd = doMaintainScrollAtEnd(false);
 
@@ -1210,7 +1218,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         // reset scroll to 0 and schedule rerender
                         scrollTo(0, false);
                         setTimeout(() => {
-                            calculateItemsInView();
+                            calculateItemsInView(/*reset*/ true);
                         }, 0);
                     } else {
                         state.startBufferedId = undefined;
@@ -1227,7 +1235,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     // reset scroll to 0 and schedule rerender
                     scrollTo(0, false);
                     setTimeout(() => {
-                        calculateItemsInView();
+                        calculateItemsInView(/*reset*/ true);
                     }, 0);
                 }
             }
@@ -1443,10 +1451,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (initialScrollIndex) {
                 requestAnimationFrame(() => {
                     // immediate render causes issues with initial index position
-                    calculateItemsInView();
+                    calculateItemsInView(/*isReset*/ true);
                 });
             } else {
-                calculateItemsInView();
+                calculateItemsInView(/*isReset*/ true);
             }
 
             return true;
