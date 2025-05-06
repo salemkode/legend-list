@@ -716,7 +716,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         };
 
         let foundEnd = false;
-        let lastSize: number | undefined;
         let nextTop: number | undefined;
         let nextBottom: number | undefined;
 
@@ -759,7 +758,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (startBuffered === null && top + size > scroll - scrollBufferTop) {
                     startBuffered = i;
                     startBufferedId = id;
-                    nextTop = top + scrollAdjustPad;
+                    nextTop = top;
                 }
                 if (startNoBuffer !== null) {
                     if (top <= scrollBottom) {
@@ -767,8 +766,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     }
                     if (top <= scrollBottom + scrollBufferBottom) {
                         endBuffered = i;
-                        lastSize = maxSizeInRow;
-                        nextBottom = top + maxSizeInRow + scrollAdjustPad;
+                        nextBottom = top + maxSizeInRow - scrollLength;
                     } else {
                         foundEnd = true;
                     }
@@ -796,9 +794,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Precompute the scroll that will be needed for the range to change
         // so it can be skipped if not needed
-        if (state.enableScrollForNextCalculateItemsInView && nextTop !== undefined && nextBottom !== undefined) {
+        if (
+            state.enableScrollForNextCalculateItemsInView &&
+            nextTop !== undefined &&
+            nextBottom !== undefined &&
+            state.disableScrollJumpsFrom === undefined
+        ) {
             state.scrollForNextCalculateItemsInView =
-                nextTop >= 0 && nextBottom >= 0
+                nextTop !== undefined && nextBottom !== undefined
                     ? {
                           top: nextTop,
                           bottom: nextBottom,
@@ -1494,6 +1497,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const index = indexByKey.get(itemKey)!;
         const numColumns = peek$(ctx, "numColumns");
 
+        state.scrollForNextCalculateItemsInView = undefined;
         state.minIndexSizeChanged =
             state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
 
