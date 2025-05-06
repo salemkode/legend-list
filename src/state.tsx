@@ -149,14 +149,6 @@ function createSelectorFunctionsArr(ctx: StateContext, signalNames: ListenerType
     };
 }
 
-export function useArr$<T extends ListenerType>(signalNames: T[]): ListenerTypeValueMap[T][] {
-    const ctx = React.useContext(ContextState)!;
-    const { subscribe, get } = React.useMemo(() => createSelectorFunctionsArr(ctx, signalNames), [ctx, signalNames]);
-    const value = useSyncExternalStore(subscribe, get);
-
-    return value;
-}
-
 export function listen$<T extends ListenerType>(
     ctx: StateContext,
     signalName: T,
@@ -199,4 +191,99 @@ export function getContentSize(ctx: StateContext) {
     const footerSize = values.get("footerSize") || 0;
     const totalSize = values.get("totalSize") || 0;
     return headerSize + footerSize + totalSize + stylePaddingTop;
+}
+
+export function useArr$<T extends ListenerType>(signalNames: [T]): [ListenerTypeValueMap[T]];
+export function useArr$<T1 extends ListenerType, T2 extends ListenerType>(
+    signalNames: [T1, T2],
+): [ListenerTypeValueMap[T1], ListenerTypeValueMap[T2]];
+export function useArr$<T1 extends ListenerType, T2 extends ListenerType, T3 extends ListenerType>(
+    signalNames: [T1, T2, T3],
+): [ListenerTypeValueMap[T1], ListenerTypeValueMap[T2], ListenerTypeValueMap[T3]];
+export function useArr$<
+    T1 extends ListenerType,
+    T2 extends ListenerType,
+    T3 extends ListenerType,
+    T4 extends ListenerType,
+>(
+    signalNames: [T1, T2, T3, T4],
+): [ListenerTypeValueMap[T1], ListenerTypeValueMap[T2], ListenerTypeValueMap[T3], ListenerTypeValueMap[T4]];
+export function useArr$<
+    T1 extends ListenerType,
+    T2 extends ListenerType,
+    T3 extends ListenerType,
+    T4 extends ListenerType,
+    T5 extends ListenerType,
+>(
+    signalNames: [T1, T2, T3, T4, T5],
+): [
+    ListenerTypeValueMap[T1],
+    ListenerTypeValueMap[T2],
+    ListenerTypeValueMap[T3],
+    ListenerTypeValueMap[T4],
+    ListenerTypeValueMap[T5],
+];
+export function useArr$<
+    T1 extends ListenerType,
+    T2 extends ListenerType,
+    T3 extends ListenerType,
+    T4 extends ListenerType,
+    T5 extends ListenerType,
+    T6 extends ListenerType,
+>(
+    signalNames: [T1, T2, T3, T4, T5, T6],
+): [
+    ListenerTypeValueMap[T1],
+    ListenerTypeValueMap[T2],
+    ListenerTypeValueMap[T3],
+    ListenerTypeValueMap[T4],
+    ListenerTypeValueMap[T5],
+    ListenerTypeValueMap[T6],
+];
+export function useArr$<
+    T1 extends ListenerType,
+    T2 extends ListenerType,
+    T3 extends ListenerType,
+    T4 extends ListenerType,
+    T5 extends ListenerType,
+    T6 extends ListenerType,
+    T7 extends ListenerType,
+>(
+    signalNames: [T1, T2, T3, T4, T5, T6, T7],
+): [
+    ListenerTypeValueMap[T1],
+    ListenerTypeValueMap[T2],
+    ListenerTypeValueMap[T3],
+    ListenerTypeValueMap[T4],
+    ListenerTypeValueMap[T5],
+    ListenerTypeValueMap[T6],
+    ListenerTypeValueMap[T7],
+];
+export function useArr$<
+    T1 extends ListenerType,
+    T2 extends ListenerType,
+    T3 extends ListenerType,
+    T4 extends ListenerType,
+    T5 extends ListenerType,
+    T6 extends ListenerType,
+    T7 extends ListenerType,
+    T8 extends ListenerType,
+>(
+    signalNames: [T1, T2, T3, T4, T5, T6, T7, T8],
+): [
+    ListenerTypeValueMap[T1],
+    ListenerTypeValueMap[T2],
+    ListenerTypeValueMap[T3],
+    ListenerTypeValueMap[T4],
+    ListenerTypeValueMap[T5],
+    ListenerTypeValueMap[T6],
+    ListenerTypeValueMap[T7],
+    ListenerTypeValueMap[T8],
+];
+export function useArr$<T extends ListenerType>(signalNames: T[]): ListenerTypeValueMap[T][] {
+    const ctx = React.useContext(ContextState)!;
+    const { subscribe, get } = React.useMemo(() => createSelectorFunctionsArr(ctx, signalNames), [ctx, signalNames]);
+    const value = useSyncExternalStore(subscribe, get);
+
+    return value;
 }
