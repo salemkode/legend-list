@@ -610,7 +610,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollState = updatedOffset;
         }
 
-        let scroll = scrollState + scrollExtra - previousScrollAdjust - topPad;
+        const scrollAdjustPad = -previousScrollAdjust - topPad;
+        let scroll = scrollState + scrollExtra + scrollAdjustPad;
 
         // Sometimes we may have scrolled past the visible area which can make items at the top of the
         // screen not render. So make sure we clamp scroll to the end.
@@ -714,6 +715,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         let foundEnd = false;
         let lastSize: number | undefined;
+        let nextTop: number | undefined;
+        let nextBottom: number | undefined;
 
         // TODO PERF: Could cache this while looping through numContainers at the end of this function
         // This takes 0.03 ms in an example in the ios simulator
@@ -754,6 +757,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (startBuffered === null && top + size > scroll - scrollBufferTop) {
                     startBuffered = i;
                     startBufferedId = id;
+                    nextTop = top + scrollAdjustPad;
                 }
                 if (startNoBuffer !== null) {
                     if (top <= scrollBottom) {
@@ -762,6 +766,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (top <= scrollBottom + scrollBufferBottom) {
                         endBuffered = i;
                         lastSize = maxSizeInRow;
+                        nextBottom = top + maxSizeInRow + scrollAdjustPad;
                     } else {
                         foundEnd = true;
                     }
@@ -789,15 +794,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Precompute the scroll that will be needed for the range to change
         // so it can be skipped if not needed
-        if (state.enableScrollForNextCalculateItemsInView && lastSize) {
-            const aboveFirst = startBuffered! - 1;
-            let nextTop = 0;
-            if (aboveFirst >= 0) {
-                const aboveFirstSize = getItemSize(getId(aboveFirst)!, aboveFirst, data[aboveFirst], useAverageSize);
-                nextTop = scroll - aboveFirstSize;
-            }
-
-            const nextBottom = scroll + lastSize!;
+        if (state.enableScrollForNextCalculateItemsInView && nextTop !== undefined && nextBottom !== undefined) {
             state.scrollForNextCalculateItemsInView =
                 nextTop >= 0 && nextBottom >= 0
                     ? {
