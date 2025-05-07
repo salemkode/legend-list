@@ -1,5 +1,51 @@
-# 1.0.0
+## 1.0.10
+- Fix: Removed an optimization that only checked newly visible items, which could sometimes cause gaps in lists
+- Fix: Scroll history resets properly during scroll operations, which was causing gaps after scroll
+- Fix: Made scroll buffer calculations and scroll jump handling more reliable
 
+## 1.0.9
+- Fix: Use the `use-sync-external-store` shim to support older versions of react
+- Fix: Lists sometimes leaving some gaps when reordering a list
+- Fix: Sometimes precomputing next scroll position for calculation incorrectly
+
+## 1.0.8
+- Perf: The scroll buffering algorithm is smarter and adjusts based on scroll direction for better performance
+- Perf: The container-finding logic keeps index order, reducing gaps in rendering
+- Perf: Combine multiple hooks in Container to a single `useArray$` hook
+
+## 1.0.7
+- Fix: Containers that move out of view are handled better
+
+## 1.0.6
+- Fix: Average item size calculations are more accurate while scrolling
+- Fix: Items in view are handled better when data changes
+- Fix: Scroll position is maintained more accurately during updates
+
+## 1.0.5
+- Fix: Fast scrolling sometimes caused elements to disappear
+- Fix: Out-of-range `scrollToIndex` calls are handled better
+
+## 1.0.4
+- Fix: Container allocation is more efficient
+- Fix: Bidirectional infinite lists scroll better on the old architecture
+- Fix: Item size updates are handled more reliably
+- Fix: Container reuse logic is more accurate
+- Fix: Zero-size layouts are handled better in the old architecture
+
+## 1.0.3
+- Fix: Items that are larger than the estimated size are handled correctly
+
+## 1.0.2
+- Fix: Initial layout works better in the old architecture
+- Fix: Average size calculations are more accurate for bidirectional scrolling
+- Fix: Initial scroll index behavior is more precise
+- Fix: Item size calculations are more accurate overall
+
+## 1.0.1
+- Fix: Total size calculations are correct when using average sizes
+- Fix: Keyboard avoiding behavior is improved for a smoother experience
+
+## 1.0.0
 Initial release! Major changes if you're coming from a beta version:
 
-- Item hooks like `useRecyclingState` are no longer render props, but can be imported from `@legendapp/list`
+- Item hooks like `useRecyclingState` are no longer render props, but can be imported directly from `@legendapp/list`.
