@@ -781,9 +781,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        const prevStartBuffered = state.startBuffered;
-        const prevEndBuffered = state.endBuffered;
-
         Object.assign(state, {
             startBuffered,
             startBufferedId,
@@ -809,7 +806,17 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     : undefined;
         }
 
-        // console.log("start", scroll, scrollState, startBuffered, startNoBuffer, endNoBuffer, endBuffered);
+        // console.log(
+        //     "start",
+        //     Math.round(scroll),
+        //     Math.round(scrollState),
+        //     Math.round(scrollExtra),
+        //     scrollAdjustPad,
+        //     startBuffered,
+        //     startNoBuffer,
+        //     endNoBuffer,
+        //     endBuffered,
+        // );
 
         if (startBuffered !== null && endBuffered !== null) {
             let numContainers = prevNumContainers;
@@ -1324,7 +1331,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
                 if (__DEV__ && numContainers + stillNeeded > peek$(ctx, "numContainersPooled")) {
                     console.warn(
-                        "[legend-list] No container to recycle, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
+                        "[legend-list] No unused container available, so creating one on demand. This can be a minor performance issue and is likely caused by the estimatedItemSize being too large. Consider decreasing estimatedItemSize or increasing initialContainerPoolRatio.",
+                        {
+                            debugInfo: {
+                                numContainers,
+                                numNeeded,
+                                stillNeeded,
+                                numContainersPooled: peek$(ctx, "numContainersPooled"),
+                            },
+                        },
                     );
                 }
             }
