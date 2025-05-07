@@ -16,7 +16,6 @@ export class ScrollAdjustHandler {
         set$(this.context, "scrollAdjust", this.appliedAdjust);
         this.busy = false;
     }
-
     requestAdjust(adjust: number, onAdjusted: (diff: number) => void) {
         if (this.isDisabled) {
             return;

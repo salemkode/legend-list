@@ -994,6 +994,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
         state.scrollAdjustHandler.setDisableAdjust(true);
+            state.scrollHistory.length = 0;
         state.scrollingToOffset = offset;
         // Do the scroll
         refScroller.current?.scrollTo({
