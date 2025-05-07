@@ -36,7 +36,6 @@ export default function VideoFeed() {
                     renderItem={Item}
                     keyExtractor={(item) => item.id}
                     decelerationRate="fast"
-                    snapToAlignment="start"
                     showsVerticalScrollIndicator={false}
                     estimatedItemSize={height}
                     pagingEnabled
