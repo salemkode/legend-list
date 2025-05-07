@@ -18,7 +18,7 @@ type Country = {
 
 // Convert countries object to array and add an id
 const DATA: Country[] = Object.entries(countries)
-    .slice(0, 5)
+    // .slice(0, 5)
     .map(([code, country]) => ({
         id: code,
         name: country.name,

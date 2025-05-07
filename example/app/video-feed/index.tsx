@@ -20,7 +20,7 @@ export default function VideoFeed() {
     useEffect(() => {
         setTimeout(() => {
             setData(
-                Array.from({ length: 20 }, (_, index) => ({
+                Array.from({ length: 10 }, (_, index) => ({
                     id: index.toString(),
                     color: colors[index % colors.length],
                 })),
@@ -35,13 +35,22 @@ export default function VideoFeed() {
                     data={data}
                     renderItem={Item}
                     keyExtractor={(item) => item.id}
-                    snapToInterval={height}
                     decelerationRate="fast"
                     snapToAlignment="start"
                     showsVerticalScrollIndicator={false}
                     estimatedItemSize={height}
+                    pagingEnabled
                     drawDistance={1}
                     extraData={height}
+                    onEndReached={() => {
+                        setData([
+                            ...data,
+                            ...Array.from({ length: 10 }, (_, index) => ({
+                                id: (data.length + index).toString(),
+                                color: colors[index % colors.length],
+                            })),
+                        ]);
+                    }}
                 />
             )}
         </View>
