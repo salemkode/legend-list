@@ -815,7 +815,6 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let numContainers = prevNumContainers;
 
             const needNewContainers: number[] = [];
-            if (isReset || startBuffered < prevStartBuffered! || endBuffered > prevEndBuffered!) {
                 const isContained = (i: number) => {
                     const id = getId(i)!;
                     // See if this item is already in a container
@@ -826,26 +825,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         }
                     }
                 };
-                if (isReset) {
+            // Note: There was previously an optimization here to only check items that are newly visible
+            // but it may have been causing issues with some items not being rendered,
+            // and it's likely not enough of a performance improvement to be worth it
                     for (let i = startBuffered!; i <= endBuffered; i++) {
                         if (!isContained(i)) {
                             needNewContainers.push(i);
                         }
                     }
-                } else {
-                    // Check only newly visible items at the top and bottom
-                    for (let i = startBuffered!; i < prevStartBuffered; i++) {
-                        if (!isContained(i)) {
-                            needNewContainers.push(i);
-                        }
-                    }
-                    for (let i = Math.max(prevEndBuffered + 1, startBuffered); i <= endBuffered!; i++) {
-                        if (!isContained(i)) {
-                            needNewContainers.push(i);
-                        }
-                    }
-                }
-            }
 
             if (needNewContainers.length > 0) {
                 const availableContainers = findAvailableContainers(
