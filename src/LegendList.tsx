@@ -629,13 +629,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let scrollBufferBottom = scrollBuffer;
 
         if (Math.abs(speed) > 4) {
-        if (speed > 0) {
-            scrollBufferTop = scrollBuffer * 0.1;
-            scrollBufferBottom = scrollBuffer * 1.9;
+            if (speed > 0) {
+                scrollBufferTop = scrollBuffer * 0.1;
+                scrollBufferBottom = scrollBuffer * 1.9;
             } else {
-            scrollBufferTop = scrollBuffer * 1.9;
-            scrollBufferBottom = scrollBuffer * 0.1;
-        }
+                scrollBufferTop = scrollBuffer * 1.9;
+                scrollBufferBottom = scrollBuffer * 0.1;
+            }
         }
 
         // console.log(Math.round(scrollExtra), scrollBufferTop, scrollBufferBottom);
@@ -822,24 +822,24 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let numContainers = prevNumContainers;
 
             const needNewContainers: number[] = [];
-                const isContained = (i: number) => {
-                    const id = getId(i)!;
-                    // See if this item is already in a container
-                    for (let j = 0; j < numContainers; j++) {
-                        const key = peek$(ctx, `containerItemKey${j}`);
-                        if (key === id) {
-                            return true;
-                        }
+            const isContained = (i: number) => {
+                const id = getId(i)!;
+                // See if this item is already in a container
+                for (let j = 0; j < numContainers; j++) {
+                    const key = peek$(ctx, `containerItemKey${j}`);
+                    if (key === id) {
+                        return true;
                     }
-                };
+                }
+            };
             // Note: There was previously an optimization here to only check items that are newly visible
             // but it may have been causing issues with some items not being rendered,
             // and it's likely not enough of a performance improvement to be worth it
-                    for (let i = startBuffered!; i <= endBuffered; i++) {
-                        if (!isContained(i)) {
-                            needNewContainers.push(i);
-                        }
-                    }
+            for (let i = startBuffered!; i <= endBuffered; i++) {
+                if (!isContained(i)) {
+                    needNewContainers.push(i);
+                }
+            }
 
             if (needNewContainers.length > 0) {
                 const availableContainers = findAvailableContainers(
@@ -1001,7 +1001,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
         state.scrollAdjustHandler.setDisableAdjust(true);
-            state.scrollHistory.length = 0;
+        state.scrollHistory.length = 0;
         state.scrollingToOffset = offset;
         // Do the scroll
         refScroller.current?.scrollTo({
