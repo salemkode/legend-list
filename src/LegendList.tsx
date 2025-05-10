@@ -992,6 +992,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (state) {
             state.scrollingToOffset = undefined;
             state.scrollAdjustHandler.setDisableAdjust(false);
+            state.scrollHistory.length = 0;
             calculateItemsInView();
         }
     };
@@ -1675,13 +1676,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 return;
             }
             const state = refState.current!;
+            const scrollingToOffset = state.scrollingToOffset;
             const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
             // Ignore scroll from calcTotal unless it's scrolling to 0
             if (state.ignoreScrollFromCalcTotal && newScroll !== 0) {
                 return;
             }
 
-            if (state.scrollingToOffset !== undefined && Math.abs(newScroll - state.scrollingToOffset) < 10) {
+            if (scrollingToOffset !== undefined && Math.abs(newScroll - scrollingToOffset) < 10) {
                 finishScrollTo();
             }
 
@@ -1701,9 +1703,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.lastBatchingAction = Date.now();
             const currentTime = performance.now();
 
-            // don't add to the history, if it's initial scroll event
-            // otherwise invalid velocity will be calculated
-            if (!(state.scrollHistory.length === 0 && newScroll === initialContentOffset)) {
+            // Don't add to the history if it's initial scroll event otherwise invalid velocity will be calculated
+            // Don't add to the history if we are scrolling to an offset
+            if (
+                scrollingToOffset === undefined &&
+                !(state.scrollHistory.length === 0 && newScroll === initialContentOffset)
+            ) {
                 // Update scroll history
                 state.scrollHistory.push({ scroll: newScroll, time: currentTime });
             }
@@ -1724,10 +1729,22 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             let velocity = 0;
             if (state.scrollHistory.length >= 2) {
                 const newest = state.scrollHistory[state.scrollHistory.length - 1];
-                const oldest = state.scrollHistory[0];
-                const scrollDiff = newest.scroll - oldest.scroll;
-                const timeDiff = newest.time - oldest.time;
-                velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
+                let oldest: (typeof state.scrollHistory)[0] | undefined;
+
+                // Find oldest entry within 60ms of newest
+                for (let i = 0; i < state.scrollHistory.length - 1; i++) {
+                    const entry = state.scrollHistory[i];
+                    if (newest.time - entry.time <= 100) {
+                        oldest = entry;
+                        break;
+                    }
+                }
+
+                if (oldest) {
+                    const scrollDiff = newest.scroll - oldest.scroll;
+                    const timeDiff = newest.time - oldest.time;
+                    velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
+                }
             }
 
             // Update current scroll state
