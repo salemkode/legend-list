@@ -1,3 +1,6 @@
+## 1.0.11
+- Fix: scrollTo was sometimes showing gaps at the bottom or bottom after reaching the destination
+
 ## 1.0.10
 - Fix: Removed an optimization that only checked newly visible items, which could sometimes cause gaps in lists
 - Fix: Scroll history resets properly during scroll operations, which was causing gaps after scroll
