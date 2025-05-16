@@ -207,7 +207,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 ? refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0
                 : 0;
 
-            return offset / numColumnsProp - adjust;
+            const topPad = peek$(ctx, "stylePaddingTop") + peek$(ctx, "headerSize");
+
+            return offset / numColumnsProp - adjust + topPad;
         }
         return 0;
     };
@@ -316,6 +318,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const firstIndexOffset = calculateOffsetForIndex(index);
         let firstIndexScrollPostion = firstIndexOffset - viewOffset;
         const diff = Math.abs(state.scroll - firstIndexScrollPostion);
+        const topPad = peek$(ctx, "stylePaddingTop") + peek$(ctx, "headerSize");
 
         // TODO: include checking if destination element position is already known, to avoid unneeded anchor element switches
         const needsReanchoring = maintainVisibleContentPosition && diff > 100;
@@ -325,7 +328,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             // in the maintainVisibleContentPosition we can choose element we are scrolling to as anchor element
             // now let's cleanup old positions and set new anchor element
             const id = getId(index);
-            state.anchorElement = { id, coordinate: firstIndexOffset };
+            state.anchorElement = { id, coordinate: firstIndexOffset - topPad };
             state.belowAnchorElementPositions?.clear();
             state.positions.clear();
             calcTotalSizesAndPositions({ forgetPositions: true }); // since we are choosing new anchor, we need to recalulate positions

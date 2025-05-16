@@ -70,8 +70,8 @@ export default function ScrollIndexDemo() {
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
                 }}
-                //ListHeaderComponent={<View />}
-                //ListHeaderComponentStyle={styles.listHeader}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
                 // initialScrollOffset={20000}
                 initialScrollIndex={50}
                 // inverted
