@@ -244,6 +244,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             scrollPrev: 0,
             scrollPrevTime: 0,
             scrollTime: 0,
+            scrollPending: 0,
             indexByKey: new Map(),
             scrollHistory: [],
             scrollVelocity: 0,
@@ -477,6 +478,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
             setTimeout(() => {
                 state.disableScrollJumpsFrom = undefined;
+                if (state.scrollPending !== undefined && state.scrollPending !== state.scroll) {
+                    updateScroll(state.scrollPending);
+                }
             }, timeout);
         }
     };
@@ -1034,6 +1038,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 state.scroll = 0;
             }
 
+            state.disableScrollJumpsFrom = undefined;
+
             requestAnimationFrame(() => {
                 state.maintainingScrollAtEnd = true;
                 refScroller.current?.scrollToEnd({
@@ -1137,9 +1143,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             state.data = dataProp;
 
             if (!isFirst) {
-                disableScrollJumps(2000);
+                // Disable scroll jumps if the scroll has jumped by the same amount as the total size
+                const totalSizeBefore = state.previousTotalSize;
+                const totalSizeAfter = state.totalSize;
+                const scrollDiff = state.scroll - state.scrollPrev;
+                const sizeDiff = totalSizeAfter - totalSizeBefore!;
 
-                refState.current!.scrollForNextCalculateItemsInView = undefined;
+                if (Math.abs(scrollDiff - sizeDiff) < 10) {
+                    disableScrollJumps(1000);
+                }
 
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$(ctx, "numContainers");
@@ -1400,6 +1412,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             refState.current.sizes.clear();
             refState.current.positions.clear();
         }
+
+        refState.current.previousTotalSize = peek$(ctx, "totalSize");
 
         calcTotalSizesAndPositions({ forgetPositions: false });
     }
@@ -1673,104 +1687,107 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }, []);
 
     const handleScroll = useCallback(
-        (
-            event: {
-                nativeEvent: NativeScrollEvent;
-            },
-            fromSelf?: boolean,
-        ) => {
+        (event: {
+            nativeEvent: NativeScrollEvent;
+        }) => {
             if (event.nativeEvent?.contentSize?.height === 0 && event.nativeEvent.contentSize?.width === 0) {
                 return;
             }
             const state = refState.current!;
-            const scrollingToOffset = state.scrollingToOffset;
             const newScroll = event.nativeEvent.contentOffset[horizontal ? "x" : "y"];
-            // Ignore scroll from calcTotal unless it's scrolling to 0
+            state.scrollPending = newScroll;
             if (state.ignoreScrollFromCalcTotal && newScroll !== 0) {
+                // Ignore scroll from calcTotal unless it's scrolling to 0
                 return;
             }
 
-            if (scrollingToOffset !== undefined && Math.abs(newScroll - scrollingToOffset) < 10) {
-                finishScrollTo();
-            }
+            updateScroll(newScroll);
 
-            if (state.disableScrollJumpsFrom !== undefined) {
-                // If the scroll is too far from the disableScrollJumpsFrom position, don't update the scroll position
-                // This is to prevent jumpiness when adding items to the top of the list
-                const scrollMinusAdjust = newScroll - state.scrollAdjustHandler.getAppliedAdjust();
-                if (Math.abs(scrollMinusAdjust - state.disableScrollJumpsFrom) > 200) {
-                    return;
-                }
-
-                // If it's close enough, we're past the jumpiness period so reset the disableScrollJumpsFrom position
-                state.disableScrollJumpsFrom = undefined;
-            }
-
-            state.hasScrolled = true;
-            state.lastBatchingAction = Date.now();
-            const currentTime = performance.now();
-
-            // Don't add to the history if it's initial scroll event otherwise invalid velocity will be calculated
-            // Don't add to the history if we are scrolling to an offset
-            if (
-                scrollingToOffset === undefined &&
-                !(state.scrollHistory.length === 0 && newScroll === initialContentOffset)
-            ) {
-                // Update scroll history
-                state.scrollHistory.push({ scroll: newScroll, time: currentTime });
-            }
-            // Keep only last 5 entries
-            if (state.scrollHistory.length > 5) {
-                state.scrollHistory.shift();
-            }
-
-            if (state.scrollTimer !== undefined) {
-                clearTimeout(state.scrollTimer);
-            }
-
-            state.scrollTimer = setTimeout(() => {
-                state.scrollVelocity = 0;
-            }, 500);
-
-            // Calculate average velocity from history
-            let velocity = 0;
-            if (state.scrollHistory.length >= 2) {
-                const newest = state.scrollHistory[state.scrollHistory.length - 1];
-                let oldest: (typeof state.scrollHistory)[0] | undefined;
-
-                // Find oldest entry within 60ms of newest
-                for (let i = 0; i < state.scrollHistory.length - 1; i++) {
-                    const entry = state.scrollHistory[i];
-                    if (newest.time - entry.time <= 100) {
-                        oldest = entry;
-                        break;
-                    }
-                }
-
-                if (oldest) {
-                    const scrollDiff = newest.scroll - oldest.scroll;
-                    const timeDiff = newest.time - oldest.time;
-                    velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
-                }
-            }
-
-            // Update current scroll state
-            state.scrollPrev = state.scroll;
-            state.scrollPrevTime = state.scrollTime;
-            state.scroll = newScroll;
-            state.scrollTime = currentTime;
-            state.scrollVelocity = velocity;
-            // Use velocity to predict scroll position
-            calculateItemsInView();
-            checkAtBottom();
-            checkAtTop();
-
-            if (!fromSelf) {
-                state.onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
-            }
+            state.onScroll?.(event as NativeSyntheticEvent<NativeScrollEvent>);
         },
         [],
     );
+
+    const updateScroll = useCallback((newScroll: number) => {
+        const state = refState.current!;
+        const scrollingToOffset = state.scrollingToOffset;
+
+        if (scrollingToOffset !== undefined && Math.abs(newScroll - scrollingToOffset) < 10) {
+            finishScrollTo();
+        }
+
+        if (state.disableScrollJumpsFrom !== undefined) {
+            // If the scroll is too far from the disableScrollJumpsFrom position, don't update the scroll position
+            // This is to prevent jumpiness when adding items to the top of the list
+            const scrollMinusAdjust = newScroll - state.scrollAdjustHandler.getAppliedAdjust();
+            if (Math.abs(scrollMinusAdjust - state.disableScrollJumpsFrom) > 200) {
+                return;
+            }
+
+            // If it's close enough, we're past the jumpiness period so reset the disableScrollJumpsFrom position
+            state.disableScrollJumpsFrom = undefined;
+        }
+
+        state.hasScrolled = true;
+        state.lastBatchingAction = Date.now();
+        const currentTime = performance.now();
+
+        // Don't add to the history if it's initial scroll event otherwise invalid velocity will be calculated
+        // Don't add to the history if we are scrolling to an offset
+        if (
+            scrollingToOffset === undefined &&
+            !(state.scrollHistory.length === 0 && newScroll === initialContentOffset)
+        ) {
+            // Update scroll history
+            state.scrollHistory.push({ scroll: newScroll, time: currentTime });
+        }
+
+        // Keep only last 5 entries
+        if (state.scrollHistory.length > 5) {
+            state.scrollHistory.shift();
+        }
+
+        if (state.scrollTimer !== undefined) {
+            clearTimeout(state.scrollTimer);
+        }
+
+        state.scrollTimer = setTimeout(() => {
+            state.scrollVelocity = 0;
+        }, 500);
+
+        // Calculate average velocity from history
+        let velocity = 0;
+        if (state.scrollHistory.length >= 2) {
+            const newest = state.scrollHistory[state.scrollHistory.length - 1];
+            let oldest: (typeof state.scrollHistory)[0] | undefined;
+
+            // Find oldest entry within 60ms of newest
+            for (let i = 0; i < state.scrollHistory.length - 1; i++) {
+                const entry = state.scrollHistory[i];
+                if (newest.time - entry.time <= 100) {
+                    oldest = entry;
+                    break;
+                }
+            }
+
+            if (oldest) {
+                const scrollDiff = newest.scroll - oldest.scroll;
+                const timeDiff = newest.time - oldest.time;
+                velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
+            }
+        }
+
+        // Update current scroll state
+        state.scrollPrev = state.scroll;
+        state.scrollPrevTime = state.scrollTime;
+        state.scroll = newScroll;
+        state.scrollTime = currentTime;
+        state.scrollVelocity = velocity;
+        // Use velocity to predict scroll position
+        calculateItemsInView();
+        checkAtBottom();
+        checkAtTop();
+    }, []);
 
     useImperativeHandle(
         forwardedRef,

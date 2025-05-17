@@ -282,6 +282,7 @@ export interface InternalState {
     startNoBuffer: number;
     endBuffered: number;
     endNoBuffer: number;
+    scrollPending: number;
     scroll: number;
     scrollTime: number;
     scrollPrev: number;
@@ -310,6 +311,7 @@ export interface InternalState {
     ignoreScrollFromCalcTotal?: boolean;
     disableScrollJumpsFrom?: number;
     scrollingToOffset?: number | undefined;
+    previousTotalSize?: number;
     averageSizes: Record<
         string,
         {
