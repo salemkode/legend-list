@@ -191,7 +191,7 @@ export const Container = <ItemT,>({
         }
         return (
             <LeanView style={style}>
-                <LeanView style={anchorStyle} onLayout={onLayout} ref={ref}>
+                <LeanView style={[anchorStyle, paddingStyles]} onLayout={onLayout} ref={ref}>
                     {contentFragment}
                     {__DEV__ && ENABLE_DEVMODE && (
                         <Text style={{ position: "absolute", top: 0, left: 0, zIndex: 1000 }}>{position.top}</Text>
