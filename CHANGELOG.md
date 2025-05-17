@@ -1,3 +1,10 @@
+## 1.0.12
+- Fix: Initial scroll index and scrollTo were not compensating for top padding
+- Fix: Removed an overly aggressive optimization that was sometimes causing blank spaces after scrolling
+- Fix: Adding a lot of items to the end with maintainScrollAtEnd could result in a large blank space
+- Fix: ListHeaderComponent sometimes not positioned correctly with maintainVisibleContentPosition
+- Fix: Gap styles not working with maintainVisibleContentPosition
+
 ## 1.0.11
 - Fix: scrollTo was sometimes showing gaps at the bottom or bottom after reaching the destination
 
