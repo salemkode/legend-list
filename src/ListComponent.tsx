@@ -10,6 +10,7 @@ import {
     View,
 } from "react-native";
 import { Containers } from "./Containers";
+import { ListHeaderComponentContainer } from "./ListHeaderComponentContainer";
 import { ENABLE_DEVMODE } from "./constants";
 import { set$, useStateContext } from "./state";
 import { type LegendListProps, typedMemo } from "./types";
@@ -180,15 +181,9 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
         >
             {!ListEmptyComponent && (ENABLE_DEVMODE ? <PaddingAndAdjustDevMode /> : <PaddingAndAdjust />)}
             {ListHeaderComponent && (
-                <View
-                    style={ListHeaderComponentStyle}
-                    onLayout={(event) => {
-                        const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
-                        set$(ctx, "headerSize", size);
-                    }}
-                >
+                <ListHeaderComponentContainer style={ListHeaderComponentStyle} ctx={ctx} horizontal={horizontal}>
                     {getComponent(ListHeaderComponent)}
-                </View>
+                </ListHeaderComponentContainer>
             )}
             {ListEmptyComponent && getComponent(ListEmptyComponent)}
 
