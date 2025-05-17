@@ -7,12 +7,21 @@ interface ListHeaderComponentContainerProps {
     style: StyleProp<ViewStyle>;
     ctx: StateContext;
     horizontal: boolean;
+    waitForInitialLayout: boolean | undefined;
 }
 
-export function ListHeaderComponentContainer({ children, style, ctx, horizontal }: ListHeaderComponentContainerProps) {
+export function ListHeaderComponentContainer({
+    children,
+    style,
+    ctx,
+    horizontal,
+    waitForInitialLayout,
+}: ListHeaderComponentContainerProps) {
     const scrollAdjust = useValue$("scrollAdjust", (v) => v, true);
+    const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
     const additionalSize: ViewStyle = {
         transform: [{ translateY: Animated.multiply(scrollAdjust, -1) }],
+        opacity: animOpacity,
     };
 
     return (

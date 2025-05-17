@@ -181,7 +181,12 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
         >
             {!ListEmptyComponent && (ENABLE_DEVMODE ? <PaddingAndAdjustDevMode /> : <PaddingAndAdjust />)}
             {ListHeaderComponent && (
-                <ListHeaderComponentContainer style={ListHeaderComponentStyle} ctx={ctx} horizontal={horizontal}>
+                <ListHeaderComponentContainer
+                    style={ListHeaderComponentStyle}
+                    ctx={ctx}
+                    horizontal={horizontal}
+                    waitForInitialLayout={waitForInitialLayout}
+                >
                     {getComponent(ListHeaderComponent)}
                 </ListHeaderComponentContainer>
             )}
