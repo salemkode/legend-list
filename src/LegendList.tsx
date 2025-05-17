@@ -600,7 +600,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const numColumns = peek$(ctx, "numColumns");
         const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
         let scrollState = state.scroll;
-        const scrollExtra = Math.max(-16, Math.min(16, speed)) * 24;
+        const scrollExtra = 0;
+        // Disabled this optimization for now because it was causing blanks to appear sometimes
+        // We may need to control speed calculation better, or not have a 5 item history to avoid this issue
+        // const scrollExtra = Math.max(-16, Math.min(16, speed)) * 24;
+
         // Don't use averages when disabling scroll jumps because adding items to the top of the list
         // causes jumpiness if using averages
         // TODO Figure out why using average caused jumpiness, maybe we can fix it a better way
