@@ -1,3 +1,7 @@
+## 1.0.13
+- Fix: Missing React import in ListHeaderComponentContainer crashing some environments
+- Fix: `initialScrollIndex` was off by padding if using "padding" or "paddingVertical" props
+
 ## 1.0.12
 - Fix: Initial scroll index and scrollTo were not compensating for top padding
 - Fix: Removed an overly aggressive optimization that was sometimes causing blank spaces after scrolling
