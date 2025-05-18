@@ -1,3 +1,5 @@
+import type { ViewStyle } from "react-native";
+
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
 export function isFunction(obj: unknown): obj is Function {
     return typeof obj === "function";
@@ -29,4 +31,11 @@ export function comparatorDefault(a: number, b: number) {
 
 export function byIndex(a: { index: number }) {
     return a.index;
+}
+
+function getPadding(s: ViewStyle) {
+    return (s.paddingTop ?? s.paddingVertical ?? s.padding ?? 0) as number;
+}
+export function extractPaddingTop(style: ViewStyle, contentContainerStyle: ViewStyle) {
+    return getPadding(style) + getPadding(contentContainerStyle);
 }

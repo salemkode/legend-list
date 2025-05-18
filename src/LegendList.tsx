@@ -16,7 +16,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { comparatorByDistance, comparatorDefault, roundSize, warnDevOnce } from "./helpers";
+import { comparatorByDistance, comparatorDefault, extractPaddingTop, roundSize, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -115,8 +115,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const contentContainerStyle = { ...StyleSheet.flatten(contentContainerStyleProp) };
     const style = { ...StyleSheet.flatten(styleProp) };
-    const stylePaddingTopState =
-        ((style?.paddingTop as number) || 0) + ((contentContainerStyle?.paddingTop as number) || 0);
+    const stylePaddingTopState = extractPaddingTop(style, contentContainerStyle);
 
     // Padding top is handled by PaddingAndAdjust so remove it from the style
     if (style?.paddingTop) {
@@ -183,7 +182,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         state.sizes.set(key, size);
         return size;
     };
-    const calculateOffsetForIndex = (index = initialScrollIndex) => {
+    const calculateOffsetForIndex = (indexParam: number | undefined) => {
+        const isFromInit = indexParam === undefined;
+        const index = isFromInit ? initialScrollIndex : indexParam;
         // This function is called before refState is initialized, so we need to use dataProp
         const data = dataProp;
         if (index !== undefined) {
@@ -207,14 +208,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 ? refState.current?.scrollAdjustHandler.getAppliedAdjust() || 0
                 : 0;
 
-            const topPad = peek$(ctx, "stylePaddingTop") + peek$(ctx, "headerSize");
+            const stylePaddingTop = isFromInit ? stylePaddingTopState : peek$(ctx, "stylePaddingTop");
+            const topPad = (stylePaddingTop ?? 0) + peek$(ctx, "headerSize");
 
             return offset / numColumnsProp - adjust + topPad;
         }
         return 0;
     };
 
-    const initialContentOffset = initialScrollOffset ?? useMemo(calculateOffsetForIndex, []);
+    const initialContentOffset = initialScrollOffset ?? useMemo(() => calculateOffsetForIndex(undefined), []);
 
     if (!refState.current) {
         const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
