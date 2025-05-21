@@ -1610,7 +1610,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // We can skip calculating items in view if they have already gone out of view. This can happen on slow
         // devices or when the list is scrolled quickly.
-        const isInView = index >= startBuffered && index <= endBuffered;
+        let isInView = index >= startBuffered && index <= endBuffered;
+
+        if (!isInView) {
+            // If not in the range it could be in a container that's offscreen but not yet recycled
+            const numContainers = ctx.values.get("numContainers") as number;
+
+            for (let i = 0; i < numContainers; i++) {
+                if (peek$(ctx, `containerItemKey${i}`) === itemKey) {
+                    isInView = true;
+                    break;
+                }
+            }
+        }
 
         if (needsUpdateContainersDidLayout || (!fromFixGaps && needsCalculate && (isInView || !queuedInitialLayout))) {
             const scrollVelocity = state.scrollVelocity;
