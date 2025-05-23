@@ -61,12 +61,12 @@ export const Container = <ItemT,>({
         if (horizontal) {
             paddingStyles = {
                 paddingRight: !lastItemKeys.includes(itemKey) ? columnGap || gap || undefined : undefined,
-                paddingVertical: (rowGap || gap || 0) / 2,
+                paddingVertical: numColumns > 1 ? (rowGap || gap || 0) / 2 : undefined,
             };
         } else {
             paddingStyles = {
                 paddingBottom: !lastItemKeys.includes(itemKey) ? rowGap || gap || undefined : undefined,
-                paddingHorizontal: (columnGap || gap || 0) / 2,
+                paddingHorizontal: numColumns > 1 ? (columnGap || gap || 0) / 2 : undefined,
             };
         }
     }

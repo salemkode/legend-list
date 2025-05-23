@@ -25,7 +25,7 @@ export const Containers = typedMemo(function Containers<ItemT>({
 }: ContainersProps<ItemT>) {
     const ctx = useStateContext();
     const columnWrapperStyle = ctx.columnWrapperStyle;
-    const [numContainers] = useArr$(["numContainersPooled"]);
+    const [numContainers, numColumns] = useArr$(["numContainersPooled", "numColumns"]);
     const animSize = useValue$("totalSizeWithScrollAdjust", undefined, /*useMicrotask*/ true);
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
@@ -50,7 +50,7 @@ export const Containers = typedMemo(function Containers<ItemT>({
         ? { width: animSize, opacity: animOpacity }
         : { height: animSize, opacity: animOpacity };
 
-    if (columnWrapperStyle) {
+    if (columnWrapperStyle && numColumns > 1) {
         // Extract gap properties from columnWrapperStyle if available
         const { columnGap, rowGap, gap } = columnWrapperStyle;
         if (horizontal) {
