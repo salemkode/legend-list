@@ -42,7 +42,7 @@ export type ListenerType =
     | "debugComputedScroll"
     | "otherAxisSize";
 
-type ListenerTypeValueMap = {
+export type ListenerTypeValueMap = {
     numContainers: number;
     numContainersPooled: number;
     containersDidLayout: boolean;
@@ -285,6 +285,18 @@ export function useArr$<T extends ListenerType>(signalNames: T[]): ListenerTypeV
     const ctx = React.useContext(ContextState)!;
     const { subscribe, get } = React.useMemo(() => createSelectorFunctionsArr(ctx, signalNames), [ctx, signalNames]);
     const value = useSyncExternalStore(subscribe, get);
+
+    return value;
+}
+export function useSelector$<T extends ListenerType>(
+    signalName: T,
+    selector: (value: ListenerTypeValueMap[T]) => any,
+): any {
+    const ctx = React.useContext(ContextState)!;
+    const { subscribe, get } = React.useMemo(() => createSelectorFunctionsArr(ctx, [signalName]), [ctx, signalName]);
+
+    // Return a selected value based on the signal name, so it only re-renders when the selected value changes
+    const value = useSyncExternalStore(subscribe, () => selector(get()[0]));
 
     return value;
 }

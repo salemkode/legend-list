@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { Text } from "react-native";
-import { ContextContainer } from "./ContextContainer";
+import { ContextContainer, type ContextContainerType } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
 import { isNullOrUndefined } from "./helpers";
@@ -158,7 +158,7 @@ export const Container = <ItemT,>({
         }, [itemKey]);
     }
 
-    const contextValue = useMemo(() => {
+    const contextValue = useMemo<ContextContainerType>(() => {
         ctx.viewRefs.set(id, ref);
         return { containerId: id, itemKey, index: index!, value: data, triggerLayout };
     }, [id, itemKey, index, data]);

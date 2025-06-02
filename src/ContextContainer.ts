@@ -9,10 +9,11 @@ import {
     useState,
 } from "react";
 import { isFunction } from "./helpers";
-import { useStateContext } from "./state";
+import { useSelector$, useStateContext } from "./state";
 import type { LegendListRecyclingState, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import { useInit } from "./useInit";
-interface ContextContainerType {
+
+export interface ContextContainerType {
     containerId: number;
     itemKey: string;
     index: number;
@@ -131,4 +132,10 @@ export function useRecyclingState<ItemT>(valueOrFun: ((info: LegendListRecycling
     );
 
     return [refState.current.value, setState] as const;
+}
+
+export function useIsLastItem() {
+    const { itemKey } = useContext(ContextContainer);
+    const isLast = useSelector$("lastItemKeys", (lastItemKeys) => lastItemKeys?.includes(itemKey) || false);
+    return isLast;
 }
