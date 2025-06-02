@@ -172,7 +172,11 @@ export function peek$<T extends ListenerType>(ctx: StateContext, signalName: T):
     return values.get(signalName);
 }
 
-export function set$<T extends ListenerType>(ctx: StateContext, signalName: T, value: ListenerTypeValueMap[T]) {
+export function set$<T extends ListenerType>(
+    ctx: StateContext,
+    signalName: T,
+    value: ListenerTypeValueMap[T] | undefined,
+) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);

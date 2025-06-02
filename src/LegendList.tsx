@@ -1176,8 +1176,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
-                        set$(ctx, `containerItemKey${i}`, null as any);
-                        set$(ctx, `containerItemData${i}`, null as any);
+                        set$(ctx, `containerItemKey${i}`, undefined);
+                        set$(ctx, `containerItemData${i}`, undefined);
                         set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
