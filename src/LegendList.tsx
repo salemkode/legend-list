@@ -382,13 +382,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (!IsNewArchitecture) {
                         scrollToIndex({ index: initialScrollIndex, animated: false });
                     }
-                    set$(ctx, "containersDidLayout", true);
+
+                    setIt();
                 });
             });
         } else {
-            queueMicrotask(() => {
-                set$(ctx, "containersDidLayout", true);
-            });
+            queueMicrotask(setIt);
         }
     };
 
@@ -667,17 +666,18 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             }
         }
 
-        // console.log(Math.round(scrollExtra), scrollBufferTop, scrollBufferBottom);
+        const scrollTopBuffered = scroll - scrollBufferTop;
+        const scrollBottom = scroll + scrollLength;
+        const scrollBottomBuffered = scrollBottom + scrollBufferBottom;
 
         // Check precomputed scroll range to see if we can skip this check
         if (state.scrollForNextCalculateItemsInView) {
             const { top, bottom } = state.scrollForNextCalculateItemsInView;
-            if (scroll > top && scroll < bottom) {
+            if (scrollTopBuffered > top && scrollBottomBuffered < bottom) {
                 return;
             }
         }
 
-        const scrollBottom = scroll + scrollLength;
         let startNoBuffer: number | null = null;
         let startBuffered: number | null = null;
         let startBufferedId: string | null = null;
@@ -784,7 +784,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 if (startNoBuffer === null && top + size > scroll) {
                     startNoBuffer = i;
                 }
-                if (startBuffered === null && top + size > scroll - scrollBufferTop) {
+                if (startBuffered === null && top + size > scrollTopBuffered) {
                     startBuffered = i;
                     startBufferedId = id;
                     nextTop = top;
@@ -793,7 +793,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (top <= scrollBottom) {
                         endNoBuffer = i;
                     }
-                    if (top <= scrollBottom + scrollBufferBottom) {
+                    if (top <= scrollBottomBuffered) {
                         endBuffered = i;
                         nextBottom = top + maxSizeInRow - scrollLength;
                     } else {
