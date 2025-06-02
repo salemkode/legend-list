@@ -1,6 +1,14 @@
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
-import { type ForwardedRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import {
+    type ForwardedRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+} from "react";
 import {
     Dimensions,
     type LayoutChangeEvent,
@@ -1664,9 +1672,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
     }, []);
 
-    const onLayout = useCallback((event: LayoutChangeEvent) => {
+    const handleLayout = useCallback((scrollLength: number) => {
         const state = refState.current!;
-        const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         const didChange = scrollLength !== state.scrollLength;
         state.scrollLength = scrollLength;
         state.lastBatchingAction = Date.now();
@@ -1682,6 +1689,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (didChange) {
             calculateItemsInView();
         }
+    }, []);
+
+    const onLayout = useCallback((event: LayoutChangeEvent) => {
+        const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+        handleLayout(scrollLength);
 
         if (__DEV__) {
             const isWidthZero = event.nativeEvent.layout.width === 0;
@@ -1699,6 +1711,20 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             onLayoutProp(event);
         }
     }, []);
+
+    if (IsNewArchitecture) {
+        useLayoutEffect(() => {
+            // unstable_getBoundingClientRect is unstable and only on Fabric
+            const measured = (refScroller.current as any)?.unstable_getBoundingClientRect?.();
+            if (measured) {
+                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+
+                if (size) {
+                    handleLayout(size);
+                }
+            }
+        }, []);
+    }
 
     const handleScroll = useCallback(
         (event: {
