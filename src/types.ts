@@ -239,6 +239,8 @@ export type LegendListPropsBase<
      * @default false
      */
     waitForInitialLayout?: boolean;
+
+    onLoad?: (info: { elapsedTimeInMs: number }) => void;
 };
 
 export interface ColumnWrapperStyle {

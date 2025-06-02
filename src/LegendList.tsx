@@ -112,6 +112,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         ...rest
     } = props;
 
+    const refLoadStartTime = useRef<number>(Date.now());
+
     const callbacks = useRef({
         onStartReached: rest.onStartReached,
         onEndReached: rest.onEndReached,
@@ -365,6 +367,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const setDidLayout = () => {
         refState.current!.queuedInitialLayout = true;
         checkAtBottom();
+        const setIt = () => {
+            set$(ctx, "containersDidLayout", true);
+
+            if (props.onLoad) {
+                props.onLoad({ elapsedTimeInMs: Date.now() - refLoadStartTime.current });
+            }
+        };
         if (initialScrollIndex) {
             queueMicrotask(() => {
                 scrollToIndex({ index: initialScrollIndex, animated: false });
