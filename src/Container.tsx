@@ -176,10 +176,13 @@ export const Container = <ItemT,>({
 
     // If maintainVisibleContentPosition is enabled, we need a way items to grow upwards
     if (maintainVisibleContentPosition) {
-        const anchorStyle: StyleProp<ViewStyle> =
-            position.type === "top"
-                ? { position: "absolute", top: 0, left: 0, right: 0 }
-                : { position: "absolute", bottom: 0, left: 0, right: 0 };
+        const anchorStyle: StyleProp<ViewStyle> = horizontal
+            ? position.type === "top"
+                ? { position: "absolute", left: 0, top: 0, bottom: 0, flexDirection: "row", alignItems: "stretch" }
+                : { position: "absolute", right: 0, top: 0, bottom: 0, flexDirection: "row", alignItems: "stretch" }
+            : position.type === "top"
+              ? { position: "absolute", top: 0, left: 0, right: 0 }
+              : { position: "absolute", bottom: 0, left: 0, right: 0 };
 
         if (__DEV__ && ENABLE_DEVMODE) {
             anchorStyle.borderColor = position.type === "top" ? "red" : "blue";
