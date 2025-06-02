@@ -537,8 +537,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     });
                     numMeasurements++;
                     if (measured) {
-                        const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
-                        updateItemSize(itemKey, size, /*fromFixGaps*/ true);
+                        updateItemSize(itemKey, measured, /*fromFixGaps*/ true);
                     }
                 }
             }
@@ -1513,164 +1512,182 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         doInitialAllocateContainers();
     });
 
-    const updateItemSize = useCallback((itemKey: string, size: number, fromFixGaps?: boolean) => {
-        const state = refState.current!;
-        const {
-            sizes,
-            indexByKey,
-            sizesKnown,
-            data,
-            rowHeights,
-            startBuffered,
-            endBuffered,
-            averageSizes,
-            queuedInitialLayout,
-        } = state;
-        if (!data) {
-            return;
-        }
-        const index = indexByKey.get(itemKey)!;
-        const numColumns = peek$(ctx, "numColumns");
-
-        state.scrollForNextCalculateItemsInView = undefined;
-        state.minIndexSizeChanged =
-            state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
-
-        const prevSize = getItemSize(itemKey, index, data as any);
-        const prevSizeKnown = sizesKnown.get(itemKey);
-
-        let needsCalculate = false;
-        let needsUpdateContainersDidLayout = false;
-
-        sizesKnown!.set(itemKey, size);
-
-        // TODO: Hook this up to actual item type later once we have item types
-        const itemType = "";
-        let averages = averageSizes[itemType];
-        if (!averages) {
-            averages = averageSizes[itemType] = {
-                num: 0,
-                avg: 0,
-            };
-        }
-        averages.avg = (averages.avg * averages.num + size) / (averages.num + 1);
-        averages.num++;
-
-        if (!prevSize || Math.abs(prevSize - size) > 0.1) {
-            let diff: number;
-            needsCalculate = true;
-
-            if (numColumns > 1) {
-                const rowNumber = Math.floor(index / numColumnsProp);
-                const prevSizeInRow = getRowHeight(rowNumber);
-                sizes.set(itemKey, size);
-                rowHeights.delete(rowNumber);
-
-                const sizeInRow = getRowHeight(rowNumber);
-                diff = sizeInRow - prevSizeInRow;
-            } else {
-                sizes.set(itemKey, size);
-                diff = size - prevSize;
+    const updateItemSize = useCallback(
+        (itemKey: string, sizeObj: { width: number; height: number }, fromFixGaps?: boolean) => {
+            const state = refState.current!;
+            const {
+                sizes,
+                indexByKey,
+                sizesKnown,
+                data,
+                rowHeights,
+                startBuffered,
+                endBuffered,
+                averageSizes,
+                queuedInitialLayout,
+            } = state;
+            if (!data) {
+                return;
             }
 
-            if (__DEV__ && suggestEstimatedItemSize) {
-                if (state.timeoutSizeMessage) {
-                    clearTimeout(state.timeoutSizeMessage);
-                }
+            const index = indexByKey.get(itemKey)!;
+            const numColumns = peek$(ctx, "numColumns");
 
-                state.timeoutSizeMessage = setTimeout(() => {
-                    state.timeoutSizeMessage = undefined;
-                    const num = sizesKnown.size;
-                    const avg = state.averageSizes[""].avg;
-
-                    console.warn(
-                        `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
-                    );
-                }, 1000);
-            }
-
-            // Reset scrollForNextCalculateItemsInView because a position may have changed making the previous
-            // precomputed scroll range invalid
             state.scrollForNextCalculateItemsInView = undefined;
+            state.minIndexSizeChanged =
+                state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
 
-            addTotalSize(itemKey, diff, 0);
+            const prevSize = getItemSize(itemKey, index, data as any);
+            const prevSizeKnown = sizesKnown.get(itemKey);
 
-            // Maintain scroll at end if this item has already rendered and is changing by more than 5px
-            // This prevents a bug where the list will scroll to the bottom when scrolling up and an item lays out
-            if (prevSizeKnown !== undefined && Math.abs(prevSizeKnown - size) > 5) {
-                doMaintainScrollAtEnd(false); // *animated*/ index === data.length - 1);
+            let needsCalculate = false;
+            let needsUpdateContainersDidLayout = false;
+
+            const size = Math.floor((horizontal ? sizeObj.width : sizeObj.height) * 8) / 8;
+
+            sizesKnown!.set(itemKey, size);
+
+            // TODO: Hook this up to actual item type later once we have item types
+            const itemType = "";
+            let averages = averageSizes[itemType];
+            if (!averages) {
+                averages = averageSizes[itemType] = {
+                    num: 0,
+                    avg: 0,
+                };
             }
+            averages.avg = (averages.avg * averages.num + size) / (averages.num + 1);
+            averages.num++;
 
-            if (onItemSizeChanged) {
-                onItemSizeChanged({
-                    size,
-                    previous: prevSize,
-                    index,
-                    itemKey,
-                    itemData: data[index],
-                });
-            }
-        }
+            if (!prevSize || Math.abs(prevSize - size) > 0.1) {
+                let diff: number;
+                needsCalculate = true;
 
-        if (!queuedInitialLayout && checkAllSizesKnown()) {
-            needsUpdateContainersDidLayout = true;
-        }
+                if (numColumns > 1) {
+                    const rowNumber = Math.floor(index / numColumnsProp);
+                    const prevSizeInRow = getRowHeight(rowNumber);
+                    sizes.set(itemKey, size);
+                    rowHeights.delete(rowNumber);
 
-        // We can skip calculating items in view if they have already gone out of view. This can happen on slow
-        // devices or when the list is scrolled quickly.
-        let isInView = index >= startBuffered && index <= endBuffered;
-
-        if (!isInView) {
-            // If not in the range it could be in a container that's offscreen but not yet recycled
-            const numContainers = ctx.values.get("numContainers") as number;
-
-            for (let i = 0; i < numContainers; i++) {
-                if (peek$(ctx, `containerItemKey${i}`) === itemKey) {
-                    isInView = true;
-                    break;
-                }
-            }
-        }
-
-        if (needsUpdateContainersDidLayout || (!fromFixGaps && needsCalculate && (isInView || !queuedInitialLayout))) {
-            const scrollVelocity = state.scrollVelocity;
-            let didCalculate = false;
-
-            // TODO: The second part of this if should be merged into the previous if
-            // Can this be less complex in general?
-            if (
-                (Number.isNaN(scrollVelocity) ||
-                    Math.abs(scrollVelocity) < 1 ||
-                    state.scrollingToOffset !== undefined) &&
-                (!waitForInitialLayout || needsUpdateContainersDidLayout || queuedInitialLayout)
-            ) {
-                // Calculate positions if not currently scrolling and not waiting on other items to layout
-                if (Date.now() - state.lastBatchingAction < 500) {
-                    // If this item layout is within 500ms of the most recent list layout, scroll, or column change,
-                    // batch calculations from layout to reduce the number of computations and renders.
-                    // This heuristic is basically to determine whether this comes from an internal List action or an external component action.
-                    // Batching adds a slight delay so this ensures that calculation is batched only if
-                    // it's likely that multiple items will have changed size and a one frame delay is acceptable,
-                    // such as when items are changed, the list changed size, or during scrolling.
-                    if (!state.queuedCalculateItemsInView) {
-                        state.queuedCalculateItemsInView = requestAnimationFrame(() => {
-                            state.queuedCalculateItemsInView = undefined;
-                            calculateItemsInView();
-                        });
-                    }
+                    const sizeInRow = getRowHeight(rowNumber);
+                    diff = sizeInRow - prevSizeInRow;
                 } else {
-                    // Otherwise this action is likely from a single item changing so it should run immediately
-                    calculateItemsInView();
-                    didCalculate = true;
+                    sizes.set(itemKey, size);
+                    diff = size - prevSize;
+                }
+
+                if (__DEV__ && suggestEstimatedItemSize) {
+                    if (state.timeoutSizeMessage) {
+                        clearTimeout(state.timeoutSizeMessage);
+                    }
+
+                    state.timeoutSizeMessage = setTimeout(() => {
+                        state.timeoutSizeMessage = undefined;
+                        const num = sizesKnown.size;
+                        const avg = state.averageSizes[""].avg;
+
+                        console.warn(
+                            `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
+                        );
+                    }, 1000);
+                }
+
+                // Reset scrollForNextCalculateItemsInView because a position may have changed making the previous
+                // precomputed scroll range invalid
+                state.scrollForNextCalculateItemsInView = undefined;
+
+                addTotalSize(itemKey, diff, 0);
+
+                // Maintain scroll at end if this item has already rendered and is changing by more than 5px
+                // This prevents a bug where the list will scroll to the bottom when scrolling up and an item lays out
+                if (prevSizeKnown !== undefined && Math.abs(prevSizeKnown - size) > 5) {
+                    doMaintainScrollAtEnd(false); // *animated*/ index === data.length - 1);
+                }
+
+                if (onItemSizeChanged) {
+                    onItemSizeChanged({
+                        size,
+                        previous: prevSize,
+                        index,
+                        itemKey,
+                        itemData: data[index],
+                    });
                 }
             }
 
-            // If this did not trigger a full calculate we should fix any gaps/overlaps
-            if (!didCalculate && !needsUpdateContainersDidLayout && IsNewArchitecture) {
-                fixGaps();
+            if (!queuedInitialLayout && checkAllSizesKnown()) {
+                needsUpdateContainersDidLayout = true;
             }
-        }
-    }, []);
+
+            // We can skip calculating items in view if they have already gone out of view. This can happen on slow
+            // devices or when the list is scrolled quickly.
+            let isInView = index >= startBuffered && index <= endBuffered;
+
+            if (!isInView) {
+                // If not in the range it could be in a container that's offscreen but not yet recycled
+                const numContainers = ctx.values.get("numContainers") as number;
+
+                for (let i = 0; i < numContainers; i++) {
+                    if (peek$(ctx, `containerItemKey${i}`) === itemKey) {
+                        isInView = true;
+                        break;
+                    }
+                }
+            }
+
+            if (
+                needsUpdateContainersDidLayout ||
+                (!fromFixGaps && needsCalculate && (isInView || !queuedInitialLayout))
+            ) {
+                const scrollVelocity = state.scrollVelocity;
+                let didCalculate = false;
+
+                // TODO: The second part of this if should be merged into the previous if
+                // Can this be less complex in general?
+                if (
+                    (Number.isNaN(scrollVelocity) ||
+                        Math.abs(scrollVelocity) < 1 ||
+                        state.scrollingToOffset !== undefined) &&
+                    (!waitForInitialLayout || needsUpdateContainersDidLayout || queuedInitialLayout)
+                ) {
+                    // Calculate positions if not currently scrolling and not waiting on other items to layout
+                    if (Date.now() - state.lastBatchingAction < 500) {
+                        // If this item layout is within 500ms of the most recent list layout, scroll, or column change,
+                        // batch calculations from layout to reduce the number of computations and renders.
+                        // This heuristic is basically to determine whether this comes from an internal List action or an external component action.
+                        // Batching adds a slight delay so this ensures that calculation is batched only if
+                        // it's likely that multiple items will have changed size and a one frame delay is acceptable,
+                        // such as when items are changed, the list changed size, or during scrolling.
+                        if (!state.queuedCalculateItemsInView) {
+                            state.queuedCalculateItemsInView = requestAnimationFrame(() => {
+                                state.queuedCalculateItemsInView = undefined;
+                                calculateItemsInView();
+                            });
+                        }
+                    } else {
+                        // Otherwise this action is likely from a single item changing so it should run immediately
+                        calculateItemsInView();
+                        didCalculate = true;
+                    }
+                }
+
+                // If this did not trigger a full calculate we should fix any gaps/overlaps
+                if (!didCalculate && !needsUpdateContainersDidLayout && IsNewArchitecture) {
+                    fixGaps();
+                }
+            }
+
+            if (state.needsOtherAxisSize) {
+                const otherAxisSize = horizontal ? sizeObj.height : sizeObj.width;
+                const cur = peek$(ctx, "otherAxisSize");
+                // console.log("cur", cur, otherAxisSize, sizeObj);
+                if (!cur || otherAxisSize > cur) {
+                    set$(ctx, "otherAxisSize", otherAxisSize);
+                }
+            }
+        },
+        [],
+    );
 
     const handleLayout = useCallback((scrollLength: number) => {
         const state = refState.current!;
@@ -1695,17 +1712,19 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
         handleLayout(scrollLength);
 
-        if (__DEV__) {
-            const isWidthZero = event.nativeEvent.layout.width === 0;
-            const isHeightZero = event.nativeEvent.layout.height === 0;
-            if (isWidthZero || isHeightZero) {
-                warnDevOnce(
-                    "height0",
-                    `[legend-list] List ${
-                        isWidthZero ? "width" : "height"
-                    } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
-                );
-            }
+        const otherAxisSize = event.nativeEvent.layout[horizontal ? "height" : "width"];
+
+        if (refState.current) {
+            refState.current.needsOtherAxisSize = otherAxisSize === 0;
+        }
+
+        if (__DEV__ && scrollLength === 0) {
+            warnDevOnce(
+                "height0",
+                `List ${
+                    horizontal ? "width" : "height"
+                } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
+            );
         }
         if (onLayoutProp) {
             onLayoutProp(event);

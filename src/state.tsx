@@ -39,8 +39,8 @@ export type ListenerType =
     | "footerSize"
     | "maintainVisibleContentPosition"
     | "debugRawScroll"
-    | "debugComputedScroll";
-// | "otherAxisSize";
+    | "debugComputedScroll"
+    | "otherAxisSize";
 
 type ListenerTypeValueMap = {
     numContainers: number;
@@ -60,6 +60,7 @@ type ListenerTypeValueMap = {
     maintainVisibleContentPosition: boolean;
     debugRawScroll: number;
     debugComputedScroll: number;
+    otherAxisSize: number;
 } & {
     [K in ListenerType as K extends `containerItemKey${number}` ? K : never]: string;
 } & {

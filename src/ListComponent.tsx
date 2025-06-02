@@ -8,6 +8,7 @@ import {
     ScrollView,
     type ScrollViewProps,
     View,
+    type ViewStyle,
 } from "react-native";
 import { Containers } from "./Containers";
 import { ListHeaderComponentContainer } from "./ListHeaderComponentContainer";
@@ -25,16 +26,18 @@ interface ListComponentProps<ItemT>
         | "maintainScrollAtEnd"
         | "maintainScrollAtEndThreshold"
         | "maintainVisibleContentPosition"
+        | "style"
     > {
     horizontal: boolean;
     initialContentOffset: number | undefined;
     refScrollView: React.Ref<ScrollView>;
     getRenderedItem: (key: string) => { index: number; item: ItemT; renderedItem: ReactNode } | null;
-    updateItemSize: (itemKey: string, size: number) => void;
+    updateItemSize: (itemKey: string, size: { width: number; height: number }) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
     renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
+    style: ViewStyle;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -136,21 +139,6 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
               [renderScrollComponent],
           )
         : ScrollView;
-
-    // TODO: Try this again? This had bad behavior of sometimes setting the min size to greater than
-    // the screen size
-    // const style = React.useMemo(() => {
-    //     const extraStyle: StyleProp<ViewStyle> = {};
-    //     if (otherAxisSize > 0) {
-    //         if (horizontal) {
-    //             extraStyle.minHeight = otherAxisSize;
-    //         } else {
-    //             extraStyle.minWidth = otherAxisSize;
-    //         }
-    //     }
-    //     console.log("style", StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>);
-    //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
-    // }, [otherAxisSize]);
 
     return (
         <ScrollComponent

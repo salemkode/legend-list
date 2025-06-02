@@ -11,7 +11,7 @@ interface ContainersProps<ItemT> {
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ComponentType<{ leadingItem: ItemT }>;
     waitForInitialLayout: boolean | undefined;
-    updateItemSize: (itemKey: string, size: number) => void;
+    updateItemSize: (itemKey: string, size: { width: number; height: number }) => void;
     getRenderedItem: (key: string) => { index: number; item: ItemT; renderedItem: React.ReactNode } | null;
 }
 
@@ -28,6 +28,7 @@ export const Containers = typedMemo(function Containers<ItemT>({
     const [numContainers, numColumns] = useArr$(["numContainersPooled", "numColumns"]);
     const animSize = useValue$("totalSizeWithScrollAdjust", undefined, /*useMicrotask*/ true);
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
+    const otherAxisSize = useValue$("otherAxisSize", undefined, /*useMicrotask*/ true);
 
     const containers: React.ReactNode[] = [];
     for (let i = 0; i < numContainers; i++) {
@@ -47,8 +48,8 @@ export const Containers = typedMemo(function Containers<ItemT>({
     }
 
     const style: StyleProp<ViewStyle> = horizontal
-        ? { width: animSize, opacity: animOpacity }
-        : { height: animSize, opacity: animOpacity };
+        ? { width: animSize, opacity: animOpacity, minHeight: otherAxisSize }
+        : { height: animSize, opacity: animOpacity, minWidth: otherAxisSize };
 
     if (columnWrapperStyle && numColumns > 1) {
         // Extract gap properties from columnWrapperStyle if available

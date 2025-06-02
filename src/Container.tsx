@@ -4,7 +4,7 @@ import { Text } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEVMODE, IsNewArchitecture } from "./constants";
-import { isNullOrUndefined, roundSize } from "./helpers";
+import { isNullOrUndefined } from "./helpers";
 import { useArr$, useStateContext } from "./state";
 
 export const Container = <ItemT,>({
@@ -19,7 +19,7 @@ export const Container = <ItemT,>({
     recycleItems?: boolean;
     horizontal: boolean;
     getRenderedItem: (key: string) => { index: number; item: ItemT; renderedItem: React.ReactNode } | null;
-    updateItemSize: (itemKey: string, size: number) => void;
+    updateItemSize: (itemKey: string, size: { width: number; height: number }) => void;
     ItemSeparatorComponent?: React.ComponentType<{ leadingItem: ItemT }>;
 }) => {
     const ctx = useStateContext();
@@ -45,7 +45,7 @@ export const Container = <ItemT,>({
         "extraData",
     ]);
 
-    const refLastSize = useRef<number>();
+    const refLastSize = useRef<{ width: number; height: number }>();
     const ref = useRef<View>(null);
     const [layoutRenderCount, forceLayoutRender] = useState(0);
 
@@ -76,7 +76,6 @@ export const Container = <ItemT,>({
               flexDirection: ItemSeparatorComponent ? "row" : undefined,
               position: "absolute",
               top: otherAxisPos,
-              bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
               left: position.relativeCoordinate,
               ...(paddingStyles || {}),
@@ -103,12 +102,12 @@ export const Container = <ItemT,>({
 
     const onLayout = (event: LayoutChangeEvent) => {
         if (!isNullOrUndefined(itemKey)) {
-            const layout = event.nativeEvent.layout;
-            let size = roundSize(layout[horizontal ? "width" : "height"]);
+            let layout: { width: number; height: number } = event.nativeEvent.layout;
+            const size = layout[horizontal ? "width" : "height"];
 
             const doUpdate = () => {
-                refLastSize.current = size;
-                updateItemSize(itemKey, size);
+                refLastSize.current = { width: layout.width, height: layout.height };
+                updateItemSize(itemKey, layout);
             };
 
             if (IsNewArchitecture || size > 0) {
@@ -117,13 +116,10 @@ export const Container = <ItemT,>({
                 // On old architecture, the size can be 0 sometimes, maybe when not fully rendered?
                 // So we need to make sure it's actually rendered and measure it to make sure it's actually 0.
                 ref.current?.measure?.((x, y, width, height) => {
-                    size = roundSize(horizontal ? width : height);
+                    layout = { width, height };
                     doUpdate();
                 });
             }
-
-            // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-            // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
         }
     };
 
@@ -137,7 +133,7 @@ export const Container = <ItemT,>({
                     const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
 
                     if (size) {
-                        updateItemSize(itemKey, size);
+                        updateItemSize(itemKey, measured);
                     }
                 }
             }

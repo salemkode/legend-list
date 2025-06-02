@@ -312,6 +312,7 @@ export interface InternalState {
     disableScrollJumpsFrom?: number;
     scrollingToOffset?: number | undefined;
     previousTotalSize?: number;
+    needsOtherAxisSize?: boolean;
     averageSizes: Record<
         string,
         {
