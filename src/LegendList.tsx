@@ -1724,7 +1724,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         const otherAxisSize = event.nativeEvent.layout[horizontal ? "height" : "width"];
 
         if (refState.current) {
-            refState.current.needsOtherAxisSize = otherAxisSize === 0;
+            // If otherAxisSize minus padding is less than 10, we need to set the size of the other axis
+            // from the item height. 10 is just a magic number to account for border/outline or rounding errors.
+            refState.current.needsOtherAxisSize = otherAxisSize - (stylePaddingTopState || 0) < 10;
         }
 
         if (__DEV__ && scrollLength === 0) {
