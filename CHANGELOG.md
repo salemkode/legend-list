@@ -1,3 +1,15 @@
+## 1.0.15
+- Feat: Add a useIsLastItem hook
+- Feat: Support horizontal lists without an intrinsic height, it takes the maximum height of list items
+- Feat: Add onLoad prop
+- Fix: maintainVisibleContentPosition not working on horizontal lists
+- Perf: scrollForNextCalculateItemsInView was not taking drawDistance into account correctly
+- Perf: Improved the algorithm for allocating containers to items
+- Perf: Use useLayoutEffect in LegendList if available to get the outer ScrollView layout as soon as possible
+
+## 1.0.14
+- Fix: A container changing size while inactive but not yet recycled could potentially overlap with elements onscreen if large enough
+
 ## 1.0.13
 - Fix: Missing React import in ListHeaderComponentContainer crashing some environments
 - Fix: `initialScrollIndex` was off by padding if using "padding" or "paddingVertical" props
