@@ -292,10 +292,10 @@ export function useArr$<T extends ListenerType>(signalNames: T[]): ListenerTypeV
 
     return value;
 }
-export function useSelector$<T extends ListenerType>(
+export function useSelector$<T extends ListenerType, T2>(
     signalName: T,
-    selector: (value: ListenerTypeValueMap[T]) => any,
-): any {
+    selector: (value: ListenerTypeValueMap[T]) => T2,
+): T2 {
     const ctx = React.useContext(ContextState)!;
     const { subscribe, get } = React.useMemo(() => createSelectorFunctionsArr(ctx, [signalName]), [ctx, signalName]);
 

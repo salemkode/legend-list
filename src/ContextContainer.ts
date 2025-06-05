@@ -134,7 +134,7 @@ export function useRecyclingState<ItemT>(valueOrFun: ((info: LegendListRecycling
     return [refState.current.value, setState] as const;
 }
 
-export function useIsLastItem() {
+export function useIsLastItem(): boolean {
     const { itemKey } = useContext(ContextContainer);
     const isLast = useSelector$("lastItemKeys", (lastItemKeys) => lastItemKeys?.includes(itemKey) || false);
     return isLast;
