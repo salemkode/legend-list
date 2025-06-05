@@ -1115,10 +1115,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (contentSize > 0 && queuedInitialLayout && !maintainingScrollAtEnd) {
             // Check if at end
             const distanceFromEnd = contentSize - scroll - scrollLength;
-            const distanceFromEndAbs = Math.abs(distanceFromEnd);
             const isContentLess = contentSize < scrollLength;
-            refState.current.isAtEnd =
-                isContentLess || distanceFromEndAbs < scrollLength * maintainScrollAtEndThreshold;
+            refState.current.isAtEnd = isContentLess || distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
 
             refState.current.isEndReached = checkThreshold(
                 distanceFromEnd,
