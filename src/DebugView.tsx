@@ -63,7 +63,7 @@ export const DebugView = React.memo(function DebugView({ state }: { state: Inter
             </DebugRow>
             <DebugRow>
                 <Text>At end:</Text>
-                <Text>{String(state.isAtBottom)}</Text>
+                <Text>{String(state.isAtEnd)}</Text>
             </DebugRow>
             <Text />
             <DebugRow>

@@ -237,8 +237,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             pendingAdjust: 0,
             isStartReached: initialContentOffset < initialScrollLength * onStartReachedThreshold!,
             isEndReached: false,
-            isAtBottom: false,
-            isAtTop: false,
+            isAtEnd: false,
+            isAtStart: false,
             data: dataProp,
             scrollLength: initialScrollLength,
             startBuffered: -1,
@@ -1048,7 +1048,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const doMaintainScrollAtEnd = (animated: boolean) => {
         const state = refState.current;
         // Run this only if scroll is at the bottom and after initial layout
-        if (state?.isAtBottom && maintainScrollAtEnd && peek$(ctx, "containersDidLayout")) {
+        if (state?.isAtEnd && maintainScrollAtEnd && peek$(ctx, "containersDidLayout")) {
             // Set scroll to the bottom of the list so that checkAtTop/checkAtBottom is correct
             const paddingTop = peek$(ctx, "alignItemsPaddingTop");
             if (paddingTop > 0) {
@@ -1117,7 +1117,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             const distanceFromEnd = contentSize - scroll - scrollLength;
             const distanceFromEndAbs = Math.abs(distanceFromEnd);
             const isContentLess = contentSize < scrollLength;
-            refState.current.isAtBottom =
+            refState.current.isAtEnd =
                 isContentLess || distanceFromEndAbs < scrollLength * maintainScrollAtEndThreshold;
 
             refState.current.isEndReached = checkThreshold(
@@ -1140,7 +1140,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         }
         const { scrollLength, scroll } = refState.current;
         const distanceFromTop = scroll;
-        refState.current.isAtTop = distanceFromTop <= 0;
+        refState.current.isAtStart = distanceFromTop <= 0;
 
         refState.current.isStartReached = checkThreshold(
             distanceFromTop,
@@ -1888,8 +1888,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                               contentLength: state.totalSize,
                               end: state.endNoBuffer,
                               endBuffered: state.endBuffered,
-                              isAtEnd: state.isAtBottom,
-                              isAtStart: state.isAtTop,
+                              isAtEnd: state.isAtEnd,
+                              isAtStart: state.isAtStart,
                               scroll: state.scroll,
                               scrollLength: state.scrollLength,
                               start: state.startNoBuffer,

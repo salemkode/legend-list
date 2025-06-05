@@ -274,8 +274,8 @@ export interface InternalState {
     pendingAdjust: number;
     isStartReached: boolean;
     isEndReached: boolean;
-    isAtBottom: boolean;
-    isAtTop: boolean;
+    isAtEnd: boolean;
+    isAtStart: boolean;
     data: readonly any[];
     hasScrolled?: boolean;
     scrollLength: number;
