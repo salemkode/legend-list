@@ -59,7 +59,7 @@
         "react-native-keyboard-controller": "^1.17.0",
         "react-native-reanimated": "^3.16.6",
         "tsup": "^8.3.5",
-        "typescript": "^5.5.2"
+        "typescript": "^5.8.3"
     },
     "author": "Legend <contact@legendapp.com> (https://github.com/LegendApp)",
     "keywords": [
