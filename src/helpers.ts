@@ -1,7 +1,6 @@
 import type { ViewStyle } from "react-native";
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
-export function isFunction(obj: unknown): obj is Function {
+export function isFunction(obj: unknown): obj is (...args: any[]) => any {
     return typeof obj === "function";
 }
 

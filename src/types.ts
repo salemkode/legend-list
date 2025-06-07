@@ -206,10 +206,15 @@ export type LegendListPropsBase<
     refreshing?: boolean;
 
     /**
-     * Function to render each item in the list.
+     * Function or React component to render each item in the list.
+     * Can be either:
+     * - A function: (props: LegendListRenderItemProps<ItemT>) => ReactNode
+     * - A React component: React.ComponentType<LegendListRenderItemProps<ItemT>>
      * @required
      */
-    renderItem?: (props: LegendListRenderItemProps<ItemT>) => ReactNode;
+    renderItem?:
+        | ((props: LegendListRenderItemProps<ItemT>) => ReactNode)
+        | React.ComponentType<LegendListRenderItemProps<ItemT>>;
 
     /**
      * Render custom ScrollView component.
@@ -299,7 +304,9 @@ export interface InternalState {
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
-    renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
+    renderItem:
+        | ((props: LegendListRenderItemProps<any>) => ReactNode)
+        | React.ComponentType<LegendListRenderItemProps<any>>;
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;

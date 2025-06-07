@@ -1,4 +1,4 @@
-import { type Item, renderItem } from "@/app/cards-renderItem";
+import { type Item, ItemCard } from "@/app/cards-renderItem";
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { useScrollTest } from "@/constants/useScrollTest";
 import { LegendList, type LegendListRef } from "@legendapp/list";
@@ -37,7 +37,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
             <LegendList
                 ref={listRef}
                 data={data}
-                renderItem={renderItem}
+                renderItem={ItemCard}
                 keyExtractor={(item) => item.id}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
