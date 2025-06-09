@@ -319,7 +319,9 @@ export interface InternalState {
     lastBatchingAction: number;
     ignoreScrollFromCalcTotal?: boolean;
     disableScrollJumpsFrom?: number;
-    scrollingToOffset?: number | undefined;
+    scrollingTo?:
+        | { offset: number; index?: number; viewOffset?: number; viewPosition?: number; animated?: boolean }
+        | undefined;
     previousTotalSize?: number;
     needsOtherAxisSize?: boolean;
     averageSizes: Record<
