@@ -1930,7 +1930,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 scrollToOffset: ({ offset, animated }) => {
                     scrollTo(offset, animated);
                 },
-                scrollToEnd: (options) => refScroller.current!.scrollToEnd(options),
+                scrollToEnd: (options) => {
+                    const { data } = refState.current!;
+                    const index = data.length - 1;
+                    if (index !== -1) {
+                        scrollToIndex({ index, viewPosition: 1, ...options });
+                    }
+                },
             };
         },
         [],

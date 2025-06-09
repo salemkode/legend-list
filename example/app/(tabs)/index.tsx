@@ -19,10 +19,6 @@ type ListElement = {
 
 const data: ListElement[] = [
     {
-        title: "Chat resize outer",
-        url: "/chat-resize-outer",
-    },
-    {
         title: "Bidirectional Infinite List",
         url: "/bidirectional-infinite-list",
     },
@@ -114,6 +110,14 @@ const data: ListElement[] = [
     {
         title: "Add to the end",
         url: "/add-to-end",
+    },
+    {
+        title: "Chat resize outer",
+        url: "/chat-resize-outer",
+    },
+    {
+        title: "Accurate scrollToHuge",
+        url: "/accurate-scrollto-huge",
     },
 ].map(
     (v, i) =>

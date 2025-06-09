@@ -9,7 +9,7 @@ interface CardsProps {
     numColumns?: number;
 }
 
-export default function AccurateScrollTo({ numColumns = 1 }: CardsProps) {
+export default function AccurateScrollToHuge({ numColumns = 1 }: CardsProps) {
     const listRef = useRef<LegendListRef>(null);
 
     const [data, setData] = useState<Item[]>(
@@ -56,7 +56,11 @@ export default function AccurateScrollTo({ numColumns = 1 }: CardsProps) {
                 ref={listRef}
                 contentContainerStyle={styles.listContainer}
                 data={data}
-                renderItem={renderItem}
+                // @ts-ignore
+                renderItem={({ item, index }) =>
+                    // @ts-ignore
+                    renderItem({ item, index, numSentences: (indexForData) => ((indexForData * 7919) % 40) + 40 })
+                }
                 keyExtractor={(item) => `id${item.id}`}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH + 120}
                 drawDistance={DRAW_DISTANCE}
