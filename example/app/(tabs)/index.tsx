@@ -19,6 +19,10 @@ type ListElement = {
 
 const data: ListElement[] = [
     {
+        title: "Chat resize outer",
+        url: "/chat-resize-outer",
+    },
+    {
         title: "Bidirectional Infinite List",
         url: "/bidirectional-infinite-list",
     },
