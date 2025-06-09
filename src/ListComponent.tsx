@@ -125,9 +125,6 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
     refScrollView,
     maintainVisibleContentPosition,
     renderScrollComponent,
-    onRefresh,
-    refreshing,
-    progressViewOffset,
     ...rest
 }: ListComponentProps<ItemT>) {
     const ctx = useStateContext();

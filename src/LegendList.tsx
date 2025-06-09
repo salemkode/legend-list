@@ -1995,14 +1995,20 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 scrollEventThrottle={Platform.OS === "web" ? 16 : undefined}
                 waitForInitialLayout={waitForInitialLayout}
                 refreshControl={
-                    refreshControl ??
-                    (onRefresh && (
-                        <RefreshControl
-                            refreshing={!!refreshing}
-                            onRefresh={onRefresh}
-                            progressViewOffset={progressViewOffset}
-                        />
-                    ))
+                    refreshControl
+                        ? stylePaddingTopState > 0
+                            ? React.cloneElement(refreshControl, {
+                                  progressViewOffset:
+                                      (refreshControl.props.progressViewOffset || 0) + stylePaddingTopState,
+                              })
+                            : refreshControl
+                        : onRefresh && (
+                              <RefreshControl
+                                  refreshing={!!refreshing}
+                                  onRefresh={onRefresh}
+                                  progressViewOffset={(progressViewOffset || 0) + stylePaddingTopState}
+                              />
+                          )
                 }
                 style={style}
                 contentContainerStyle={contentContainerStyle}
