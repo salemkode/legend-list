@@ -1,3 +1,12 @@
+## 1.0.16
+- Fix: isAtEnd was going to false when overscrolling
+- Fix: refreshControl not being top padded correctly
+- Fix: type of useLastItem hook
+- Fix: header component was not displaying if a list had no data
+- Fix: scrollToIndex logic that fixes scroll after items layout was not using viewPosition/viewOffset
+- Fix: Improve scrollToIndex accuracy
+- Fix: Improve scrollToEnd accuracy
+
 ## 1.0.15
 - Feat: Add a useIsLastItem hook
 - Feat: Support horizontal lists without an intrinsic height, it takes the maximum height of list items
