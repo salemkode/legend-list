@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
 import {
     type ForwardedRef,
@@ -24,14 +23,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import {
-    comparatorByDistance,
-    comparatorDefault,
-    extractPaddingTop,
-    isFunction,
-    roundSize,
-    warnDevOnce,
-} from "./helpers";
+import { comparatorByDistance, comparatorDefault, extractPaddingTop, isFunction, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -171,19 +163,22 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         let size: number | undefined;
         const numColumns = peek$(ctx, "numColumns");
 
+        // TODO: Using averages was causing many problems, so we're disabling it for now
+        // Specifically, it was causing the scrollToIndex to not work correctly
+        // and didn't work well when prepending items to the list
         // Get average size of rendered items if we don't know the size or are using getEstimatedItemSize
         // TODO: Columns throws off the size, come back and fix that by using getRowHeight
-        if (sizeKnown === undefined && !getEstimatedItemSize && numColumns === 1 && useAverageSize) {
-            // TODO: Hook this up to actual item type later once we have item types
-            const itemType = "";
-            const average = state.averageSizes[itemType];
-            if (average) {
-                size = roundSize(average.avg);
-                if (size !== sizePrevious) {
-                    addTotalSize(key, size - sizePrevious, 0);
-                }
-            }
-        }
+        // if (sizeKnown === undefined && !getEstimatedItemSize && numColumns === 1 && useAverageSize) {
+        //     // TODO: Hook this up to actual item type later once we have item types
+        //     const itemType = "";
+        //     const average = state.averageSizes[itemType];
+        //     if (average) {
+        //         size = roundSize(average.avg);
+        //         if (size !== sizePrevious) {
+        //             addTotalSize(key, size - sizePrevious, 0);
+        //         }
+        //     }
+        // }
 
         if (size === undefined && sizePrevious !== undefined) {
             // If we already have a cached size, use it
@@ -210,7 +205,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             if (canGetSize || getEstimatedItemSize) {
                 const sizeFn = (index: number) => {
                     if (canGetSize) {
-                        return getItemSize(getId(index), index, data[index]);
+                        return getItemSize(getId(index), index, data[index], true);
                     }
                     return getEstimatedItemSize!(index, data[index]);
                 };
