@@ -164,7 +164,7 @@ export const ListComponent = typedMemo(function ListComponent<ItemT>({
             }
             ref={refScrollView as any}
         >
-            {!ListEmptyComponent && (ENABLE_DEVMODE ? <PaddingAndAdjustDevMode /> : <PaddingAndAdjust />)}
+            {ENABLE_DEVMODE ? <PaddingAndAdjustDevMode /> : <PaddingAndAdjust />}
             {ListHeaderComponent && (
                 <ListHeaderComponentContainer
                     style={ListHeaderComponentStyle}
