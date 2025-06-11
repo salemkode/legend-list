@@ -1008,7 +1008,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const updateAlignItemsPaddingTop = () => {
         if (alignItemsAtEnd) {
-            const { scrollLength } = refState.current!;
+            const state = refState.current!;
+            if(!state.data || state.data.length === 0) {
+                setPaddingTop({ alignItemsPaddingTop: 0 });
+                return;
+            }
+            const {scrollLength} = state;
             const contentSize = getContentSize(ctx);
             const paddingTop = Math.max(0, Math.floor(scrollLength - contentSize));
             setPaddingTop({ alignItemsPaddingTop: paddingTop });
