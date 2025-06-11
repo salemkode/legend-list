@@ -1,3 +1,8 @@
+## 1.0.17
+- Fix: initialScrollIndex not taking header component size into account
+- Fix: PaddingAndAdjust for ListHeaderComponent
+- Fix: ignore alignItemsAtEnd when the list is empty
+
 ## 1.0.16
 - Fix: isAtEnd was going to false when overscrolling
 - Fix: refreshControl not being top padded correctly
