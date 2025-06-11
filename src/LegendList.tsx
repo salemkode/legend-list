@@ -24,7 +24,7 @@ import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
 import { comparatorByDistance, comparatorDefault, extractPaddingTop, isFunction, warnDevOnce } from "./helpers";
-import { StateProvider, getContentSize, peek$, set$, useStateContext } from "./state";
+import { StateProvider, getContentSize, listen$, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
     ColumnWrapperStyle,
@@ -92,6 +92,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         estimatedItemSize: estimatedItemSizeProp,
         getEstimatedItemSize,
         suggestEstimatedItemSize,
+        ListHeaderComponent,
         ListEmptyComponent,
         onItemSizeChanged,
         refScrollView,
@@ -1457,6 +1458,25 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }
 
     useEffect(() => {
+        if (initialScrollIndex && ListHeaderComponent) {
+            // Once we get a headerSize we need to fix the initial scroll offset
+            // to include the headerSize
+            const dispose = listen$(ctx, "headerSize", (size) => {
+                if (size > 0) {
+                    scrollToIndex({ index: initialScrollIndex, animated: false });
+                    dispose?.();
+                }
+            });
+
+            // Dispose after timeout 0 because header should have laid out already.
+            // If it didn't we don't want to erroneously scroll sometime later.
+            setTimeout(dispose, 0);
+
+            return dispose;
+        }
+    }, []);
+
+    useEffect(() => {
         const didAllocateContainers = doInitialAllocateContainers();
         if (!didAllocateContainers) {
             checkResetContainers(/*isFirst*/ isFirst);
@@ -2005,6 +2025,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
                 ListEmptyComponent={dataProp.length === 0 ? ListEmptyComponent : undefined}
+                ListHeaderComponent={ListHeaderComponent}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={Platform.OS === "web" ? 16 : undefined}
                 waitForInitialLayout={waitForInitialLayout}
