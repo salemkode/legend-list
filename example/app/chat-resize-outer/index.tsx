@@ -147,28 +147,7 @@ const ChatResizeOuter = () => {
                     maintainScrollAtEnd
                     maintainScrollAtEndThreshold={0.1}
                     alignItemsAtEnd
-                    renderItem={({ item }) => (
-                        <Fragment>
-                            <View
-                                style={[
-                                    styles.messageContainer,
-                                    item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
-                                    item.sender === "bot" ? styles.botStyle : styles.userStyle,
-                                ]}
-                            >
-                                <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>
-                                    {item.text}
-                                </Text>
-                            </View>
-                            <View
-                                style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}
-                            >
-                                <Text style={styles.timeStampText}>
-                                    {new Date(item.timeStamp).toLocaleTimeString()}
-                                </Text>
-                            </View>
-                        </Fragment>
-                    )}
+                    renderItem={renderItem}
                 />
             </KeyboardAvoidingView>
             <Pressable
@@ -247,3 +226,22 @@ const styles = StyleSheet.create({
 });
 
 export default ChatResizeOuter;
+
+const renderItem = ({ item }: { item: Message }) => {
+    return (
+        <Fragment>
+            <View
+                style={[
+                    styles.messageContainer,
+                    item.sender === "bot" ? styles.botMessageContainer : styles.userMessageContainer,
+                    item.sender === "bot" ? styles.botStyle : styles.userStyle,
+                ]}
+            >
+                <Text style={[styles.messageText, item.sender === "user" && styles.userMessageText]}>{item.text}</Text>
+            </View>
+            <View style={[styles.timeStamp, item.sender === "bot" ? styles.botStyle : styles.userStyle]}>
+                <Text style={styles.timeStampText}>{new Date(item.timeStamp).toLocaleTimeString()}</Text>
+            </View>
+        </Fragment>
+    );
+};

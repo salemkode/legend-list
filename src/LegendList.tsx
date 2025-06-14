@@ -23,7 +23,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { comparatorByDistance, comparatorDefault, extractPaddingTop, isFunction, warnDevOnce } from "./helpers";
+import { comparatorByDistance, comparatorDefault, extractPaddingTop, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, listen$, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -1517,9 +1517,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 extraData: peek$(ctx, "extraData"),
             };
 
-            renderedItem = isFunction(renderItemProp)
-                ? renderItemProp(itemProps)
-                : React.createElement(renderItemProp, itemProps);
+            renderedItem = React.createElement(renderItemProp, itemProps);
         }
 
         return { index, item: data[index], renderedItem };
