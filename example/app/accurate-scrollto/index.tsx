@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
         width: 400,
         maxWidth: "100%",
         marginHorizontal: "auto",
+        paddingBottom: 200,
     },
     searchContainer: {
         padding: 8,

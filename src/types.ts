@@ -333,6 +333,7 @@ export interface InternalState {
         }
     >;
     onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
+    stylePaddingBottom?: number;
 }
 
 export interface ViewableRange<T> {

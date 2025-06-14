@@ -32,9 +32,9 @@ export function byIndex(a: { index: number }) {
     return a.index;
 }
 
-function getPadding(s: ViewStyle) {
-    return (s.paddingTop ?? s.paddingVertical ?? s.padding ?? 0) as number;
+function getPadding(s: ViewStyle, type: "Top" | "Bottom") {
+    return (s[`padding${type}`] ?? s.paddingVertical ?? s.padding ?? 0) as number;
 }
-export function extractPaddingTop(style: ViewStyle, contentContainerStyle: ViewStyle) {
-    return getPadding(style) + getPadding(contentContainerStyle);
+export function extractPadding(style: ViewStyle, contentContainerStyle: ViewStyle, type: "Top" | "Bottom") {
+    return getPadding(style, type) + getPadding(contentContainerStyle, type);
 }

@@ -23,7 +23,7 @@ import { DebugView } from "./DebugView";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, ENABLE_DEBUG_VIEW, IsNewArchitecture, POSITION_OUT_OF_VIEW } from "./constants";
-import { comparatorByDistance, comparatorDefault, extractPaddingTop, warnDevOnce } from "./helpers";
+import { comparatorByDistance, comparatorDefault, extractPadding, warnDevOnce } from "./helpers";
 import { StateProvider, getContentSize, listen$, peek$, set$, useStateContext } from "./state";
 import type {
     AnchoredPosition,
@@ -125,7 +125,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     const contentContainerStyle = { ...StyleSheet.flatten(contentContainerStyleProp) };
     const style = { ...StyleSheet.flatten(styleProp) };
-    const stylePaddingTopState = extractPaddingTop(style, contentContainerStyle);
+    const stylePaddingTopState = extractPadding(style, contentContainerStyle, "Top");
+    const stylePaddingBottomState = extractPadding(style, contentContainerStyle, "Bottom");
 
     // Padding top is handled by PaddingAndAdjust so remove it from the style
     if (style?.paddingTop) {
@@ -1426,6 +1427,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // keep the same content in view
         const prevPaddingTop = peek$(ctx, "stylePaddingTop");
         setPaddingTop({ stylePaddingTop: stylePaddingTopState });
+        refState.current!.stylePaddingBottom = stylePaddingBottomState;
 
         const paddingDiff = stylePaddingTopState - prevPaddingTop;
         // If the style padding has changed then adjust the paddingTop and update scroll to compensate
@@ -1491,7 +1493,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
     // TODO: This needs to support horizontal and other ways of defining padding
 
-    useEffect(initalizeStateVars, [memoizedLastItemKeys.join(","), numColumnsProp, stylePaddingTopState]);
+    useEffect(initalizeStateVars, [
+        memoizedLastItemKeys.join(","),
+        numColumnsProp,
+        stylePaddingTopState,
+        stylePaddingBottomState,
+    ]);
 
     const getRenderedItem = useCallback((key: string) => {
         const state = refState.current;
@@ -1968,10 +1975,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 },
                 scrollToOffset: (params) => scrollTo(params),
                 scrollToEnd: (options) => {
-                    const { data } = refState.current!;
+                    const { data, stylePaddingBottom } = refState.current!;
                     const index = data.length - 1;
                     if (index !== -1) {
-                        scrollToIndex({ index, ...options });
+                        const paddingBottom = stylePaddingBottom || 0;
+                        scrollToIndex({ index, viewOffset: -paddingBottom, ...options });
                     }
                 },
             };
