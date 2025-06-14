@@ -9,7 +9,7 @@ import {
     useState,
 } from "react";
 import { isFunction } from "./helpers";
-import { useSelector$, useStateContext } from "./state";
+import { useArr$, useSelector$, useStateContext } from "./state";
 import type { LegendListRecyclingState, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import { useInit } from "./useInit";
 
@@ -138,4 +138,9 @@ export function useIsLastItem(): boolean {
     const { itemKey } = useContext(ContextContainer);
     const isLast = useSelector$("lastItemKeys", (lastItemKeys) => lastItemKeys?.includes(itemKey) || false);
     return isLast;
+}
+
+export function useListScrollSize(): { width: number; height: number } {
+    const [scrollSize] = useArr$(["scrollSize"]);
+    return scrollSize;
 }

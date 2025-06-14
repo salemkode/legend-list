@@ -1,6 +1,7 @@
 export { LegendList } from "./LegendList";
 export {
     useIsLastItem,
+    useListScrollSize,
     useRecyclingEffect,
     useRecyclingState,
     useViewability,

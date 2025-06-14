@@ -299,6 +299,7 @@ export interface InternalState {
     maintainingScrollAtEnd?: boolean;
     totalSize: number;
     totalSizeBelowAnchor: number;
+    otherAxisSize?: number;
     timeouts: Set<number>;
     timeoutSizeMessage: any;
     nativeMarginTop: number;

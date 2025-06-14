@@ -1743,10 +1743,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         [],
     );
 
-    const handleLayout = useCallback((scrollLength: number) => {
+    const handleLayout = useCallback((size: { width: number; height: number }) => {
+        const scrollLength = size[horizontal ? "width" : "height"];
+        const otherAxisSize = size[horizontal ? "height" : "width"];
         const state = refState.current!;
         const didChange = scrollLength !== state.scrollLength;
+        const prevOtherAxisSize = state.otherAxisSize;
         state.scrollLength = scrollLength;
+        state.otherAxisSize = otherAxisSize;
         state.lastBatchingAction = Date.now();
         state.scrollForNextCalculateItemsInView = undefined;
 
@@ -1760,13 +1764,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         if (didChange) {
             calculateItemsInView();
         }
-    }, []);
-
-    const onLayout = useCallback((event: LayoutChangeEvent) => {
-        const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
-        handleLayout(scrollLength);
-
-        const otherAxisSize = event.nativeEvent.layout[horizontal ? "height" : "width"];
+        if (didChange || otherAxisSize !== prevOtherAxisSize) {
+            set$(ctx, "scrollSize", { width: size.width, height: size.height });
+        }
 
         if (refState.current) {
             // If otherAxisSize minus padding is less than 10, we need to set the size of the other axis
@@ -1782,6 +1782,15 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 } is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
             );
         }
+    }, []);
+
+    const onLayout = useCallback((event: LayoutChangeEvent) => {
+        const layout = event.nativeEvent.layout;
+        handleLayout(layout);
+
+        const scrollLength = layout[horizontal ? "width" : "height"];
+        const otherAxisSize = layout[horizontal ? "height" : "width"];
+
         if (onLayoutProp) {
             onLayoutProp(event);
         }
@@ -1790,12 +1799,14 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     if (IsNewArchitecture) {
         useLayoutEffect(() => {
             // unstable_getBoundingClientRect is unstable and only on Fabric
-            const measured = (refScroller.current as any)?.unstable_getBoundingClientRect?.();
+            const measured: { width: number; height: number } = (
+                refScroller.current as any
+            )?.unstable_getBoundingClientRect?.();
             if (measured) {
                 const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
 
                 if (size) {
-                    handleLayout(size);
+                    handleLayout(measured);
                 }
             }
         }, []);
