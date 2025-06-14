@@ -18,12 +18,13 @@ When updating the changelog with recent git commits, follow these guidelines:
   - "Refactor*" commits
 
 ### 2. Categorize Changes
-Organize changes by type with these prefixes:
-- **Fix:** Bug fixes and corrections
+Organize changes by type with these prefixes, in this order:
 - **Feat:** New features and capabilities
-- **Refactor:** API changes and restructuring (user-facing)
+- **Fix:** Bug fixes and corrections
 - **Perf:** Performance improvements
 - **Improvement:** Enhancements to existing functionality
+
+Skip **Refactor:**, they don't need to be in the changelog
 
 ### 3. Format Guidelines
 - Write user-friendly descriptions, not raw commit messages
@@ -54,3 +55,6 @@ Organize changes by type with these prefixes:
 - Verify technical accuracy of descriptions
 - Check that breaking changes are clearly marked
 - Review for consistency in tone and format
+
+### 7. Update package version
+If a specific version number is requested and it is newer than the version in package.json, update package.json

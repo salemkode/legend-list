@@ -1,3 +1,8 @@
+## 1.0.18
+- Feat: Add a useListScrollSize hook
+- Fix: Support renderItem being a function component
+- Fix: scrollToEnd being incorrect by the amount of the bottom padding
+
 ## 1.0.17
 - Fix: initialScrollIndex not taking header component size into account
 - Fix: PaddingAndAdjust for ListHeaderComponent
