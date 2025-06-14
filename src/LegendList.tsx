@@ -1979,7 +1979,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     const index = data.length - 1;
                     if (index !== -1) {
                         const paddingBottom = stylePaddingBottom || 0;
-                        scrollToIndex({ index, viewOffset: -paddingBottom, ...options });
+                        const footerSize = peek$(ctx, "footerSize") || 0;
+                        scrollToIndex({ index, viewOffset: -paddingBottom - footerSize, ...options });
                     }
                 },
             };
