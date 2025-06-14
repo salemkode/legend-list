@@ -1,3 +1,6 @@
+## 1.0.19
+- Fix: scrollToEnd not including footerSize
+
 ## 1.0.18
 - Feat: Add a useListScrollSize hook
 - Fix: Support renderItem being a function component
