@@ -78,7 +78,13 @@ export type LegendListPropsBase<
      * Index to scroll to initially.
      * @default 0
      */
-    initialScrollIndex?: number;
+    initialScrollIndex?:
+        | number
+        | {
+              index: number;
+              viewOffset?: number | undefined;
+              viewPosition?: number | undefined;
+          };
 
     /**
      * Component to render between items, receiving the leading item as prop.
@@ -540,3 +546,9 @@ export type TypedMemo = <T extends React.ComponentType<any>>(
 ) => T & { displayName?: string };
 
 export const typedMemo = memo as TypedMemo;
+
+export type ScrollIndexWithOffsetPosition = {
+    index: number;
+    viewOffset?: number;
+    viewPosition?: number;
+};

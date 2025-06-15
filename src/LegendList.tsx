@@ -31,6 +31,7 @@ import type {
     InternalState,
     LegendListProps,
     LegendListRef,
+    ScrollIndexWithOffsetPosition,
     ScrollState,
 } from "./types";
 import { typedForwardRef } from "./types";
@@ -72,7 +73,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 ) {
     const {
         data: dataProp = [],
-        initialScrollIndex,
+        initialScrollIndex: initialScrollIndexProp,
         initialScrollOffset,
         horizontal,
         drawDistance = 250,
@@ -111,6 +112,10 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         onViewableItemsChanged,
         ...rest
     } = props;
+
+    const initialScroll: ScrollIndexWithOffsetPosition | undefined =
+        typeof initialScrollIndexProp === "number" ? { index: initialScrollIndexProp } : initialScrollIndexProp;
+    const initialScrollIndex = initialScroll?.index;
 
     const refLoadStartTime = useRef<number>(Date.now());
 
@@ -228,6 +233,22 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             return offset / numColumnsProp - adjust + topPad;
         }
         return 0;
+    };
+    const calculateOffsetWithOffsetPosition = (offsetParam: number, params: Partial<ScrollIndexWithOffsetPosition>) => {
+        const { index, viewOffset, viewPosition } = params;
+        let offset = offsetParam;
+        const state = refState.current!;
+        if (viewOffset) {
+            offset -= viewOffset;
+        }
+
+        if (viewPosition !== undefined && index !== undefined) {
+            // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
+            // In the future we can improve this by listening for the item size change and then updating the scroll position
+            offset -= viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
+        }
+
+        return offset;
     };
 
     const initialContentOffset = initialScrollOffset ?? useMemo(() => calculateOffsetForIndex(undefined), []);
@@ -375,13 +396,13 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                 props.onLoad({ elapsedTimeInMs: Date.now() - refLoadStartTime.current });
             }
         };
-        if (initialScrollIndex) {
+        if (initialScroll) {
             queueMicrotask(() => {
-                scrollToIndex({ index: initialScrollIndex, animated: false });
+                scrollToIndex({ ...initialScroll, animated: false });
                 requestAnimationFrame(() => {
                     // Old architecture sometimes doesn't scroll to the initial index correctly
                     if (!IsNewArchitecture) {
-                        scrollToIndex({ index: initialScrollIndex, animated: false });
+                        scrollToIndex({ ...initialScroll, animated: false });
                     }
 
                     setIt();
@@ -635,8 +656,11 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // If this is before the initial layout, and we have an initialScrollIndex,
         // then ignore the actual scroll which might be shifting due to scrollAdjustHandler
         // and use the calculated offset of the initialScrollIndex instead.
-        if (!state.queuedInitialLayout && initialScrollIndex) {
-            const updatedOffset = calculateOffsetForIndex(initialScrollIndex);
+        if (!state.queuedInitialLayout && initialScroll) {
+            const updatedOffset = calculateOffsetWithOffsetPosition(
+                calculateOffsetForIndex(initialScroll.index),
+                initialScroll,
+            );
             scrollState = updatedOffset;
         }
 
@@ -1040,18 +1064,9 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         } = {} as any,
     ) => {
         const state = refState.current!;
-        const { animated, index, viewPosition, viewOffset } = params;
-        let { offset } = params;
+        const { animated } = params;
 
-        if (viewOffset) {
-            offset -= viewOffset;
-        }
-
-        if (viewPosition !== undefined && index !== undefined) {
-            // TODO: This can be inaccurate if the item size is very different from the estimatedItemSize
-            // In the future we can improve this by listening for the item size change and then updating the scroll position
-            offset -= viewPosition * (state.scrollLength - getItemSize(getId(index), index, state.data[index]));
-        }
+        const offset = calculateOffsetWithOffsetPosition(params.offset, params);
 
         // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
         state.scrollAdjustHandler.setDisableAdjust(true);
@@ -1460,12 +1475,12 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     }
 
     useEffect(() => {
-        if (initialScrollIndex && ListHeaderComponent) {
+        if (initialScroll && ListHeaderComponent) {
             // Once we get a headerSize we need to fix the initial scroll offset
             // to include the headerSize
             const dispose = listen$(ctx, "headerSize", (size) => {
                 if (size > 0) {
-                    scrollToIndex({ index: initialScrollIndex, animated: false });
+                    scrollToIndex({ ...initialScroll, animated: false });
                     dispose?.();
                 }
             });
@@ -1547,7 +1562,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * initialContainerPoolRatio);
 
-            if (initialScrollIndex) {
+            if (initialScroll) {
                 requestAnimationFrame(() => {
                     // immediate render causes issues with initial index position
                     calculateItemsInView(/*isReset*/ true);
