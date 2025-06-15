@@ -43,8 +43,7 @@ type AnimatedLegendListProps<ItemT> = Omit<AnimatedLegendListPropsBase<ItemT>, "
     OtherAnimatedLegendListProps<ItemT>;
 
 type AnimatedLegendListDefinition = <ItemT>(
-    props: Omit<AnimatedLegendListPropsBase<ItemT>, "refLegendList" | "ref"> &
-        OtherAnimatedLegendListProps<ItemT> & { ref?: React.Ref<LegendListRef> },
+    props: AnimatedLegendListProps<ItemT> & { ref?: React.Ref<LegendListRef> },
 ) => React.ReactElement | null;
 
 // A component that has the shape of LegendList which passes the ref down as refLegendList
