@@ -1,3 +1,8 @@
+## 1.1.0
+- Feat: Add LazyLegendList component for virtualizing regular children
+- Feat: Support initialScrollIndex with viewOffset and viewPosition
+- Feat: Add estimatedListSize prop for better initial size estimation
+
 ## 1.0.20
 - Types: Fix type of ref in Reanimated LegendList
 
