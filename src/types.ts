@@ -20,6 +20,7 @@ export type LegendListPropsBase<
     | "maintainVisibleContentPosition"
     | "stickyHeaderIndices"
     | "removeClippedSubviews"
+    | "children"
 > & {
     /**
      * If true, aligns items at the end of the list.

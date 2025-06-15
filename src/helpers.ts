@@ -3,6 +3,9 @@ import type { ViewStyle } from "react-native";
 export function isFunction(obj: unknown): obj is (...args: any[]) => any {
     return typeof obj === "function";
 }
+export function isArray(obj: unknown): obj is Array<any> {
+    return Array.isArray(obj);
+}
 
 const warned = new Set<string>();
 export function warnDevOnce(id: string, text: string) {

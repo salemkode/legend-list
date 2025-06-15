@@ -35,6 +35,10 @@ const data: ListElement[] = [
         url: "/countries",
     },
     {
+        title: "Lazy List",
+        url: "/lazy-list",
+    },
+    {
         title: "Accurate scrollToIndex",
         url: "/accurate-scrollto",
     },

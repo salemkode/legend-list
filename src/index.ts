@@ -1,4 +1,5 @@
 export { LegendList } from "./LegendList";
+export { LazyLegendList, type LazyLegendListProps } from "./LazyLegendList";
 export {
     useIsLastItem,
     useListScrollSize,
