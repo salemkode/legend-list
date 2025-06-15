@@ -1,3 +1,6 @@
+## 1.0.20
+- Types: Fix type of ref in Reanimated LegendList
+
 ## 1.0.19
 - Fix: scrollToEnd not including footerSize
 
