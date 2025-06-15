@@ -90,6 +90,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         columnWrapperStyle,
         keyExtractor: keyExtractorProp,
         renderItem,
+        estimatedListSize,
         estimatedItemSize: estimatedItemSizeProp,
         getEstimatedItemSize,
         suggestEstimatedItemSize,
@@ -254,7 +255,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
     const initialContentOffset = initialScrollOffset ?? useMemo(() => calculateOffsetForIndex(undefined), []);
 
     if (!refState.current) {
-        const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
+        const initialScrollLength = (estimatedListSize ?? Dimensions.get("window"))[horizontal ? "width" : "height"];
         refState.current = {
             sizes: new Map(),
             positions: new Map(),

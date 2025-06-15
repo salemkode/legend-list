@@ -52,6 +52,12 @@ export type LegendListPropsBase<
     estimatedItemSize?: number;
 
     /**
+     * Estimated size of the ScrollView in pixels, a hint for the first render to improve performance
+     * @default undefined
+     */
+    estimatedListSize?: { height: number; width: number };
+
+    /**
      * Extra data to trigger re-rendering when changed.
      */
     extraData?: any;
