@@ -19,7 +19,7 @@ export default function AccurateScrollTo({ numColumns = 1 }: CardsProps) {
             })) as any[],
     );
 
-    const buttonText = useRef<string>();
+    const buttonText = useRef<string>("");
 
     return (
         <View style={styles.container}>
