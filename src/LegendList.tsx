@@ -1073,6 +1073,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         state.scrollAdjustHandler.setDisableAdjust(true);
         state.scrollHistory.length = 0;
         state.scrollingTo = params;
+        state.scrollPending = offset;
         // Do the scroll
         refScroller.current?.scrollTo({
             x: horizontal ? offset : 0,
@@ -1450,7 +1451,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         // Only iOS seems to need the scroll compensation
         if (paddingDiff && prevPaddingTop !== undefined && Platform.OS === "ios") {
             queueMicrotask(() => {
-                scrollTo({ offset: refState.current!.scroll + paddingDiff, animated: false });
+                scrollTo({ offset: refState.current!.scrollPending + paddingDiff, animated: false });
             });
         }
     };
