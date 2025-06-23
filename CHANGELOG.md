@@ -1,3 +1,6 @@
+## 1.1.1
+- Fix: scrollTo accuracy when paddingTop changes
+
 ## 1.1.0
 - Feat: Add LazyLegendList component for virtualizing regular children
 - Feat: Support initialScrollIndex with viewOffset and viewPosition
