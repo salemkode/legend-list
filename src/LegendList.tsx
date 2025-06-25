@@ -345,7 +345,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
         index,
         viewOffset = 0,
         animated = true,
-        viewPosition = 0,
+        viewPosition,
     }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
         const state = refState.current!;
         if (index >= state.data.length) {
@@ -384,7 +384,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         // Disable scroll adjust while scrolling so that it doesn't do extra work affecting the target offset
         // Do the scroll
-        scrollTo({ offset: firstIndexScrollPostion, animated, index, viewPosition, viewOffset });
+        scrollTo({ offset: firstIndexScrollPostion, animated, index, viewPosition: viewPosition ?? 0, viewOffset });
     };
 
     const setDidLayout = () => {
