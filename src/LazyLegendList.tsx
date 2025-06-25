@@ -38,8 +38,6 @@ export const LazyLegendList = typedForwardRef(function LazyLegendList<
 
     const data = (isArray(children) ? children : React.Children.toArray(children)).flat(1);
 
-    console.log({ data });
-
     return (
         // @ts-expect-error TODO: Fix this type
         <LegendListComponent {...rest} data={data} renderItem={renderItem} ref={forwardedRef} />
