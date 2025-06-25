@@ -51,6 +51,7 @@ export const Container = <ItemT,>({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+    const isALastItem = lastItemKeys.includes(itemKey);
 
     let paddingStyles: ViewStyle | undefined;
     if (columnWrapperStyle) {
@@ -60,12 +61,12 @@ export const Container = <ItemT,>({
         // Create padding styles for both horizontal and vertical layouts with multiple columns
         if (horizontal) {
             paddingStyles = {
-                paddingRight: !lastItemKeys.includes(itemKey) ? columnGap || gap || undefined : undefined,
+                paddingRight: !isALastItem ? columnGap || gap || undefined : undefined,
                 paddingVertical: numColumns > 1 ? (rowGap || gap || 0) / 2 : undefined,
             };
         } else {
             paddingStyles = {
-                paddingBottom: !lastItemKeys.includes(itemKey) ? rowGap || gap || undefined : undefined,
+                paddingBottom: !isALastItem ? rowGap || gap || undefined : undefined,
                 paddingHorizontal: numColumns > 1 ? (columnGap || gap || 0) / 2 : undefined,
             };
         }
@@ -137,7 +138,7 @@ export const Container = <ItemT,>({
                     }
                 }
             }
-        }, [itemKey, layoutRenderCount]);
+        }, [itemKey, layoutRenderCount, isALastItem]);
     } else {
         // Since old architecture cannot use unstable_getBoundingClientRect it needs to ensure that
         // all containers updateItemSize even if the container did not resize.
@@ -167,7 +168,7 @@ export const Container = <ItemT,>({
         <React.Fragment key={recycleItems ? undefined : itemKey}>
             <ContextContainer.Provider value={contextValue}>
                 {renderedItem}
-                {renderedItemInfo && ItemSeparatorComponent && !lastItemKeys.includes(itemKey) && (
+                {renderedItemInfo && ItemSeparatorComponent && !isALastItem && (
                     <ItemSeparatorComponent leadingItem={renderedItemInfo.item} />
                 )}
             </ContextContainer.Provider>
