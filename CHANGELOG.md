@@ -1,3 +1,6 @@
+## 1.1.2
+- Fix: Adding items in a list with item separators had a small layout jump as the previously last item re-rendered with a separator
+
 ## 1.1.1
 - Fix: scrollTo accuracy when paddingTop changes
 
