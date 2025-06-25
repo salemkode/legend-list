@@ -1997,7 +1997,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                     if (index !== -1) {
                         const paddingBottom = stylePaddingBottom || 0;
                         const footerSize = peek$(ctx, "footerSize") || 0;
-                        scrollToIndex({ index, viewOffset: -paddingBottom - footerSize, ...options });
+                        scrollToIndex({ index, viewPosition: 1, viewOffset: -paddingBottom - footerSize, ...options });
                     }
                 },
             };
