@@ -1971,6 +1971,8 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                               scrollLength: state.scrollLength,
                               start: state.startNoBuffer,
                               startBuffered: state.startBuffered,
+                              sizes: state.sizesKnown,
+                              sizeAtIndex: (index: number) => state.sizesKnown.get(getId(index))!,
                           }
                         : ({} as ScrollState);
                 },

@@ -373,6 +373,8 @@ export type ScrollState = {
     scrollLength: number;
     start: number;
     startBuffered: number;
+    sizes: Map<string, number>;
+    sizeAtIndex: (index: number) => number;
 };
 
 export type LegendListRef = {
