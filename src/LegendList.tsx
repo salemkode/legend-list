@@ -1667,7 +1667,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         const avg = state.averageSizes[""].avg;
 
                         console.warn(
-                            `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
+                            `[legend-list] Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
                         );
                     }, 1000);
                 }
