@@ -1,3 +1,6 @@
+## 1.1.4
+- Feat: Add sizes to getState()
+
 ## 1.1.3
 - Fix: scrollToEnd was not always setting `viewPosition: 1` correctly
 
