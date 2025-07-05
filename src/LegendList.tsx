@@ -1280,6 +1280,7 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
 
         if (!forgetPositions && !isFirst) {
             // check if anchorElement is still in the list
+            let didChange = false;
             if (maintainVisibleContentPosition) {
                 if (state.anchorElement == null || indexByKey.get(state.anchorElement.id) == null) {
                     if (dataProp.length) {
@@ -1289,29 +1290,26 @@ const LegendListInner = typedForwardRef(function LegendListInner<T>(
                         };
                         state.anchorElement = newAnchorElement;
                         state.belowAnchorElementPositions?.clear();
-                        // reset scroll to 0 and schedule rerender
-                        scrollTo({ offset: 0, animated: false });
-                        setTimeout(() => {
-                            calculateItemsInView(/*reset*/ true);
-                        }, 0);
+                        didChange = true;
                     } else {
                         state.startBufferedId = undefined;
                     }
                 }
-            } else {
+            } else if (state.startBufferedId != null && newPositions.get(state.startBufferedId) == null) {
                 // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
-                if (state.startBufferedId != null && newPositions.get(state.startBufferedId) == null) {
-                    if (dataProp.length) {
-                        state.startBufferedId = getId(0);
-                    } else {
-                        state.startBufferedId = undefined;
-                    }
-                    // reset scroll to 0 and schedule rerender
-                    scrollTo({ offset: 0, animated: false });
-                    setTimeout(() => {
-                        calculateItemsInView(/*reset*/ true);
-                    }, 0);
+                if (dataProp.length) {
+                    state.startBufferedId = getId(0);
+                } else {
+                    state.startBufferedId = undefined;
                 }
+                didChange = true;
+            }
+
+            if (didChange) {
+                // schedule rerender
+                setTimeout(() => {
+                    calculateItemsInView(/*reset*/ true);
+                }, 0);
             }
         }
 
