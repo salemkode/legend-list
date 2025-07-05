@@ -38,6 +38,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 ref={listRef}
                 data={data}
                 renderItem={ItemCard}
+                numColumns={numColumns}
                 keyExtractor={(item) => item.id}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
